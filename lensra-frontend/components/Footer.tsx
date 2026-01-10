@@ -4,23 +4,6 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
       {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-3">Get 15% Off Your First Order</h2>
-          <p className="text-lg mb-6">Join our newsletter for exclusive deals and design inspiration</p>
-          <div className="flex gap-3 max-w-md mx-auto flex-col sm:flex-row">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="flex-1 px-5 py-3 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
-            />
-            <button className="px-8 py-3 bg-white text-purple-600 rounded-full font-bold hover:bg-gray-100 transition shadow-lg">
-              Subscribe
-            </button>
-          </div>
-          <p className="text-sm mt-4 opacity-90">No spam, unsubscribe anytime</p>
-        </div>
-      </div>
 
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 py-12">
