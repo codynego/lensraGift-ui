@@ -64,63 +64,6 @@ export default function LensraHomepage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top Banner */}
-      <div className="bg-red-600 text-white text-center py-2 text-sm font-medium">
-        🎁 Free shipping on orders over $50 | Use code: GIFT20 for 20% off
-      </div>
-
-      {/* Header */}
-      <header className="border-b sticky top-0 bg-white z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Top Header */}
-          <div className="py-3 flex items-center justify-between">
-            <div className="text-3xl font-bold text-red-600">Lensra</div>
-            
-            {/* Search Bar */}
-            <div className="flex-1 max-w-2xl mx-8 hidden md:block">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search for products, designs, or ideas..."
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-full focus:border-red-600 focus:outline-none"
-                />
-                <Search className="absolute right-4 top-2.5 w-5 h-5 text-gray-400" />
-              </div>
-            </div>
-
-            {/* User Actions */}
-            <div className="flex items-center gap-4">
-              <button className="hidden md:flex items-center gap-2 hover:text-red-600 transition">
-                <User className="w-5 h-5" />
-                <span className="text-sm">Sign In</span>
-              </button>
-              <button className="relative hover:text-red-600 transition">
-                <Heart className="w-6 h-6" />
-              </button>
-              <button className="relative hover:text-red-600 transition">
-                <ShoppingCart className="w-6 h-6" />
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="border-t py-3">
-            <ul className="flex items-center gap-8 text-sm font-medium overflow-x-auto">
-              <li className="flex items-center gap-1 cursor-pointer hover:text-red-600 transition whitespace-nowrap">
-                Products <ChevronDown className="w-4 h-4" />
-              </li>
-              <li className="cursor-pointer hover:text-red-600 transition whitespace-nowrap">Design Ideas</li>
-              <li className="cursor-pointer hover:text-red-600 transition whitespace-nowrap">Custom Gifts</li>
-              <li className="cursor-pointer hover:text-red-600 transition whitespace-nowrap">Occasions</li>
-              <li className="cursor-pointer hover:text-red-600 transition whitespace-nowrap">Sale</li>
-              <li className="cursor-pointer hover:text-red-600 transition whitespace-nowrap">Business</li>
-            </ul>
-          </nav>
-        </div>
-      </header>
 
       {/* Hero Carousel */}
       <section className="relative overflow-hidden">
@@ -309,46 +252,6 @@ export default function LensraHomepage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-xl font-bold text-white mb-4">Lensra</h3>
-            <p className="text-sm">Create custom products that express your unique style.</p>
-          </div>
-          <div>
-            <h4 className="font-bold text-white mb-4">Shop</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition">All Products</a></li>
-              <li><a href="#" className="hover:text-white transition">Apparel</a></li>
-              <li><a href="#" className="hover:text-white transition">Home & Living</a></li>
-              <li><a href="#" className="hover:text-white transition">Accessories</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-white mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition">Help Center</a></li>
-              <li><a href="#" className="hover:text-white transition">Shipping Info</a></li>
-              <li><a href="#" className="hover:text-white transition">Returns</a></li>
-              <li><a href="#" className="hover:text-white transition">Contact Us</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-white mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition">About Us</a></li>
-              <li><a href="#" className="hover:text-white transition">Careers</a></li>
-              <li><a href="#" className="hover:text-white transition">Blog</a></li>
-              <li><a href="#" className="hover:text-white transition">Affiliate Program</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 mt-8 pt-8 border-t border-gray-800 text-center text-sm">
-          <p>© 2026 Lensra. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }
