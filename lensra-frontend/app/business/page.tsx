@@ -1,6 +1,10 @@
-"use client"
+"use client";
 import { useState } from 'react';
-import { Building2, Users, Package, TrendingUp, CheckCircle, Gift, Truck, Headphones, Mail, Phone, MapPin, Star } from 'lucide-react';
+import { 
+  Building2, Users, Package, TrendingUp, CheckCircle, 
+  Truck, Headphones, Mail, Phone, MapPin, Star, 
+  ArrowRight, Zap, Briefcase, Globe, ShieldCheck 
+} from 'lucide-react';
 
 export default function LensraBusinessPage() {
   const [formData, setFormData] = useState({
@@ -17,18 +21,8 @@ export default function LensraBusinessPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Quote request submitted! Our team will contact you within 24 hours.');
-    setFormData({
-      companyName: '',
-      contactName: '',
-      email: '',
-      phone: '',
-      productType: '',
-      quantity: '',
-      budget: '',
-      deadline: '',
-      message: ''
-    });
+    alert('Strategic partnership request received. Our corporate lead will contact you within 24 hours.');
+    setFormData({ companyName: '', contactName: '', email: '', phone: '', productType: '', quantity: '', budget: '', deadline: '', message: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -36,217 +30,114 @@ export default function LensraBusinessPage() {
   };
 
   const benefits = [
-    { icon: <Package className="w-8 h-8" />, title: 'Volume Discounts', desc: 'Save up to 40% on bulk orders of 100+ units' },
-    { icon: <Users className="w-8 h-8" />, title: 'Dedicated Account Manager', desc: 'Personal support throughout your order process' },
-    { icon: <TrendingUp className="w-8 h-8" />, title: 'Custom Branding', desc: 'Full customization with your company logo and colors' },
-    { icon: <Truck className="w-8 h-8" />, title: 'Fast Turnaround', desc: 'Rush orders available with 5-7 day production' },
-    { icon: <CheckCircle className="w-8 h-8" />, title: 'Quality Guarantee', desc: '100% satisfaction or full refund policy' },
-    { icon: <Headphones className="w-8 h-8" />, title: 'Priority Support', desc: '24/7 dedicated business customer service' }
+    { icon: <Package />, title: 'Volume Logistics', desc: 'Enterprise-grade savings up to 40% on bulk procurement.' },
+    { icon: <Users />, title: 'Identity Strategy', desc: 'Direct access to a dedicated brand design consultant.' },
+    { icon: <TrendingUp />, title: 'Brand Fidelity', desc: 'Precision-matched identity with total pantone accuracy.' },
+    { icon: <Zap />, title: 'Priority Slotting', desc: 'Accelerated production for time-critical corporate deployments.' },
+    { icon: <ShieldCheck />, title: 'Quality Protocol', desc: 'Multi-stage biometric QA for every single unit produced.' },
+    { icon: <Briefcase />, title: 'White Label', desc: 'Stealth shipping protocols for agency and resale partners.' }
   ];
 
   const pricingTiers = [
-    { range: '50-99 units', discount: '15%', color: 'from-blue-500 to-blue-600' },
-    { range: '100-249 units', discount: '25%', color: 'from-purple-500 to-purple-600' },
-    { range: '250-499 units', discount: '35%', color: 'from-pink-500 to-pink-600' },
-    { range: '500+ units', discount: '40%', color: 'from-red-500 to-red-600' }
+    { range: '50-99 units', discount: '15%', label: 'TIER I', feature: 'Standard Support' },
+    { range: '100-249 units', discount: '25%', label: 'TIER II', feature: 'Priority Shipping' },
+    { range: '250-499 units', discount: '35%', label: 'PRO', feature: 'Custom Labelling' },
+    { range: '500+ units', discount: '40%', label: 'ENTERPRISE', feature: 'Dedicated Account Lead' }
   ];
-
-  const useCases = [
-    { title: 'Employee Appreciation', icon: '🎁', desc: 'Branded gifts for team milestones and achievements' },
-    { title: 'Corporate Events', icon: '🎪', desc: 'Conference swag, trade show giveaways, and event merchandise' },
-    { title: 'Client Gifting', icon: '🤝', desc: 'Impress clients with personalized corporate gifts' },
-    { title: 'New Hire Kits', icon: '👋', desc: 'Welcome packages for onboarding new employees' },
-    { title: 'Marketing Campaigns', icon: '📢', desc: 'Promotional items to boost brand awareness' },
-    { title: 'Holiday Gifts', icon: '🎄', desc: 'Seasonal gifts for employees and clients' }
-  ];
-
-  const testimonials = [
-    { company: 'TechCorp Inc.', person: 'Sarah Johnson, HR Director', text: 'Ordered 500 branded mugs for our annual conference. Quality exceeded expectations and delivery was on time!', rating: 5 },
-    { company: 'Marketing Pro Agency', person: 'Mike Chen, CEO', text: 'The dedicated account manager made the entire process seamless. Will definitely order again.', rating: 5 },
-    { company: 'StartUp Labs', person: 'Emily Rodriguez, Operations Manager', text: 'Great bulk pricing and the customization options were perfect for our brand identity.', rating: 5 }
-  ];
-
-  const popularProducts = [
-    { name: 'Branded Mugs', minOrder: 50, price: 'from $8.99', img: '☕' },
-    { name: 'Corporate T-Shirts', minOrder: 100, price: 'from $12.99', img: '👕' },
-    { name: 'Tote Bags', minOrder: 50, price: 'from $14.99', img: '👜' },
-    { name: 'Water Bottles', minOrder: 100, price: 'from $18.99', img: '🍶' },
-    { name: 'Notebooks', minOrder: 50, price: 'from $6.99', img: '📓' },
-    { name: 'Hoodies', minOrder: 50, price: 'from $29.99', img: '🧥' }
-  ];
-
-  const scrollToForm = () => {
-    const formElement = document.getElementById('quote-form');
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-red-600">
       
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="flex items-center gap-2 text-blue-100">
-                <Building2 className="w-6 h-6" />
-                <span className="font-semibold">Lensra for Business</span>
+      {/* 1. ARCHIVE HEADER: IMPACT SECTION */}
+      <section className="relative pt-40 pb-32 px-6 lg:px-12 overflow-hidden border-b-[1px] border-zinc-900">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-red-600/10 blur-[150px] -z-10 animate-pulse" />
+        <div className="max-w-[1600px] mx-auto">
+          <div className="grid lg:grid-cols-12 gap-20 items-center">
+            <div className="lg:col-span-7 space-y-10">
+              <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase tracking-[0.5em] text-red-600">
+                <Building2 className="w-3.5 h-3.5" />
+                Enterprise Operations
               </div>
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                Elevate Your Brand with Custom Corporate Gifts
+              <h1 className="text-7xl md:text-[10rem] font-black leading-[0.8] tracking-tighter uppercase italic">
+                Scale Your <br /> <span className="text-red-600">Identity.</span>
               </h1>
-              <p className="text-xl text-blue-50">
-                Premium bulk customization for businesses of all sizes. From employee swag to client appreciation gifts.
+              <p className="text-xl text-zinc-400 font-bold max-w-xl leading-relaxed uppercase tracking-tight">
+                High-volume customization for elite teams. We transform corporate identity into physical benchmarks.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-6 pt-6">
                 <button 
-                  onClick={scrollToForm}
-                  className="px-8 py-4 bg-white text-purple-600 rounded-full font-bold text-lg hover:bg-gray-100 transition shadow-xl"
+                  onClick={() => document.getElementById('strategic-brief')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-12 py-6 bg-red-600 text-white rounded-[24px] font-black uppercase text-xs tracking-[0.3em] hover:bg-white hover:text-black transition-all flex items-center gap-4 group shadow-2xl shadow-red-600/20"
                 >
-                  Request a Quote
+                  Initiate Brief <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                 </button>
-                <button className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition">
-                  View Catalog
+                <button className="px-12 py-6 bg-zinc-900 border border-zinc-800 text-white rounded-[24px] font-black uppercase text-xs tracking-[0.3em] hover:bg-zinc-800 transition">
+                  System Catalog
                 </button>
-              </div>
-              <div className="flex items-center gap-8 pt-4">
-                <div>
-                  <div className="text-3xl font-bold">10,000+</div>
-                  <div className="text-blue-100">Happy Businesses</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold">500K+</div>
-                  <div className="text-blue-100">Products Delivered</div>
-                </div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 space-y-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-green-300" />
-                <span className="text-lg">No minimum order for samples</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-green-300" />
-                <span className="text-lg">Free design mockups</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-green-300" />
-                <span className="text-lg">Volume discounts up to 40%</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-green-300" />
-                <span className="text-lg">Dedicated account manager</span>
-              </div>
+
+            {/* Metrics Dashboard */}
+            <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+              {[
+                { label: 'Network Partners', val: '10K+' },
+                { label: 'Assets Deployed', val: '500K+' },
+                { label: 'Uptime Protocol', val: '99.9%' },
+                { label: 'Sync Time', val: '<24H' }
+              ].map((stat, i) => (
+                <div key={i} className="p-10 rounded-[40px] bg-zinc-900/50 border border-zinc-800 hover:border-red-600/40 transition-colors group">
+                  <div className="text-5xl font-black tracking-tighter mb-2 italic group-hover:text-red-500 transition-colors">{stat.val}</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Benefits Grid */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Why Choose Lensra for Business?</h2>
-            <p className="text-xl text-gray-600">Everything you need for successful corporate gifting</p>
+      {/* 2. CORE PROTOCOLS (BENEFITS) */}
+      <section className="py-32 bg-white text-zinc-950">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
+          <div className="mb-20">
+            <span className="text-red-600 font-black text-[10px] uppercase tracking-[0.6em] mb-4 block italic">Process 01.</span>
+            <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8]">
+              Volume <br /> <span className="text-zinc-400">Engineering.</span>
+            </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-200 border border-zinc-200 overflow-hidden rounded-[40px]">
             {benefits.map((benefit, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition group">
-                <div className="text-purple-600 mb-4 group-hover:scale-110 transition">
-                  {benefit.icon}
+              <div key={idx} className="bg-white p-16 hover:bg-zinc-50 transition-all group relative">
+                <div className="text-zinc-950 mb-10 group-hover:text-red-600 transition-colors">
+                  {cloneIcon(benefit.icon)}
                 </div>
-                <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
-                <p className="text-gray-600">{benefit.desc}</p>
+                <h3 className="text-2xl font-black uppercase tracking-tighter mb-4 italic italic">{benefit.title}</h3>
+                <p className="text-sm text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">{benefit.desc}</p>
+                <div className="absolute top-8 right-8 text-[10px] font-black text-zinc-200 uppercase tracking-widest">
+                  MOD_0{idx + 1}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Tiers */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Volume Discount Pricing</h2>
-            <p className="text-xl text-gray-600">The more you order, the more you save</p>
-          </div>
+      {/* 3. DISCOUNT MATRIX (TIERS) */}
+      <section className="py-32 bg-zinc-950 border-t border-zinc-900">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
           <div className="grid md:grid-cols-4 gap-6">
             {pricingTiers.map((tier, idx) => (
-              <div key={idx} className={`bg-gradient-to-br ${tier.color} text-white rounded-xl p-6 text-center hover:scale-105 transition shadow-xl`}>
-                <div className="text-5xl font-bold mb-2">{tier.discount}</div>
-                <div className="text-xl font-semibold mb-2">OFF</div>
-                <div className="text-sm opacity-90">{tier.range}</div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <p className="text-gray-600">
-              Looking for 1,000+ units? <button className="text-purple-600 font-semibold hover:underline">Contact us for enterprise pricing</button>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Use Cases */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Perfect for Every Occasion</h2>
-            <p className="text-xl text-gray-600">Versatile solutions for all your corporate needs</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {useCases.map((useCase, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-6 hover:shadow-xl transition cursor-pointer group">
-                <div className="text-5xl mb-4 group-hover:scale-110 transition">{useCase.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{useCase.title}</h3>
-                <p className="text-gray-600">{useCase.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Products */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Popular Business Products</h2>
-            <p className="text-xl text-gray-600">Best sellers for corporate gifting</p>
-          </div>
-          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {popularProducts.map((product, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-xl p-4 text-center hover:shadow-lg transition group cursor-pointer">
-                <div className="text-6xl mb-4 group-hover:scale-110 transition">{product.img}</div>
-                <h3 className="font-bold mb-2">{product.name}</h3>
-                <p className="text-sm text-gray-500 mb-2">Min. {product.minOrder} units</p>
-                <p className="text-purple-600 font-semibold">{product.price}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Trusted by Leading Companies</h2>
-            <p className="text-xl text-gray-600">See what our business clients have to say</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-6 shadow-lg">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4 italic">"{testimonial.text}"</p>
-                <div className="border-t pt-4">
-                  <p className="font-bold">{testimonial.person}</p>
-                  <p className="text-sm text-gray-500">{testimonial.company}</p>
+              <div key={idx} className="group relative p-12 rounded-[48px] border-2 border-zinc-900 bg-zinc-900/20 hover:border-red-600 hover:bg-zinc-900 transition-all duration-500">
+                <div className="text-[10px] font-black tracking-[0.5em] text-red-600 mb-8 uppercase">{tier.label}</div>
+                <div className="text-7xl font-black tracking-tighter mb-4 italic">{tier.discount}</div>
+                <div className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-10 italic">Tier Rebate</div>
+                <div className="space-y-4 pt-8 border-t border-zinc-800">
+                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest">
+                      <CheckCircle className="w-3 h-3 text-red-600" /> {tier.range}
+                   </div>
+                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                      <CheckCircle className="w-3 h-3 text-zinc-700" /> {tier.feature}
+                   </div>
                 </div>
               </div>
             ))}
@@ -254,182 +145,97 @@ export default function LensraBusinessPage() {
         </div>
       </section>
 
-      {/* Quote Request Form */}
-      <section id="quote-form" className="py-16 bg-gradient-to-r from-purple-600 to-pink-600">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center text-white mb-12">
-            <h2 className="text-4xl font-bold mb-4">Request a Custom Quote</h2>
-            <p className="text-xl text-purple-100">Fill out the form below and our team will get back to you within 24 hours</p>
+      {/* 4. STRATEGIC BRIEF (FORM) */}
+      <section id="strategic-brief" className="py-40 relative">
+        <div className="absolute inset-0 bg-red-600 -z-10 translate-y-1/2 opacity-10 blur-[120px]" />
+        <div className="max-w-5xl mx-auto px-6 lg:px-12">
+          <div className="text-center mb-20 space-y-6">
+            <h2 className="text-7xl md:text-9xl font-black tracking-tighter uppercase italic text-white leading-[0.8]">Brief <br /> <span className="text-red-600">Operations.</span></h2>
+            <p className="text-zinc-500 font-black uppercase text-[10px] tracking-[0.4em]">Response Window: 24-Hour Cycle</p>
           </div>
-          <div className="bg-white rounded-2xl p-8 shadow-2xl">
-            <div className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Company Name *</label>
-                  <input
-                    type="text"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Your Company Inc."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Contact Name *</label>
-                  <input
-                    type="text"
-                    name="contactName"
-                    value={formData.contactName}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="John Doe"
-                  />
-                </div>
+          
+          <div className="bg-zinc-900 p-10 lg:p-20 rounded-[60px] border border-zinc-800 shadow-3xl">
+            <form onSubmit={handleSubmit} className="space-y-12">
+              <div className="grid md:grid-cols-2 gap-12">
+                <FormInput label="Corporation" name="companyName" value={formData.companyName} onChange={handleChange} placeholder="LENSRA GMBH" />
+                <FormInput label="Officer" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="KLEIN SMITH" />
               </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="john@company.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="+1 (555) 000-0000"
-                  />
-                </div>
+              <div className="grid md:grid-cols-2 gap-12">
+                <FormInput label="Network Email" name="email" value={formData.email} onChange={handleChange} placeholder="K.SMITH@BRAND.COM" type="email" />
+                <FormInput label="Direct Line" name="phone" value={formData.phone} onChange={handleChange} placeholder="+234..." />
               </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Product Type *</label>
-                  <select
-                    name="productType"
-                    value={formData.productType}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="">Select a product</option>
-                    <option value="mugs">Mugs</option>
-                    <option value="tshirts">T-Shirts</option>
-                    <option value="hoodies">Hoodies</option>
-                    <option value="tote-bags">Tote Bags</option>
-                    <option value="water-bottles">Water Bottles</option>
-                    <option value="notebooks">Notebooks</option>
-                    <option value="multiple">Multiple Products</option>
-                    <option value="other">Other</option>
+              <div className="grid md:grid-cols-2 gap-12">
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">Mission Objective</label>
+                  <select name="productType" className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[20px] px-8 py-6 outline-none focus:border-red-600 transition uppercase text-xs font-black tracking-[0.2em] text-white appearance-none">
+                    <option value="">Select Protocol</option>
+                    <option value="apparel">Bulk Apparel Deployment</option>
+                    <option value="events">Strategic Event Assets</option>
+                    <option value="branding">Full Ecosystem Identity</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity *</label>
-                  <select
-                    name="quantity"
-                    value={formData.quantity}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="">Select quantity</option>
-                    <option value="50-99">50-99 units</option>
-                    <option value="100-249">100-249 units</option>
-                    <option value="250-499">250-499 units</option>
-                    <option value="500-999">500-999 units</option>
-                    <option value="1000+">1,000+ units</option>
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">Deployment Scale</label>
+                  <select name="quantity" className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[20px] px-8 py-6 outline-none focus:border-red-600 transition uppercase text-xs font-black tracking-[0.2em] text-white appearance-none">
+                    <option value="">Asset Count</option>
+                    <option value="50">50-100 Units</option>
+                    <option value="500">500+ Units</option>
+                    <option value="1000">1000+ (Enterprise Level)</option>
                   </select>
                 </div>
               </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Budget Range</label>
-                  <select
-                    name="budget"
-                    value={formData.budget}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="">Select budget</option>
-                    <option value="under-1000">Under $1,000</option>
-                    <option value="1000-5000">$1,000 - $5,000</option>
-                    <option value="5000-10000">$5,000 - $10,000</option>
-                    <option value="10000-25000">$10,000 - $25,000</option>
-                    <option value="25000+">$25,000+</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Target Deadline</label>
-                  <input
-                    type="date"
-                    name="deadline"
-                    value={formData.deadline}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
+              <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">The Mission Brief</label>
+                  <textarea name="message" rows={5} className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[32px] px-8 py-8 outline-none focus:border-red-600 transition text-[13px] font-bold uppercase tracking-tight placeholder:text-zinc-800" placeholder="DESCRIBE YOUR VISION IN DETAIL..." />
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Additional Details</label>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Tell us about your project, design requirements, or any special requests..."
-                ></textarea>
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-bold text-lg hover:shadow-xl transition"
-              >
-                Submit Quote Request
+              <button type="submit" className="w-full py-8 bg-red-600 hover:bg-white hover:text-black text-white rounded-[32px] font-black uppercase tracking-[0.4em] text-xs transition-all transform active:scale-[0.98] shadow-2xl shadow-red-600/20">
+                Transmit Strategic Briefing
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section className="py-16 bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div>
-              <Mail className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-              <h3 className="text-xl font-bold mb-2">Email Us</h3>
-              <p className="text-gray-400">business@lensra.com</p>
-            </div>
-            <div>
-              <Phone className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-              <h3 className="text-xl font-bold mb-2">Call Us</h3>
-              <p className="text-gray-400">1-800-LENSRA-BIZ</p>
-            </div>
-            <div>
-              <MapPin className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-              <h3 className="text-xl font-bold mb-2">Visit Us</h3>
-              <p className="text-gray-400">123 Business St, Suite 100</p>
-            </div>
-          </div>
+      {/* 5. LOGISTICS FOOTER */}
+      <section className="py-24 border-t border-zinc-900 bg-black">
+        <div className="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-16">
+            <ContactBlock icon={<Mail className="w-6 h-6" />} title="Secure Email" val="operations@lensra.com" />
+            <ContactBlock icon={<Phone className="w-6 h-6" />} title="Priority Line" val="+234 812 000 0000" />
+            <ContactBlock icon={<MapPin className="w-6 h-6" />} title="Main Lab" val="Lagos, Nigeria" />
+            <ContactBlock icon={<Globe className="w-6 h-6" />} title="Logistics" val="Global Deployment" />
         </div>
       </section>
     </div>
   );
+}
+
+// Sub-components
+function cloneIcon(icon: any) {
+    return <icon.type {...icon.props} className="w-12 h-12" strokeWidth={1.5} />;
+}
+
+function FormInput({ label, ...props }: any) {
+  return (
+    <div className="space-y-4">
+      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">{label}</label>
+      <input 
+        {...props} 
+        className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[20px] px-8 py-6 outline-none focus:border-red-600 transition text-xs font-black uppercase tracking-[0.2em] placeholder:text-zinc-800"
+      />
+    </div>
+  );
+}
+
+function ContactBlock({ icon, title, val }: any) {
+    return (
+        <div className="flex items-center gap-6 group cursor-pointer">
+            <div className="w-16 h-16 rounded-[24px] bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-500">
+                {icon}
+            </div>
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-1 italic">{title}</p>
+                <p className="text-lg font-black tracking-tighter uppercase italic">{val}</p>
+            </div>
+        </div>
+    );
 }

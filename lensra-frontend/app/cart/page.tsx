@@ -1,17 +1,18 @@
-"use client"
+"use client";
+
 import { useState } from 'react';
-import { Trash2, Plus, Minus, ShoppingBag, Lock, ArrowLeft, Heart } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, Lock, ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const initialCart = [
   { 
     id: "mug_white", 
-    name: "White Ceramic Mug", 
+    name: "Custom Coffee Mug", 
     qty: 1, 
     price: 2500,
     image: "☕",
-    customization: "Custom design with photo",
+    details: "Your Photo Print",
     color: "White",
-    size: "11oz"
+    size: "Standard"
   },
   { 
     id: "shirt_white", 
@@ -19,7 +20,7 @@ const initialCart = [
     qty: 2, 
     price: 4000,
     image: "👕",
-    customization: "Text: 'Best Dad Ever'",
+    details: "Logo: 'Lensra Studio'",
     color: "White",
     size: "Large"
   },
@@ -30,6 +31,7 @@ export default function CartPage() {
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
 
+  // Function to change item amount
   const updateQuantity = (id: string, newQty: number) => {
     if (newQty < 1) return;
     setCartItems(prev => 
@@ -37,244 +39,161 @@ export default function CartPage() {
     );
   };
 
+  // Function to delete item
   const removeItem = (id: string) => {
     setCartItems(prev => prev.filter(item => item.id !== id));
   };
 
+  // Math for the checkout
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = promoApplied ? subtotal * 0.2 : 0;
   const shipping = subtotal > 10000 ? 0 : 1500;
   const total = subtotal - discount + shipping;
 
   const applyPromo = () => {
-    if (promoCode.toUpperCase() === 'GIFT20') {
+    if (promoCode.toUpperCase() === 'LENSRA20') {
       setPromoApplied(true);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-3 text-sm font-medium">
-        🎁 Free Shipping on Orders Over ₦10,000 | Use Code: GIFT20 for 20% Off
+    <div className="min-h-screen bg-white text-black font-sans">
+      
+      {/* 1. Top Message Bar */}
+      <div className="bg-black text-white py-3 px-6 text-center">
+        <p className="text-[10px] font-bold uppercase tracking-widest">
+          🎁 Free Delivery on orders over ₦10,000 — <span className="text-red-500">Use Code: LENSRA20</span>
+        </p>
       </div>
 
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3 text-sm text-gray-600">
-          <a href="/" className="hover:text-red-600">Home</a> / <span className="text-gray-900 font-medium">Shopping Cart</span>
-        </div>
-      </div>
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Go Back Link */}
+        <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest mb-10 hover:text-red-600 transition">
+          <ArrowLeft className="w-4 h-4" /> Back to Shopping
+        </button>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Back to Shopping */}
-        <a href="/products" className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 mb-6 font-medium">
-          <ArrowLeft className="w-4 h-4" />
-          Continue Shopping
-        </a>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg border p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <ShoppingBag className="w-6 h-6 text-red-600" />
-                <h1 className="text-2xl font-bold">Shopping Cart ({cartItems.length} items)</h1>
-              </div>
-
-              {cartItems.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h3>
-                  <p className="text-gray-600 mb-6">Start adding some amazing custom products!</p>
-                  <a href="/products" className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">
-                    Browse Products
-                  </a>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition">
-                      {/* Product Image */}
-                      <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center text-4xl flex-shrink-0">
-                        {item.image}
-                      </div>
-
-                      {/* Product Details */}
-                      <div className="flex-1">
-                        <div className="flex justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold text-lg">{item.name}</h3>
-                            <p className="text-sm text-gray-600">{item.customization}</p>
-                            <div className="flex gap-4 text-xs text-gray-500 mt-1">
-                              <span>Color: {item.color}</span>
-                              <span>Size: {item.size}</span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            className="text-gray-400 hover:text-red-600 transition h-fit"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-4">
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm text-gray-600">Qty:</span>
-                            <div className="flex items-center border rounded-lg">
-                              <button
-                                onClick={() => updateQuantity(item.id, item.qty - 1)}
-                                className="p-2 hover:bg-gray-100 transition"
-                              >
-                                <Minus className="w-4 h-4" />
-                              </button>
-                              <span className="px-4 py-2 font-medium min-w-[3rem] text-center">{item.qty}</span>
-                              <button
-                                onClick={() => updateQuantity(item.id, item.qty + 1)}
-                                className="p-2 hover:bg-gray-100 transition"
-                              >
-                                <Plus className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Price */}
-                          <div className="text-right">
-                            <div className="text-xl font-bold text-gray-900">
-                              ₦{(item.price * item.qty).toLocaleString()}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              ₦{item.price.toLocaleString()} each
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Quick Actions */}
-                        <div className="flex gap-4 mt-3">
-                          <button className="text-sm text-red-600 hover:underline font-medium">
-                            Edit Design
-                          </button>
-                          <button className="text-sm text-gray-600 hover:text-red-600 transition flex items-center gap-1">
-                            <Heart className="w-4 h-4" />
-                            Save for Later
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+        <div className="flex flex-col lg:flex-row gap-12">
+          
+          {/* LEFT SIDE: List of Items */}
+          <div className="flex-1">
+            <div className="border-b-4 border-black pb-6 mb-8 flex justify-between items-end">
+              <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter">My Bag</h1>
+              <span className="text-xl font-bold text-zinc-400">{cartItems.length} Items</span>
             </div>
 
-            {/* Recommended Products */}
-            {cartItems.length > 0 && (
-              <div className="bg-white rounded-lg border p-6">
-                <h3 className="font-bold text-lg mb-4">You Might Also Like</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { name: 'Canvas Print', price: 5500, image: '🖼️' },
-                    { name: 'Tote Bag', price: 3500, image: '👜' },
-                    { name: 'Phone Case', price: 2800, image: '📱' },
-                    { name: 'Notebook', price: 2200, image: '📓' }
-                  ].map((product, idx) => (
-                    <div key={idx} className="border rounded-lg p-3 hover:shadow-md transition cursor-pointer group">
-                      <div className="bg-gray-100 rounded-lg h-24 flex items-center justify-center text-3xl mb-2 group-hover:bg-gray-200 transition">
-                        {product.image}
-                      </div>
-                      <h4 className="text-sm font-medium mb-1 line-clamp-1">{product.name}</h4>
-                      <p className="text-sm font-bold text-red-600">₦{product.price.toLocaleString()}</p>
+            {cartItems.length === 0 ? (
+              <div className="py-20 text-center bg-zinc-50 rounded-[40px] border-2 border-dashed border-zinc-200">
+                <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-zinc-300" />
+                <p className="text-lg font-bold uppercase italic">Your bag is empty</p>
+                <button className="mt-6 px-8 py-4 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest">Shop Now</button>
+              </div>
+            ) : (
+              <div className="divide-y divide-zinc-100">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="py-8 flex flex-col md:flex-row gap-6 group">
+                    {/* Item Image */}
+                    <div className="w-full md:w-40 aspect-square bg-zinc-50 rounded-[30px] flex items-center justify-center text-6xl group-hover:bg-red-50 transition-colors">
+                      {item.image}
                     </div>
-                  ))}
-                </div>
+
+                    {/* Item Text */}
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-xl font-black uppercase italic tracking-tight">{item.name}</h3>
+                          <p className="text-[11px] font-bold text-zinc-500 uppercase mt-1">Design: {item.details}</p>
+                          <p className="text-[11px] font-bold text-zinc-400 uppercase mt-1">Size: {item.size} | Color: {item.color}</p>
+                        </div>
+                        <button onClick={() => removeItem(item.id)} className="p-2 text-zinc-300 hover:text-red-600 transition">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {/* Item Price and Quantity */}
+                      <div className="flex justify-between items-end mt-6">
+                        <div className="flex items-center bg-zinc-100 rounded-xl p-1">
+                          <button onClick={() => updateQuantity(item.id, item.qty - 1)} className="p-2 hover:bg-white rounded-lg transition"><Minus className="w-4 h-4" /></button>
+                          <span className="px-4 font-bold">{item.qty}</span>
+                          <button onClick={() => updateQuantity(item.id, item.qty + 1)} className="p-2 hover:bg-white rounded-lg transition"><Plus className="w-4 h-4" /></button>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-black italic">₦{(item.price * item.qty).toLocaleString()}</p>
+                          <p className="text-[10px] text-zinc-400 font-bold uppercase">₦{item.price.toLocaleString()} each</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg border p-6 sticky top-6">
-              <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+          {/* RIGHT SIDE: Payment Summary */}
+          <div className="lg:w-96">
+            <div className="bg-zinc-50 rounded-[40px] p-8 sticky top-10 border border-zinc-100">
+              <h2 className="text-2xl font-black uppercase italic tracking-tight mb-8">Order Summary</h2>
 
-              {/* Promo Code */}
-              <div className="mb-6">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Promo Code
-                </label>
-                <div className="flex gap-2">
+              {/* Discount Box */}
+              <div className="mb-8">
+                <div className="flex gap-2 border-b-2 border-black pb-2">
                   <input
                     type="text"
+                    placeholder="ENTER DISCOUNT CODE"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="Enter code"
-                    className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-red-600"
+                    className="bg-transparent border-none text-[10px] font-bold tracking-widest w-full focus:ring-0"
                   />
-                  <button
-                    onClick={applyPromo}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
-                  >
-                    Apply
-                  </button>
+                  <button onClick={applyPromo} className="text-[10px] font-black uppercase hover:text-red-600 transition">Apply</button>
                 </div>
-                {promoApplied && (
-                  <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-                    ✓ Promo code applied!
-                  </p>
-                )}
+                {promoApplied && <p className="text-[10px] font-bold text-green-600 mt-2 uppercase tracking-widest italic">Success: 20% Off Applied!</p>}
               </div>
 
-              <div className="space-y-3 mb-6 pb-6 border-b">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal</span>
-                  <span>₦{subtotal.toLocaleString()}</span>
+              {/* Price Breakdown */}
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between text-[11px] font-bold uppercase text-zinc-500">
+                  <span>Items Subtotal</span>
+                  <span className="text-black italic">₦{subtotal.toLocaleString()}</span>
                 </div>
                 {promoApplied && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount (20%)</span>
-                    <span>-₦{discount.toLocaleString()}</span>
+                  <div className="flex justify-between text-[11px] font-bold uppercase text-red-600">
+                    <span>Discount</span>
+                    <span className="italic">-₦{discount.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-700">
-                  <span>Shipping</span>
-                  <span>{shipping === 0 ? 'FREE' : `₦${shipping.toLocaleString()}`}</span>
+                <div className="flex justify-between text-[11px] font-bold uppercase text-zinc-500">
+                  <span>Delivery Fee</span>
+                  <span className="text-black italic">{shipping === 0 ? 'FREE' : `₦${shipping.toLocaleString()}`}</span>
                 </div>
-                {shipping === 0 && (
-                  <p className="text-xs text-green-600">🎉 You qualify for free shipping!</p>
-                )}
               </div>
 
-              <div className="flex justify-between text-xl font-bold mb-6">
-                <span>Total</span>
-                <span className="text-red-600">₦{total.toLocaleString()}</span>
+              {/* Final Total */}
+              <div className="border-t-2 border-zinc-200 pt-6 mb-8 flex justify-between items-end">
+                <span className="text-[11px] font-black uppercase">Grand Total</span>
+                <span className="text-4xl font-black italic text-red-600 tracking-tighter">₦{total.toLocaleString()}</span>
               </div>
 
-              <button className="w-full py-4 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition shadow-lg hover:shadow-xl mb-3 flex items-center justify-center gap-2">
-                <Lock className="w-4 h-4" />
-                Proceed to Checkout
-              </button>
+              {/* Checkout Buttons */}
+              <div className="space-y-3">
+                <button className="w-full py-5 bg-black text-white rounded-2xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 hover:bg-red-600 transition-all shadow-lg shadow-black/10">
+                  <Lock className="w-4 h-4" /> Pay Securely Now
+                </button>
+                <button className="w-full py-5 bg-white border border-black text-black rounded-2xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all">
+                  Quick Pay <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
 
-              <button className="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-red-600 hover:text-red-600 transition">
-                Continue Shopping
-              </button>
-
-              {/* Trust Badges */}
-              <div className="mt-6 pt-6 border-t space-y-3">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Lock className="w-4 h-4 text-green-600" />
-                  <span>Secure checkout</span>
+              {/* Safety Badges */}
+              <div className="mt-8 pt-6 border-t border-zinc-200 flex flex-col gap-3">
+                <div className="flex items-center gap-3 text-[9px] font-bold uppercase text-zinc-400">
+                  <ShieldCheck className="w-4 h-4 text-black" /> Safe & Encrypted Payment
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <ShoppingBag className="w-4 h-4 text-blue-600" />
-                  <span>Free returns within 30 days</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Heart className="w-4 h-4 text-red-600" />
-                  <span>100% satisfaction guarantee</span>
+                <div className="flex items-center gap-3 text-[9px] font-bold uppercase text-zinc-400">
+                  <ShoppingBag className="w-4 h-4 text-black" /> 100% Quality Guarantee
                 </div>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>

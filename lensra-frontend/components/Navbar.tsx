@@ -1,201 +1,179 @@
-"use client"
+"use client";
+
 import { useState } from 'react';
-import { Search, ShoppingCart, User, Heart, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, User, Heart, Menu, X, ChevronDown, LogOut } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <>
-      {/* Top Promotional Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-2 text-sm font-medium">
-        🎁 Free Shipping on Orders Over ₦10,000 | Use Code: GIFT20 for 20% Off
+      {/* 1. TOP ANNOUNCEMENT BAR */}
+      <div className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] py-2.5 text-center">
+        🎁 Free Delivery over ₦10,000 <span className="text-red-600 mx-2">|</span> Use Code: <span className="text-red-600">LENSRA2026</span>
       </div>
 
-      {/* Main Navbar */}
-      <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Top Header Row */}
-          <div className="py-3 flex items-center justify-between gap-4">
+      {/* 2. MAIN NAVIGATION */}
+      <header className="bg-white sticky top-0 z-50 border-b border-zinc-100">
+        <div className="max-w-[1600px] mx-auto px-6">
+          <div className="py-5 flex items-center justify-between gap-10">
+            
             {/* Logo */}
-            <a href="/" className="text-3xl font-bold text-red-600 flex-shrink-0">
-              Lensra
-            </a>
+            <Link href="/" className="text-3xl font-black tracking-tighter uppercase italic flex-shrink-0">
+              Lensra<span className="text-red-600">.</span>
+            </Link>
 
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-2xl">
-              <div className="relative w-full">
+            {/* Simple Search Bar */}
+            <div className="hidden lg:flex flex-1 max-w-xl">
+              <div className="relative w-full group">
                 <input
                   type="text"
-                  placeholder="Search for products, designs, or ideas..."
+                  placeholder="SEARCH FOR A GIFT OR DESIGN..."
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
-                  className={`w-full px-4 py-2 border-2 rounded-full transition focus:outline-none ${
-                    searchFocused ? 'border-red-600' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-6 py-3 bg-zinc-50 text-[10px] font-black tracking-widest uppercase rounded-2xl transition-all border-2 ${
+                    searchFocused ? 'bg-white border-black' : 'border-transparent'
+                  } outline-none`}
                 />
-                <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition">
-                  <Search className="w-4 h-4" />
-                </button>
+                <Search className={`absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 ${searchFocused ? 'text-red-600' : 'text-zinc-400'}`} />
               </div>
             </div>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-4">
-              {/* Sign In - Desktop */}
-              <a href="/login" className="hidden md:flex items-center gap-2 hover:text-red-600 transition">
-                <User className="w-5 h-5" />
-                <span className="text-sm font-medium">Sign In</span>
-              </a>
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-3 md:gap-6">
+              
+              {/* Account Section */}
+              <div className="hidden md:block">
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-4">
+                    <Link href="/dashboard" className="flex items-center gap-2 group">
+                      <div className="w-10 h-10 bg-black text-white rounded-2xl flex items-center justify-center font-black text-xs group-hover:bg-red-600 transition-colors">
+                        {user?.first_name?.charAt(0) || 'U'}
+                      </div>
+                    </Link>
+                    <button onClick={logout} className="p-2 text-zinc-400 hover:text-red-600 transition">
+                      <LogOut className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <Link href="/login" className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all">
+                    <User className="w-4 h-4" /> Sign In
+                  </Link>
+                )}
+              </div>
 
-              {/* Wishlist */}
-              <a href="/wishlist" className="relative hover:text-red-600 transition">
-                <Heart className="w-6 h-6" />
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                  3
-                </span>
-              </a>
+              {/* Favorites & Cart */}
+              <div className="flex items-center border-l border-zinc-100 pl-4 md:pl-6">
+                <Link href="/wishlist" className="p-3 hover:text-red-600 transition relative group">
+                  <Heart className="w-6 h-6 stroke-[2.5px]" />
+                  <span className="absolute top-2 right-2 bg-black text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">3</span>
+                </Link>
 
-              {/* Cart */}
-              <a href="/cart" className="relative hover:text-red-600 transition">
-                <ShoppingCart className="w-6 h-6" />
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                  2
-                </span>
-              </a>
+                <Link href="/cart" className="p-3 hover:text-red-600 transition relative">
+                  <ShoppingCart className="w-6 h-6 stroke-[2.5px]" />
+                  <span className="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">2</span>
+                </Link>
+              </div>
 
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden text-gray-700 hover:text-red-600 transition"
+                className="lg:hidden p-3 bg-zinc-100 rounded-2xl hover:bg-black hover:text-white transition"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
 
-          {/* Navigation Links - Desktop */}
-          <nav className="hidden md:block border-t py-3">
-            <ul className="flex items-center gap-8 text-sm font-medium">
-              <li className="group relative">
-                <a href="/products" className="flex items-center gap-1 hover:text-red-600 transition cursor-pointer">
-                  Products <ChevronDown className="w-4 h-4" />
-                </a>
-                {/* Dropdown Menu */}
-                <div className="absolute top-full left-0 mt-2 bg-white border shadow-lg rounded-lg p-4 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
-                  <a href="/products?category=apparel" className="block py-2 px-3 hover:bg-gray-50 rounded">Apparel</a>
-                  <a href="/products?category=drinkware" className="block py-2 px-3 hover:bg-gray-50 rounded">Drinkware</a>
-                  <a href="/products?category=home" className="block py-2 px-3 hover:bg-gray-50 rounded">Home Decor</a>
-                  <a href="/products?category=accessories" className="block py-2 px-3 hover:bg-gray-50 rounded">Accessories</a>
-                </div>
-              </li>
-              <li>
-                <a href="/design-ideas" className="hover:text-red-600 transition">Design Ideas</a>
-              </li>
-              <li>
-                <a href="/custom-gifts" className="hover:text-red-600 transition">Custom Gifts</a>
-              </li>
-              <li>
-                <a href="/occasions" className="hover:text-red-600 transition">Occasions</a>
-              </li>
-              <li>
-                <a href="/sale" className="text-red-600 font-bold hover:text-red-700 transition">Sale</a>
-              </li>
-              <li>
-                <a href="/business" className="hover:text-red-600 transition">Business</a>
-              </li>
-              <li>
-                <a href="/about" className="hover:text-red-600 transition">About</a>
-              </li>
-              <li>
-                <a href="/contact" className="hover:text-red-600 transition">Contact</a>
-              </li>
+          {/* 3. DESKTOP CATEGORIES */}
+          <nav className="hidden lg:block border-t border-zinc-50">
+            <ul className="flex items-center justify-center gap-12 py-5">
+              <NavItem href="/products" label="All Gifts" hasDropdown />
+              <NavItem href="/design-ideas" label="Trending Designs" />
+              <NavItem href="/sale" label="Discount Sale" isHighlight />
+              <NavItem href="/business" label="Business" />
+              <NavItem href="/about" label="Our Studio" />
+              <NavItem href="/contact" label="Contact Us" />
             </ul>
           </nav>
         </div>
 
-        {/* Mobile Menu */}
+        {/* 4. MOBILE MENU DRAWER */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t bg-white">
-            {/* Mobile Search */}
-            <div className="p-4 border-b">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-full focus:border-red-600 focus:outline-none"
-                />
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              </div>
+          <div className="lg:hidden fixed inset-0 z-50 bg-white p-8 animate-in slide-in-from-right duration-300">
+            <div className="flex justify-between items-center mb-12">
+               <span className="text-2xl font-black italic uppercase">Menu</span>
+               <button onClick={() => setMobileMenuOpen(false)} className="p-3 bg-zinc-100 rounded-full">
+                <X className="w-6 h-6" />
+              </button>
             </div>
+            
+            <div className="space-y-10">
+              <div className="flex flex-col gap-6">
+                <MobileLink href="/products" label="Shop All" onClick={() => setMobileMenuOpen(false)} />
+                <MobileLink href="/design-ideas" label="Top Designs" onClick={() => setMobileMenuOpen(false)} />
+                <MobileLink href="/business" label="Business" onClick={() => setMobileMenuOpen(false)} />
+                <MobileLink href="/sale" label="Sale" onClick={() => setMobileMenuOpen(false)} />
+                <MobileLink href="/about" label="About Us" onClick={() => setMobileMenuOpen(false)} />
+                <MobileLink href="/contact" label="Contact" onClick={() => setMobileMenuOpen(false)} />
+              </div>
 
-            {/* Mobile Navigation Links */}
-            <nav className="p-4">
-              <ul className="space-y-3">
-                <li>
-                  <a href="/login" className="flex items-center gap-2 py-2 hover:text-red-600 transition font-medium">
-                    <User className="w-5 h-5" />
-                    Sign In
-                  </a>
-                </li>
-                <li className="border-t pt-3">
-                  <a href="/products" className="block py-2 hover:text-red-600 transition font-medium">
-                    All Products
-                  </a>
-                </li>
-                <li>
-                  <a href="/design-ideas" className="block py-2 hover:text-red-600 transition">
-                    Design Ideas
-                  </a>
-                </li>
-                <li>
-                  <a href="/custom-gifts" className="block py-2 hover:text-red-600 transition">
-                    Custom Gifts
-                  </a>
-                </li>
-                <li>
-                  <a href="/occasions" className="block py-2 hover:text-red-600 transition">
-                    Occasions
-                  </a>
-                </li>
-                <li>
-                  <a href="/sale" className="block py-2 text-red-600 font-bold hover:text-red-700 transition">
-                    Sale
-                  </a>
-                </li>
-                <li>
-                  <a href="/business" className="block py-2 hover:text-red-600 transition">
-                    Business
-                  </a>
-                </li>
-                <li className="border-t pt-3">
-                  <a href="/about" className="block py-2 hover:text-red-600 transition">
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a href="/contact" className="block py-2 hover:text-red-600 transition">
-                    Contact
-                  </a>
-                </li>
-              </ul>
-            </nav>
+              <div className="h-px bg-zinc-100" />
 
-            {/* Mobile Quick Links */}
-            <div className="p-4 border-t bg-gray-50 grid grid-cols-2 gap-3">
-              <a href="/wishlist" className="flex items-center justify-center gap-2 py-3 bg-white border rounded-lg hover:border-red-600 transition">
-                <Heart className="w-5 h-5" />
-                <span className="font-medium">Wishlist</span>
-              </a>
-              <a href="/cart" className="flex items-center justify-center gap-2 py-3 bg-white border rounded-lg hover:border-red-600 transition">
-                <ShoppingCart className="w-5 h-5" />
-                <span className="font-medium">Cart</span>
-              </a>
+              <div>
+                {isAuthenticated ? (
+                  <Link href="/dashboard" className="flex items-center gap-4 p-5 bg-zinc-50 rounded-[32px]">
+                    <div className="w-14 h-14 bg-black text-white rounded-[20px] flex items-center justify-center text-xl font-black">
+                      {user?.first_name?.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-black text-lg uppercase tracking-tight">{user?.first_name}</p>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">My Account</p>
+                    </div>
+                  </Link>
+                ) : (
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-3 w-full py-6 bg-black text-white rounded-[32px] font-black uppercase text-sm tracking-widest">
+                    <User className="w-5 h-5" /> Sign In / Register
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}
       </header>
     </>
+  );
+}
+
+// Small UI Helpers
+function NavItem({ href, label, hasDropdown = false, isHighlight = false }: { href: string, label: string, hasDropdown?: boolean, isHighlight?: boolean }) {
+  return (
+    <li>
+      <Link 
+        href={href} 
+        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${
+          isHighlight ? 'text-red-600 hover:text-red-700' : 'text-zinc-500 hover:text-black'
+        }`}
+      >
+        {label}
+        {hasDropdown && <ChevronDown className="w-3 h-3 text-red-600" />}
+      </Link>
+    </li>
+  );
+}
+
+function MobileLink({ href, label, onClick }: { href: string, label: string, onClick: () => void }) {
+  return (
+    <Link 
+      href={href} 
+      onClick={onClick} 
+      className="text-4xl font-black uppercase italic tracking-tighter hover:text-red-600 transition"
+    >
+      {label}
+    </Link>
   );
 }

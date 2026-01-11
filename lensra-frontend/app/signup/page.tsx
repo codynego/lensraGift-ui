@@ -1,6 +1,9 @@
-"use client"
+"use client";
+
 import { useState } from 'react';
-import { Mail, Lock, User, Phone, UserPlus, Eye, EyeOff, Chrome, Facebook, Apple, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, Phone, UserPlus, Eye, EyeOff, Chrome, Facebook, Apple, Zap, CheckCircle, ShieldCheck, ChevronRight } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
@@ -12,375 +15,220 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [subscribeNewsletter, setSubscribeNewsletter] = useState(true);
+  
+  const [error, setError] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { register } = useAuth();
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
     if (password !== passwordConfirm) {
-      alert('Passwords do not match!');
+      setError({ password: ["Credentials mismatch: Passwords do not correlate."] });
       return;
     }
     if (!agreeToTerms) {
-      alert('Please agree to the Terms and Privacy Policy');
+      setError({ non_field_errors: ["Policy acknowledgment required for initialization."] });
       return;
     }
-    console.log({ firstName, lastName, email, phoneNumber, password, subscribeNewsletter });
-    alert('Account created successfully! (Simulation)');
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    setPhoneNumber('');
-    setPassword('');
-    setPasswordConfirm('');
-  };
 
-  const handleSocialSignup = (provider: string) => {
-    alert(`Signing up with ${provider}... (Simulation)`);
+    setIsLoading(true);
+    try {
+      await register({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone_number: phoneNumber,
+        password,
+        password_confirm: passwordConfirm,
+      });
+      router.push('/dashboard'); 
+    } catch (err: any) {
+      setError(err.response?.data || { non_field_errors: ["System error during initialization."] });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const passwordStrength = () => {
-    if (!password) return { strength: 0, text: '', color: '' };
+    if (!password) return { strength: 0, text: '', color: 'bg-zinc-100' };
     let strength = 0;
     if (password.length >= 8) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/[A-Z]/.test(password)) strength++;
     if (/\d/.test(password)) strength++;
     if (/[^a-zA-Z\d]/.test(password)) strength++;
 
     const levels = [
-      { strength: 0, text: '', color: '' },
-      { strength: 1, text: 'Weak', color: 'bg-red-500' },
-      { strength: 2, text: 'Fair', color: 'bg-yellow-500' },
-      { strength: 3, text: 'Good', color: 'bg-blue-500' },
-      { strength: 4, text: 'Strong', color: 'bg-green-500' }
+      { strength: 0, text: '', color: 'bg-zinc-100' },
+      { strength: 1, text: 'VULNERABLE', color: 'bg-red-500' },
+      { strength: 2, text: 'BASIC', color: 'bg-orange-500' },
+      { strength: 3, text: 'SECURE', color: 'bg-zinc-900' },
+      { strength: 4, text: 'ENCRYPTED', color: 'bg-green-600' }
     ];
     return levels[strength];
   };
 
-  const passwordMatch = password && passwordConfirm && password === passwordConfirm;
+  const renderError = (field: string) => {
+    if (error && error[field]) {
+      return <p className="text-red-600 text-[9px] font-bold uppercase tracking-widest mt-2 ml-1 italic">{error[field][0]}</p>;
+    }
+    return null;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      
-      <div className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="max-w-6xl w-full grid lg:grid-cols-2 gap-8 items-center">
+    <div className="min-h-screen bg-white text-zinc-900 selection:bg-red-600 selection:text-white">
+      <div className="flex min-h-screen">
+        
+        {/* LEFT SIDE: CREATOR BRANDING */}
+        <div className="hidden lg:flex lg:w-1/3 bg-zinc-900 text-white p-12 flex-col justify-between relative overflow-hidden border-r-[1px] border-zinc-800">
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+               style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '30px 30px' }} />
           
-          {/* Left Side - Benefits */}
-          <div className="hidden lg:block space-y-6">
-            <div className="space-y-4">
-              <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Lensra
-              </div>
-              <h2 className="text-4xl font-bold text-gray-800">
-                Create Your Free Account
-              </h2>
-              <p className="text-xl text-gray-600">
-                Join thousands of creators designing custom products
-              </p>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 text-red-600 mb-16">
+              <Zap className="w-6 h-6 fill-current" />
+              <span className="font-bold uppercase tracking-[0.4em] text-[10px]">Lensra / Registry</span>
             </div>
-
-            <div className="space-y-4 pt-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-800">Free Forever</div>
-                  <div className="text-sm text-gray-600">No credit card required. Start designing immediately with our free tools.</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-800">1000+ Templates</div>
-                  <div className="text-sm text-gray-600">Access professionally designed templates for mugs, shirts, and more.</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-pink-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-800">15% Welcome Discount</div>
-                  <div className="text-sm text-gray-600">Get 15% off your first order when you sign up today.</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-800">Fast & Secure</div>
-                  <div className="text-sm text-gray-600">Your data is protected with enterprise-grade encryption.</div>
-                </div>
-              </div>
-            </div>
+            <h2 className="text-6xl font-bold uppercase tracking-tighter leading-[0.9] mb-8">
+              Initialize <br /> <span className="text-zinc-500">Creator</span><span className="text-red-600">.</span>
+            </h2>
+            <p className="max-w-xs text-zinc-400 font-bold uppercase tracking-widest text-[9px] leading-relaxed border-l-2 border-red-600 pl-6">
+              Join the elite archive. Access cloud-based design suites and global distribution networks.
+            </p>
           </div>
 
-          {/* Right Side - Signup Form */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
-              <p className="text-gray-600">Get started with Lensra today</p>
+          <div className="relative z-10 space-y-6">
+            {['Cloud Design Archive', 'Real-time Telemetry', 'Production Pipeline'].map((feature) => (
+              <div key={feature} className="flex items-center gap-4 group">
+                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-500 group-hover:text-white transition-colors">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT SIDE: REGISTRATION INTERFACE */}
+        <div className="w-full lg:w-2/3 flex items-center justify-center p-8 md:p-16 bg-white overflow-y-auto">
+          <div className="w-full max-w-2xl">
+            <div className="mb-12">
+              <h1 className="text-2xl font-bold uppercase tracking-tight text-zinc-900">Creator Registration</h1>
+              <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-1">Personnel Onboarding Protocol</p>
             </div>
 
-            {/* Social Signup Buttons */}
-            <div className="space-y-3 mb-8">
-              <button
-                onClick={() => handleSocialSignup('Google')}
-                className="w-full py-3 px-4 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-3"
-              >
-                <Chrome className="w-5 h-5 text-red-500" />
-                Sign up with Google
-              </button>
-              <button
-                onClick={() => handleSocialSignup('Facebook')}
-                className="w-full py-3 px-4 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-3"
-              >
-                <Facebook className="w-5 h-5 text-blue-600" />
-                Sign up with Facebook
-              </button>
-              <button
-                onClick={() => handleSocialSignup('Apple')}
-                className="w-full py-3 px-4 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-3"
-              >
-                <Apple className="w-5 h-5" />
-                Sign up with Apple
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
+            {error?.non_field_errors && (
+              <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-600 text-[10px] font-bold uppercase tracking-widest rounded-xl flex items-center gap-3">
+                <ShieldCheck className="w-4 h-4" /> {error.non_field_errors[0]}
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">Or sign up with email</span>
-              </div>
-            </div>
+            )}
 
-            {/* Signup Form */}
-            <div className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
-                    First Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      id="firstName"
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="John"
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                      required
-                    />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Name Row */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Legal First Name</label>
+                  <div className="relative group">
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase" placeholder="First Name" required />
+                  </div>
+                  {renderError('first_name')}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Legal Last Name</label>
+                  <div className="relative group">
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase" placeholder="Last Name" required />
+                  </div>
+                  {renderError('last_name')}
+                </div>
+              </div>
+
+              {/* Contact Row */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Communication Email</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase" placeholder="email@lensra.com" required />
+                  </div>
+                  {renderError('email')}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Phone Protocol</label>
+                  <div className="relative group">
+                    <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
+                    <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm" placeholder="+234 ..." required />
+                  </div>
+                  {renderError('phone_number')}
+                </div>
+              </div>
+
+              {/* Security Row */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Encryption Key</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
+                    <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-14 pr-14 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm" placeholder="••••••••" required />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-300 hover:text-zinc-900 transition">{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-3 px-1">
+                    {[1, 2, 3, 4].map((step) => (
+                      <div key={step} className={`h-1 flex-1 rounded-full transition-all duration-700 ${step <= passwordStrength().strength ? passwordStrength().color : 'bg-zinc-100'}`} />
+                    ))}
+                    <span className="text-[8px] font-bold ml-2 text-zinc-400 tracking-widest">{passwordStrength().text}</span>
                   </div>
                 </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Last Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      id="lastName"
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Doe"
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                      required
-                    />
+
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Confirm Key</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
+                    <input type={showPasswordConfirm ? 'text' : 'password'} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} className={`w-full pl-14 pr-14 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm ${passwordConfirm && (password === passwordConfirm ? 'border-green-500/30' : 'border-red-500/30')}`} placeholder="••••••••" required />
+                    <button type="button" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-300 hover:text-zinc-900 transition">{showPasswordConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
                   </div>
+                  {renderError('password_confirm')}
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    id="phoneNumber"
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
-                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a strong password"
-                    className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                {password && (
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${passwordStrength().color} transition-all duration-300`}
-                          style={{ width: `${(passwordStrength().strength / 4) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs font-semibold text-gray-600">{passwordStrength().text}</span>
-                    </div>
-                    <p className="text-xs text-gray-500">Use 8+ characters with mix of letters, numbers & symbols</p>
+              <div className="pt-4">
+                <label className="flex items-start gap-4 cursor-pointer group">
+                  <div className="relative flex items-center justify-center mt-0.5">
+                    <input type="checkbox" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.target.checked)} className="peer appearance-none w-4 h-4 border border-zinc-200 rounded checked:bg-zinc-900 checked:border-zinc-900 transition-all cursor-pointer" />
+                    <CheckCircle className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
                   </div>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="passwordConfirm" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    id="passwordConfirm"
-                    type={showPasswordConfirm ? 'text' : 'password'}
-                    value={passwordConfirm}
-                    onChange={(e) => setPasswordConfirm(e.target.value)}
-                    placeholder="Confirm your password"
-                    className={`w-full pl-12 pr-12 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition ${
-                      passwordConfirm && (passwordMatch ? 'border-green-500' : 'border-red-500')
-                    } ${!passwordConfirm ? 'border-gray-200' : ''}`}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-                  >
-                    {showPasswordConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                {passwordConfirm && (
-                  <p className={`text-xs mt-1 ${passwordMatch ? 'text-green-600' : 'text-red-600'}`}>
-                    {passwordMatch ? '✓ Passwords match' : '✗ Passwords do not match'}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={agreeToTerms}
-                    onChange={(e) => setAgreeToTerms(e.target.checked)}
-                    className="w-4 h-4 mt-1 text-purple-600 rounded cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-600">
-                    I agree to the <a href="/terms" className="text-purple-600 font-semibold hover:underline">Terms of Service</a> and <a href="/privacy" className="text-purple-600 font-semibold hover:underline">Privacy Policy</a>
-                  </span>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={subscribeNewsletter}
-                    onChange={(e) => setSubscribeNewsletter(e.target.checked)}
-                    className="w-4 h-4 mt-1 text-purple-600 rounded cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-600">
-                    Send me exclusive offers and design inspiration (15% off first order!)
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-900 transition leading-relaxed">
+                    I acknowledge the Lensra Studio <a href="#" className="text-red-600 hover:underline">Terms of Protocol</a> and <a href="#" className="text-red-600 hover:underline">Privacy Policy</a>
                   </span>
                 </label>
               </div>
 
               <button
-                onClick={handleSubmit}
-                className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-bold text-lg hover:shadow-xl transition flex items-center justify-center gap-2"
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-red-600 transition-all shadow-xl shadow-zinc-200 flex items-center justify-center gap-3 disabled:bg-zinc-200"
               >
-                <UserPlus className="w-5 h-5" />
-                Create Account
+                {isLoading ? (
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <UserPlus className="w-3.5 h-3.5" />
+                    Initialize Account
+                  </>
+                )}
               </button>
+            </form>
 
-              <div className="text-center text-sm text-gray-600">
-                Already have an account?{' '}
-                <a href="/login" className="text-purple-600 font-semibold hover:underline">
-                  Sign in
-                </a>
-              </div>
+            <div className="mt-12 text-center border-t border-zinc-50 pt-10">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                Authorized personnel? <a href="/login" className="text-red-600 hover:underline inline-flex items-center gap-1">Access Vault <ChevronRight className="w-3 h-3" /></a>
+              </p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Trust Section */}
-      <section className="py-12 bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Join 10,000+ Happy Creators</h3>
-            <p className="text-gray-600">Trusted by individuals and businesses worldwide</p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl mb-2">🎨</div>
-              <div className="font-semibold text-gray-800">Easy Designer</div>
-              <div className="text-sm text-gray-600">Intuitive design tools</div>
-            </div>
-            <div>
-              <div className="text-3xl mb-2">⚡</div>
-              <div className="font-semibold text-gray-800">Fast Shipping</div>
-              <div className="text-sm text-gray-600">5-7 day delivery</div>
-            </div>
-            <div>
-              <div className="text-3xl mb-2">💯</div>
-              <div className="font-semibold text-gray-800">Quality Guarantee</div>
-              <div className="text-sm text-gray-600">100% satisfaction</div>
-            </div>
-            <div>
-              <div className="text-3xl mb-2">🔒</div>
-              <div className="font-semibold text-gray-800">Secure Payment</div>
-              <div className="text-sm text-gray-600">SSL encrypted</div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

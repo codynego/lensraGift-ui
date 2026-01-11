@@ -1,154 +1,131 @@
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, ShieldCheck, Zap, Award, Globe } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      {/* Newsletter Section */}
-
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
-          {/* Company Info */}
-          <div className="lg:col-span-2">
-            <h3 className="text-2xl font-bold text-white mb-4">Lensra Gifts</h3>
-            <p className="text-gray-400 mb-4 max-w-sm">
-              Create personalized products that express your unique style. From custom mugs to apparel, we bring your ideas to life with quality printing and fast delivery.
+    <footer className="bg-black text-white border-t border-zinc-900">
+      <div className="max-w-[1600px] mx-auto px-6 py-20">
+        
+        {/* 1. MAIN LINKS AREA */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-20">
+          
+          {/* Brand Box */}
+          <div className="lg:col-span-2 space-y-8">
+            <h3 className="text-4xl font-black tracking-tighter uppercase italic">
+              Lensra<span className="text-red-600">Gifts.</span>
+            </h3>
+            <p className="text-zinc-500 text-sm font-bold uppercase leading-relaxed max-w-sm">
+              We make custom gifts easy. From cool t-shirts to personalized mugs, we print and deliver across Nigeria in 24 hours.
             </p>
-            <div className="space-y-2">
-              <a href="tel:+2348012345678" className="flex items-center gap-2 hover:text-white transition">
-                <Phone className="w-4 h-4" />
-                <span>+234 801 234 5678</span>
-              </a>
-              <a href="mailto:support@lensra.com" className="flex items-center gap-2 hover:text-white transition">
-                <Mail className="w-4 h-4" />
-                <span>support@lensra.com</span>
-              </a>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span>Benin City, Edo State, Nigeria</span>
+            
+            <div className="space-y-4">
+              <ContactLink icon={<Phone />} text="+234 801 234 5678" href="tel:+2348012345678" />
+              <ContactLink icon={<Mail />} text="support@lensra.com" href="mailto:support@lensra.com" />
+              <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-600">
+                <div className="w-10 h-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-400">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <span>Benin City, Edo, Nigeria</span>
               </div>
             </div>
           </div>
 
           {/* Shop Links */}
           <div>
-            <h4 className="font-bold text-white mb-4">Shop</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/products" className="hover:text-white transition">All Products</a></li>
-              <li><a href="/products?category=apparel" className="hover:text-white transition">Apparel</a></li>
-              <li><a href="/products?category=drinkware" className="hover:text-white transition">Drinkware</a></li>
-              <li><a href="/products?category=home" className="hover:text-white transition">Home & Living</a></li>
-              <li><a href="/products?category=accessories" className="hover:text-white transition">Accessories</a></li>
-              <li><a href="/sale" className="text-red-400 hover:text-red-300 transition font-medium">Sale Items</a></li>
-              <li><a href="/custom-gifts" className="hover:text-white transition">Custom Gifts</a></li>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 mb-8">Buy Now</h4>
+            <ul className="space-y-4 text-[11px] font-black uppercase tracking-widest text-zinc-400">
+              <li><Link href="/products" className="hover:text-white transition">All Products</Link></li>
+              <li><Link href="/products?category=apparel" className="hover:text-white transition">T-Shirts & Wear</Link></li>
+              <li><Link href="/products?category=drinkware" className="hover:text-white transition">Cups & Mugs</Link></li>
+              <li><Link href="/featured" className="text-white hover:text-red-600 transition italic">★ Hot Items</Link></li>
             </ul>
           </div>
 
-          {/* Customer Service */}
+          {/* Help Links */}
           <div>
-            <h4 className="font-bold text-white mb-4">Customer Service</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/help" className="hover:text-white transition">Help Center</a></li>
-              <li><a href="/shipping" className="hover:text-white transition">Shipping Info</a></li>
-              <li><a href="/returns" className="hover:text-white transition">Returns & Exchanges</a></li>
-              <li><a href="/track-order" className="hover:text-white transition">Track Your Order</a></li>
-              <li><a href="/sizing" className="hover:text-white transition">Size Guide</a></li>
-              <li><a href="/faq" className="hover:text-white transition">FAQ</a></li>
-              <li><a href="/contact" className="hover:text-white transition">Contact Us</a></li>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 mb-8">Get Help</h4>
+            <ul className="space-y-4 text-[11px] font-black uppercase tracking-widest text-zinc-400">
+              <li><Link href="/help" className="hover:text-white transition">Support Center</Link></li>
+              <li><Link href="/track" className="hover:text-white transition">Where is my order?</Link></li>
+              <li><Link href="/shipping" className="hover:text-white transition">Delivery Info</Link></li>
+              <li><Link href="/returns" className="hover:text-white transition">Easy Returns</Link></li>
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Social Icons */}
           <div>
-            <h4 className="font-bold text-white mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/about" className="hover:text-white transition">About Us</a></li>
-              <li><a href="/careers" className="hover:text-white transition">Careers</a></li>
-              <li><a href="/blog" className="hover:text-white transition">Blog</a></li>
-              <li><a href="/press" className="hover:text-white transition">Press</a></li>
-              <li><a href="/affiliate" className="hover:text-white transition">Affiliate Program</a></li>
-              <li><a href="/business" className="hover:text-white transition">Business Solutions</a></li>
-              <li><a href="/sustainability" className="hover:text-white transition">Sustainability</a></li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Social Media & Payment Methods */}
-        <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-white">Follow Us:</span>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="bg-gray-800 p-2 rounded-full hover:bg-blue-600 transition">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="bg-gray-800 p-2 rounded-full hover:bg-sky-500 transition">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="bg-gray-800 p-2 rounded-full hover:bg-pink-600 transition">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="bg-gray-800 p-2 rounded-full hover:bg-red-600 transition">
-                <Youtube className="w-5 h-5" />
-              </a>
-            </div>
-
-            {/* Payment Methods */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-white">We Accept:</span>
-              <div className="flex gap-2">
-                {['💳', '💰', '🏦', '📱'].map((icon, idx) => (
-                  <div key={idx} className="bg-white rounded px-3 py-1 text-lg">
-                    {icon}
-                  </div>
-                ))}
-              </div>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 mb-8">Follow Us</h4>
+            <div className="flex flex-wrap gap-3">
+              <SocialIcon icon={<Facebook />} color="hover:bg-blue-600" />
+              <SocialIcon icon={<Twitter />} color="hover:bg-zinc-700" />
+              <SocialIcon icon={<Instagram />} color="hover:bg-pink-600" />
+              <SocialIcon icon={<Youtube />} color="hover:bg-red-600" />
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-            <p className="text-gray-500">
-              © {new Date().getFullYear()} Lensra Gifts. All rights reserved.
-            </p>
-            <div className="flex gap-6">
-              <a href="/privacy" className="hover:text-white transition">Privacy Policy</a>
-              <a href="/terms" className="hover:text-white transition">Terms of Service</a>
-              <a href="/cookies" className="hover:text-white transition">Cookie Policy</a>
-            </div>
-          </div>
+        {/* 2. TRUST SYMBOLS */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900 border border-zinc-900 rounded-[32px] overflow-hidden mb-16">
+          <Badge icon={<ShieldCheck />} title="Safe Pay" desc="100% Secure" />
+          <Badge icon={<Zap />} title="Fast" desc="24hr Delivery" />
+          <Badge icon={<Award />} title="Best" desc="Top Quality" />
+          <Badge icon={<Globe />} title="Active" desc="Natiowide" />
         </div>
-      </div>
 
-      {/* Trust Badges */}
-      <div className="bg-gray-800 py-6">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="space-y-2">
-              <div className="text-3xl">🚚</div>
-              <h5 className="font-semibold text-white text-sm">Free Shipping</h5>
-              <p className="text-xs text-gray-400">Orders over ₦10,000</p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl">🔒</div>
-              <h5 className="font-semibold text-white text-sm">Secure Payment</h5>
-              <p className="text-xs text-gray-400">100% protected</p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl">↩️</div>
-              <h5 className="font-semibold text-white text-sm">Easy Returns</h5>
-              <p className="text-xs text-gray-400">30-day guarantee</p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl">⭐</div>
-              <h5 className="font-semibold text-white text-sm">Quality Guaranteed</h5>
-              <p className="text-xs text-gray-400">Premium products</p>
-            </div>
+        {/* 3. FINAL FOOTNOTE */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-8 border-t border-zinc-900">
+          <div className="flex gap-6 text-[9px] font-black uppercase tracking-widest text-zinc-600">
+            <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition">Terms of Use</Link>
+          </div>
+
+          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700">
+            © {new Date().getFullYear()} Lensra Studio. Made in Nigeria.
+          </p>
+
+          <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all">
+             <div className="px-3 py-1 bg-zinc-900 rounded font-black text-[8px]">VISA</div>
+             <div className="px-3 py-1 bg-zinc-900 rounded font-black text-[8px]">MASTERCARD</div>
+             <div className="px-3 py-1 bg-zinc-900 rounded font-black text-[8px]">PAYSTACK</div>
           </div>
         </div>
       </div>
     </footer>
   );
+}
+
+// Helper Components
+function ContactLink({ icon, text, href }: { icon: any, text: string, href: string }) {
+  return (
+    <a href={href} className="flex items-center gap-4 group">
+      <div className="w-10 h-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-400 group-hover:bg-red-600 group-hover:text-white transition-all">
+        {cloneIcon(icon)}
+      </div>
+      <span className="text-[11px] font-black uppercase tracking-widest group-hover:text-red-600 transition">{text}</span>
+    </a>
+  );
+}
+
+function SocialIcon({ icon, color }: { icon: any, color: string }) {
+  return (
+    <a href="#" className={`w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center transition-all duration-300 ${color}`}>
+      {cloneIcon(icon)}
+    </a>
+  );
+}
+
+function Badge({ icon, title, desc }: { icon: any, title: string, desc: string }) {
+  return (
+    <div className="bg-black p-8 flex items-center gap-4 hover:bg-zinc-950 transition-colors">
+      <div className="text-red-600">{icon}</div>
+      <div>
+        <p className="text-[11px] font-black uppercase tracking-widest leading-none">{title}</p>
+        <p className="text-[9px] font-bold text-zinc-600 uppercase mt-1">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function cloneIcon(icon: any) {
+  return <icon.type {...icon.props} className="w-5 h-5" />;
 }

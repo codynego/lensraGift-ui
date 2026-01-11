@@ -1,324 +1,258 @@
-"use client"
-import { useState } from 'react';
-import { Search, SlidersHorizontal, Heart, Star, ChevronDown, Grid3x3, List } from 'lucide-react';
+"use client";
 
-const products = [
-  { 
-    id: "mug_white", 
-    name: "White Ceramic Mug", 
-    image: "/mockups/mug-white.png", 
-    price: 2500,
-    rating: 4.8,
-    reviews: 324,
-    category: "Drinkware",
-    sale: false
-  },
-  { 
-    id: "shirt_white", 
-    name: "Premium Cotton T-Shirt", 
-    image: "/mockups/shirt-white.png", 
-    price: 4000,
-    rating: 4.9,
-    reviews: 567,
-    category: "Apparel",
-    sale: true,
-    salePrice: 3200
-  },
-  { 
-    id: "frame_wood", 
-    name: "Wooden Photo Frame", 
-    image: "/mockups/frame.png", 
-    price: 3000,
-    rating: 4.7,
-    reviews: 189,
-    category: "Home Decor",
-    sale: false
-  },
-  { 
-    id: "hoodie_black", 
-    name: "Classic Pullover Hoodie", 
-    image: "/mockups/hoodie.png", 
-    price: 6500,
-    rating: 4.9,
-    reviews: 892,
-    category: "Apparel",
-    sale: false
-  },
-  { 
-    id: "canvas_print", 
-    name: "Canvas Wall Art 16x20", 
-    image: "/mockups/canvas.png", 
-    price: 5500,
-    rating: 4.6,
-    reviews: 234,
-    category: "Home Decor",
-    sale: true,
-    salePrice: 4400
-  },
-  { 
-    id: "tote_bag", 
-    name: "Canvas Tote Bag", 
-    image: "/mockups/tote.png", 
-    price: 3500,
-    rating: 4.8,
-    reviews: 445,
-    category: "Accessories",
-    sale: false
-  },
-  { 
-    id: "phone_case", 
-    name: "Slim Phone Case", 
-    image: "/mockups/phone-case.png", 
-    price: 2800,
-    rating: 4.7,
-    reviews: 678,
-    category: "Accessories",
-    sale: false
-  },
-  { 
-    id: "notebook", 
-    name: "Spiral Notebook A5", 
-    image: "/mockups/notebook.png", 
-    price: 2200,
-    rating: 4.8,
-    reviews: 312,
-    category: "Stationery",
-    sale: true,
-    salePrice: 1800
-  },
-  { 
-    id: "pillow", 
-    name: "Throw Pillow Cover", 
-    image: "/mockups/pillow.png", 
-    price: 3800,
-    rating: 4.9,
-    reviews: 523,
-    category: "Home Decor",
-    sale: false
-  },
-];
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { 
+  Search, Heart, ChevronRight, ArrowUpRight, Filter, Loader2, 
+  ChevronLeft, X 
+} from 'lucide-react';
+
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+
+interface Product {
+  id: number;
+  name: string;
+  base_price: string;
+  category: string;
+  image: string | null;
+  is_active: boolean;
+}
 
 export default function ProductsPage() {
-  const [viewMode, setViewMode] = useState('grid');
-  const [sortBy, setSortBy] = useState('featured');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  
+  // Search & Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All Products');
+  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
 
-  const categories = ['All Products', 'Apparel', 'Drinkware', 'Home Decor', 'Accessories', 'Stationery'];
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-  const toggleFavorite = (id: string) => {
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
-    );
-  };
+  const sidebarCategories = ["All Products", "Apparel", "Drinkware", "Home Decor", "Accessories", "Stationery"];
+  const priceRanges = [
+    { label: "Any Price", value: "all" },
+    { label: "Under ₦3,000", value: "under-3k" },
+    { label: "₦3,000 - ₦5,000", value: "3k-5k" },
+    { label: "Over ₦5,000", value: "over-5k" },
+  ];
 
-  const filteredProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${BaseUrl}api/products/`);
+        const data = await response.json();
+        const results = Array.isArray(data) ? data : data.results || [];
+        setProducts(results.filter((p: Product) => p.is_active));
+      } catch (err) { console.error(err); } finally { setLoading(false); }
+    };
+    fetchProducts();
+  }, []);
+
+  // Filter Logic (Search + Category + Price)
+  const filteredProducts = useMemo(() => {
+    let result = products;
+
+    if (searchQuery) {
+      result = result.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    if (selectedCategory !== 'All Products') {
+      result = result.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
+    }
+    if (selectedPriceRange !== 'all') {
+      result = result.filter(p => {
+        const price = parseFloat(p.base_price);
+        if (selectedPriceRange === 'under-3k') return price < 3000;
+        if (selectedPriceRange === '3k-5k') return price >= 3000 && price <= 5000;
+        if (selectedPriceRange === 'over-5k') return price > 5000;
+        return true;
+      });
+    }
+    return result;
+  }, [products, searchQuery, selectedCategory, selectedPriceRange]);
+
+  // Pagination Calculation
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedPriceRange]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-3 text-sm font-medium">
-        🎨 Create Your Custom Design Today | Free Shipping Over ₦10,000
-      </div>
-
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3 text-sm text-gray-600">
-          <a href="/" className="hover:text-red-600">Home</a> / <span className="text-gray-900 font-medium">Products</span>
+    <div className="min-h-screen bg-white text-zinc-900">
+      
+      {/* 1. COMPACT SEARCH & CATEGORY BAR (MOBILE) */}
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-zinc-100 lg:hidden">
+        <div className="p-4 flex flex-col gap-3">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input 
+              type="text" 
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-zinc-50 border-none rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold focus:ring-2 focus:ring-red-600/20"
+            />
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button onClick={() => setShowMobileFilters(true)} className="p-3 bg-zinc-900 text-white rounded-xl flex-shrink-0"><Filter className="w-4 h-4" /></button>
+            {sidebarCategories.map((cat) => (
+              <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          {/* Sidebar Filters */}
-          <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="bg-white rounded-lg border p-6 sticky top-6">
-              <h3 className="font-bold text-lg mb-4">Categories</h3>
-              <ul className="space-y-2">
-                {categories.map((cat, idx) => (
-                  <li key={idx}>
-                    <button
-                      onClick={() => setSelectedCategory(idx === 0 ? 'all' : cat)}
-                      className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition ${
-                        (idx === 0 && selectedCategory === 'all') || selectedCategory === cat
-                          ? 'bg-red-50 text-red-600 font-medium'
-                          : 'text-gray-700'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  </li>
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-10">
+        <div className="flex flex-col lg:flex-row gap-16">
+          
+          {/* 2. SIDEBAR (DESKTOP) */}
+          <aside className="hidden lg:block lg:w-64 flex-shrink-0 sticky top-28 h-fit space-y-12">
+            <div>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Categories</h3>
+              <div className="space-y-1">
+                {sidebarCategories.map((cat) => (
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${selectedCategory === cat ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'}`}>
+                    {cat} <ChevronRight className="w-3 h-3" />
+                  </button>
                 ))}
-              </ul>
-
-              <hr className="my-6" />
-
-              <h3 className="font-bold text-lg mb-4">Price Range</h3>
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Under ₦3,000</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">₦3,000 - ₦5,000</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Over ₦5,000</span>
-                </label>
               </div>
+            </div>
 
-              <hr className="my-6" />
-
-              <h3 className="font-bold text-lg mb-4">Rating</h3>
-              <div className="space-y-3">
-                {[5, 4, 3].map(rating => (
-                  <label key={rating} className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="rounded" />
-                    <div className="flex items-center gap-1">
-                      {[...Array(rating)].map((_, i) => (
-                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      ))}
-                      <span className="text-sm ml-1">& Up</span>
-                    </div>
+            <div className="pt-10 border-t border-zinc-100">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Price Range</h3>
+              <div className="space-y-4">
+                {priceRanges.map((range) => (
+                  <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
+                    <input type="radio" name="price" checked={selectedPriceRange === range.value} onChange={() => setSelectedPriceRange(range.value)} className="w-4 h-4 accent-red-600" />
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{range.label}</span>
                   </label>
                 ))}
               </div>
             </div>
           </aside>
 
-          {/* Products Section */}
+          {/* 3. MAIN CONTENT */}
           <div className="flex-1">
-            {/* Top Bar */}
-            <div className="bg-white rounded-lg border p-4 mb-6">
-              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold mb-1">All Products</h1>
-                  <p className="text-sm text-gray-600">{filteredProducts.length} products available</p>
-                </div>
-
-                <div className="flex gap-3 items-center">
-                  {/* Sort Dropdown */}
-                  <div className="relative">
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="appearance-none border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:border-red-600"
-                    >
-                      <option value="featured">Featured</option>
-                      <option value="price-low">Price: Low to High</option>
-                      <option value="price-high">Price: High to Low</option>
-                      <option value="rating">Top Rated</option>
-                      <option value="newest">Newest</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
-                  </div>
-
-                  {/* View Toggle */}
-                  <div className="flex gap-1 border rounded-lg p-1">
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded ${viewMode === 'grid' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                    >
-                      <Grid3x3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`p-2 rounded ${viewMode === 'list' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+            {/* SEARCH & HEADER (DESKTOP) */}
+            <div className="hidden lg:flex items-center justify-between mb-12 border-b border-zinc-100 pb-10">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <input 
+                  type="text" 
+                  placeholder="SEARCH FOR A PRODUCT..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent border-none pl-8 text-[11px] font-black uppercase tracking-widest focus:ring-0"
+                />
               </div>
+              <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{filteredProducts.length} Results Found</p>
             </div>
 
-            {/* Products Grid */}
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
-              {filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className={`bg-white rounded-lg border hover:shadow-xl transition group cursor-pointer ${
-                    viewMode === 'list' ? 'flex gap-6' : ''
-                  }`}
-                >
-                  <div className={`relative bg-gray-50 ${viewMode === 'list' ? 'w-48 h-48' : 'h-64'} flex items-center justify-center overflow-hidden`}>
-                    {/* Placeholder for product image */}
-                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-6xl">
-                      {product.category === 'Apparel' ? '👕' : product.category === 'Drinkware' ? '☕' : product.category === 'Home Decor' ? '🖼️' : product.category === 'Accessories' ? '👜' : '📓'}
-                    </div>
-                    
-                    {product.sale && (
-                      <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                        SALE
-                      </span>
-                    )}
-                    
-                    <button
-                      onClick={() => toggleFavorite(product.id)}
-                      className="absolute top-3 right-3 bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition shadow-lg hover:scale-110"
-                    >
-                      <Heart className={`w-5 h-5 ${favorites.includes(product.id) ? 'fill-red-600 text-red-600' : 'text-gray-600'}`} />
-                    </button>
-                  </div>
+            <div className="mb-10 lg:hidden">
+                <h1 className="text-4xl font-black uppercase italic tracking-tighter text-zinc-900">{selectedCategory}</h1>
+            </div>
 
-                  <div className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                    <div className="text-xs text-gray-500 mb-1">{product.category}</div>
-                    <h3 className="font-semibold text-base mb-2 line-clamp-2 group-hover:text-red-600 transition">
-                      {product.name}
-                    </h3>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{product.rating}</span>
+            {loading ? (
+              <div className="h-96 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300">Loading Shop</span>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-12 lg:gap-x-10 lg:gap-y-20">
+                  {currentItems.map((product) => (
+                    <div key={product.id} className="group flex flex-col">
+                      <Link href={`/products/${product.id}`} className="relative aspect-[4/5] bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100">
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} className="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center uppercase font-black text-[8px] text-zinc-300 italic">No Image</div>
+                        )}
+                        <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="bg-white text-zinc-900 px-6 py-3 rounded-2xl text-[8px] font-black uppercase tracking-widest flex items-center gap-2">View Details <ArrowUpRight className="w-3 h-3" /></div>
+                        </div>
+                      </Link>
+                      <div className="mt-6 space-y-2">
+                        <div className="flex justify-between items-start gap-2">
+                          <h3 className="text-sm lg:text-lg font-black uppercase tracking-tight italic text-zinc-900 leading-tight">{product.name}</h3>
+                          <p className="text-sm lg:text-lg font-black text-red-600 italic">₦{parseFloat(product.base_price).toLocaleString()}</p>
+                        </div>
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 bg-zinc-50 px-2 py-1 rounded inline-block">{product.category}</span>
                       </div>
-                      <span className="text-xs text-gray-500">({product.reviews} reviews)</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* PAGINATION CONTROLS */}
+                {totalPages > 1 && (
+                  <div className="mt-20 flex items-center justify-center gap-4 border-t border-zinc-100 pt-10">
+                    <button 
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(p => p - 1)}
+                      className="p-3 rounded-xl border border-zinc-100 disabled:opacity-30 hover:bg-zinc-50 transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    
+                    <div className="flex gap-2">
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-red-600 text-white' : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100'}`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
                     </div>
 
-                    <div className="flex items-center gap-3 mb-4">
-                      {product.sale && product.salePrice ? (
-                        <>
-                          <span className="text-xl font-bold text-red-600">₦{product.salePrice.toLocaleString()}</span>
-                          <span className="text-sm text-gray-400 line-through">₦{product.price.toLocaleString()}</span>
-                        </>
-                      ) : (
-                        <span className="text-xl font-bold text-gray-900">₦{product.price.toLocaleString()}</span>
-                      )}
-                    </div>
-
-                    <button className="w-full px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition transform group-hover:scale-105">
-                      Customize Now
+                    <button 
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(p => p + 1)}
+                      className="p-3 rounded-xl border border-zinc-100 disabled:opacity-30 hover:bg-zinc-50 transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Load More */}
-            <div className="mt-8 text-center">
-              <button className="px-8 py-3 border-2 border-gray-300 rounded-lg font-medium hover:border-red-600 hover:text-red-600 transition">
-                Load More Products
-              </button>
-            </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12 mt-12">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Can't Find What You're Looking For?</h2>
-          <p className="text-lg mb-6">Contact us and we'll help you create the perfect custom product</p>
-          <button className="px-8 py-3 bg-white text-purple-600 rounded-full font-bold hover:bg-gray-100 transition shadow-xl">
-            Contact Support
-          </button>
+      {/* MOBILE FILTERS SHEET */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-[100] lg:hidden">
+          <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm" onClick={() => setShowMobileFilters(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[40px] p-8 pb-12 animate-in slide-in-from-bottom duration-500">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-2xl font-black uppercase italic tracking-tighter">Filter By Price</h2>
+              <button onClick={() => setShowMobileFilters(false)} className="p-2 bg-zinc-100 rounded-full"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {priceRanges.map((range) => (
+                <button
+                  key={range.value}
+                  onClick={() => { setSelectedPriceRange(range.value); setShowMobileFilters(false); }}
+                  className={`py-5 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest border text-left transition-all ${selectedPriceRange === range.value ? 'bg-zinc-900 text-white border-zinc-900' : 'bg-zinc-50 border-transparent text-zinc-400'}`}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

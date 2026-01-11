@@ -1,173 +1,162 @@
-"use client"
+"use client";
+
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Search, User, Heart, ChevronDown, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import Link from 'next/link';
+import { 
+  ShoppingBag, Zap, TrendingUp, Award, ArrowRight, 
+  ShieldCheck, Loader2, Edit3, Palette, ChevronRight,
+  Shirt, Coffee, Home, Briefcase, Gift
+} from 'lucide-react';
+
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+
+interface Product {
+  id: number;
+  name: string;
+  base_price: string;
+  category: string;
+  image: string | null;
+  is_active: boolean;
+  is_featured: boolean;
+}
+
+interface Design {
+  id: number;
+  name: string;
+  preview_image?: string | null;
+}
 
 export default function LensraHomepage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [featuredDesigns, setFeaturedDesigns] = useState<Design[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const heroSlides = [
-    {
-      title: 'Design Your Perfect Gift',
-      subtitle: 'Custom mugs, apparel & more',
-      cta: 'Start Creating',
-      bg: 'bg-gradient-to-r from-blue-600 to-purple-600'
-    },
-    {
-      title: 'Express Yourself',
-      subtitle: 'Personalized products made easy',
-      cta: 'Browse Products',
-      bg: 'bg-gradient-to-r from-pink-500 to-red-500'
-    },
-    {
-      title: 'Gifts That Matter',
-      subtitle: 'Create something unique today',
-      cta: 'Get Started',
-      bg: 'bg-gradient-to-r from-green-500 to-teal-500'
-    }
+  const categories = [
+    { name: "Shirts", icon: <Shirt className="w-5 h-5" /> },
+    { name: "Mugs", icon: <Coffee className="w-5 h-5" /> },
+    { name: "Home", icon: <Home className="w-5 h-5" /> },
+    { name: "Office", icon: <Briefcase className="w-5 h-5" /> },
+    { name: "Gifts", icon: <Gift className="w-5 h-5" /> },
   ];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 4000);
-    return () => clearInterval(interval);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [prodRes, designRes] = await Promise.all([
+          fetch(`${BaseUrl}api/products/`),
+          fetch(`${BaseUrl}api/designs/featured/`)
+        ]);
+        const prodData = await prodRes.json();
+        const designData = await designRes.json();
+
+        setProducts(Array.isArray(prodData) ? prodData : prodData.results || []);
+        setFeaturedDesigns(Array.isArray(designData) ? designData : designData.results || []);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const categories = [
-    { name: 'Mugs', img: '☕', items: '500+ designs' },
-    { name: 'T-Shirts', img: '👕', items: '1000+ styles' },
-    { name: 'Hoodies', img: '🧥', items: '300+ options' },
-    { name: 'Canvas Prints', img: '🖼️', items: '200+ sizes' },
-    { name: 'Phone Cases', img: '📱', items: '400+ models' },
-    { name: 'Tote Bags', img: '👜', items: '150+ styles' },
-    { name: 'Stickers', img: '⭐', items: '600+ designs' },
-    { name: 'Notebooks', img: '📓', items: '250+ options' }
-  ];
-
-  const featuredProducts = [
-    { name: 'White Ceramic Mug', price: 12.99, rating: 4.8, reviews: 234, img: '☕', sale: false },
-    { name: 'Classic Cotton Tee', price: 19.99, rating: 4.9, reviews: 567, img: '👕', sale: true, salePrice: 14.99 },
-    { name: 'Canvas Wall Art 16x20', price: 34.99, rating: 4.7, reviews: 123, img: '🖼️', sale: false },
-    { name: 'Premium Hoodie', price: 39.99, rating: 4.9, reviews: 890, img: '🧥', sale: false },
-    { name: 'Slim Phone Case', price: 16.99, rating: 4.6, reviews: 456, img: '📱', sale: true, salePrice: 12.99 },
-    { name: 'Canvas Tote Bag', price: 18.99, rating: 4.8, reviews: 345, img: '👜', sale: false },
-    { name: 'Photo Blanket', price: 44.99, rating: 4.9, reviews: 678, img: '🛏️', sale: false },
-    { name: 'Metal Water Bottle', price: 24.99, rating: 4.7, reviews: 234, img: '🍶', sale: false }
-  ];
-
-  const testimonials = [
-    { name: 'Jennifer L.', text: 'Amazing quality! The mug I designed turned out exactly as I hoped.', rating: 5 },
-    { name: 'Michael R.', text: 'Fast shipping and excellent customer service. Highly recommend!', rating: 5 },
-    { name: 'Sarah P.', text: 'The design tool is so easy to use. Made a perfect gift for my sister!', rating: 5 }
-  ];
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <Loader2 className="w-12 h-12 animate-spin text-red-600 mb-4" />
+      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Opening Studio...</span>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-white">
-
-      {/* Hero Carousel */}
-      <section className="relative overflow-hidden">
-        {heroSlides.map((slide, idx) => (
-          <div
-            key={idx}
-            className={`transition-opacity duration-500 ${
-              idx === currentSlide ? 'opacity-100' : 'opacity-0 absolute top-0 left-0 w-full'
-            }`}
-          >
-            <div className={`${slide.bg} text-white py-20 px-4`}>
-              <div className="max-w-7xl mx-auto text-center space-y-6">
-                <h1 className="text-5xl md:text-6xl font-bold">{slide.title}</h1>
-                <p className="text-2xl font-light">{slide.subtitle}</p>
-                <button className="px-10 py-4 bg-white text-gray-900 rounded-full font-bold text-lg hover:bg-gray-100 transition shadow-xl">
-                  {slide.cta}
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+    <div className="min-h-screen bg-white selection:bg-red-600 selection:text-white">
+      
+      {/* 1. HERO SECTION */}
+      <section className="bg-zinc-950 min-h-[85vh] flex items-center relative overflow-hidden px-6 border-b-[12px] border-red-600">
+        <div className="absolute inset-0 opacity-10 pointer-events-none" 
+             style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         
-        {/* Carousel Controls */}
-        <button
-          onClick={() => setCurrentSlide((currentSlide - 1 + heroSlides.length) % heroSlides.length)}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white transition"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          onClick={() => setCurrentSlide((currentSlide + 1) % heroSlides.length)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white transition"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
+        <div className="max-w-7xl mx-auto w-full text-white z-10">
+          <div className="flex items-center gap-3 text-red-600 mb-6">
+            <Zap className="w-5 h-5 fill-current" />
+            <span className="font-black uppercase tracking-[0.4em] text-[10px]">Print Studio Lagos</span>
+          </div>
+          
+          <h1 className="text-6xl md:text-[11rem] font-black tracking-tighter leading-[0.8] mb-12 italic uppercase">
+            YOUR <br /><span className="text-zinc-700">IDEA</span> LOUD<span className="text-red-600">.</span>
+          </h1>
+          
+          <div className="flex flex-col md:flex-row md:items-center gap-10">
+            <p className="text-sm md:text-base text-zinc-400 max-w-sm font-bold uppercase tracking-widest leading-relaxed border-l-2 border-red-600 pl-6">
+              Custom printing for the bold. High-end gifts and apparel made ready in 24 hours.
+            </p>
+            <Link href="/products" className="group flex items-center justify-center gap-4 px-12 py-6 bg-white text-black rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all shadow-2xl">
+              Start Creating <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
-        {/* Dots */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-          {heroSlides.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentSlide(idx)}
-              className={`w-2 h-2 rounded-full transition ${
-                idx === currentSlide ? 'bg-white w-8' : 'bg-white/50'
-              }`}
-            />
+      {/* 2. ENHANCED CATEGORY SECTION */}
+      <section className="py-12 border-b border-zinc-100 bg-white sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center gap-8 overflow-x-auto no-scrollbar pb-2">
+            <div className="flex items-center gap-2 pr-6 border-r-2 border-zinc-100 flex-shrink-0">
+               <Palette className="w-4 h-4 text-red-600" />
+               <span className="text-[10px] font-black uppercase tracking-widest">Aisles</span>
+            </div>
+            {categories.map((cat) => (
+              <Link 
+                key={cat.name} 
+                href={`/products?category=${cat.name}`} 
+                className="group flex items-center gap-3 flex-shrink-0 px-5 py-3 rounded-2xl hover:bg-zinc-900 hover:text-white transition-all"
+              >
+                <span className="text-zinc-400 group-hover:text-red-600 transition-colors">{cat.icon}</span>
+                <span className="text-xs font-black uppercase tracking-widest">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. NEW DROPS */}
+      <section className="py-24 max-w-7xl mx-auto px-6">
+        <SectionHeader title="Fresh Drops" subtitle="The Latest Gear" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+          {products.filter(p => p.is_featured).slice(0, 4).map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* Categories Grid */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center">Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {categories.map((cat, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition group">
-                <div className="text-5xl mb-3 group-hover:scale-110 transition">{cat.img}</div>
-                <h3 className="font-semibold text-sm mb-1">{cat.name}</h3>
-                <p className="text-xs text-gray-500">{cat.items}</p>
-              </div>
-            ))}
+      {/* 4. DESIGN SHOWCASE (4 COL DESKTOP / 2 COL MOBILE) */}
+      <section className="py-24 bg-zinc-950 text-white px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+            <div>
+              <span className="text-red-500 font-bold text-[10px] uppercase tracking-[0.4em]">Ready-To-Wear Art</span>
+              <h2 className="text-5xl md:text-8xl font-black tracking-tighter uppercase mt-4 italic leading-none">Cool <br />Designs<span className="text-red-600">.</span></h2>
+            </div>
+            <p className="text-zinc-500 max-w-xs md:text-right text-[10px] font-bold uppercase tracking-widest leading-loose">
+              Don't want to design from scratch? Pick a masterpiece from our artist community.
+            </p>
           </div>
-        </div>
-      </section>
 
-      {/* Featured Products */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
-            <button className="text-red-600 font-semibold hover:underline">View All →</button>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {featuredProducts.map((product, idx) => (
-              <div key={idx} className="bg-white rounded-lg overflow-hidden border hover:shadow-xl transition group cursor-pointer">
-                <div className="relative bg-gray-100 h-48 flex items-center justify-center text-6xl group-hover:bg-gray-200 transition">
-                  {product.img}
-                  {product.sale && (
-                    <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                      SALE
-                    </span>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+            {featuredDesigns.slice(0, 8).map((design) => (
+              <div key={design.id} className="group bg-zinc-900/50 rounded-[32px] p-4 border border-zinc-800 hover:border-red-600 transition-all duration-500">
+                <div className="aspect-square rounded-[24px] overflow-hidden mb-5 bg-black relative">
+                  {design.preview_image ? (
+                    <img src={design.preview_image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition duration-700 opacity-80 group-hover:opacity-100" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-800"><Edit3 className="w-10 h-10" /></div>
                   )}
-                  <button className="absolute top-3 right-3 bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition">
-                    <Heart className="w-4 h-4" />
-                  </button>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-medium text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs font-medium">{product.rating}</span>
-                    <span className="text-xs text-gray-500">({product.reviews})</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {product.sale ? (
-                      <>
-                        <span className="text-lg font-bold text-red-600">${product.salePrice}</span>
-                        <span className="text-sm text-gray-400 line-through">${product.price}</span>
-                      </>
-                    ) : (
-                      <span className="text-lg font-bold">${product.price}</span>
-                    )}
-                  </div>
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-sm font-black uppercase italic tracking-tight truncate mr-2">{design.name}</h3>
+                  <Link href={`/designs/${design.id}`} className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-zinc-800 group-hover:bg-red-600 rounded-xl transition-all">
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
             ))}
@@ -175,83 +164,59 @@ export default function LensraHomepage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 bg-blue-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                1
-              </div>
-              <h3 className="text-xl font-bold mb-3">Choose a Product</h3>
-              <p className="text-gray-600">Browse thousands of customizable products</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                2
-              </div>
-              <h3 className="text-xl font-bold mb-3">Personalize It</h3>
-              <p className="text-gray-600">Add your photos, text, and designs</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                3
-              </div>
-              <h3 className="text-xl font-bold mb-3">Order & Enjoy</h3>
-              <p className="text-gray-600">We'll print and ship it to your door</p>
-            </div>
-          </div>
+      {/* 5. TRUST BADGES */}
+      <section className="py-24 px-6 bg-zinc-50">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
+          <Badge icon={<ShieldCheck className="w-6 h-6" />} title="Verified" desc="High Standards" />
+          <Badge icon={<Zap className="w-6 h-6" />} title="Rapid" desc="24hr Service" />
+          <Badge icon={<Award className="w-6 h-6" />} title="Premium" desc="Italian Inks" />
+          <Badge icon={<TrendingUp className="w-6 h-6" />} title="Logistics" desc="Lagos Delivery" />
         </div>
       </section>
+    </div>
+  );
+}
 
-      {/* Customer Reviews */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
-          <div className="relative bg-gray-50 rounded-lg p-8">
-            <div className="text-center space-y-4">
-              <div className="flex justify-center gap-1 mb-4">
-                {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                  <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-lg italic text-gray-700">"{testimonials[currentTestimonial].text}"</p>
-              <p className="font-semibold text-gray-900">— {testimonials[currentTestimonial].name}</p>
-            </div>
-            <button
-              onClick={() => setCurrentTestimonial((currentTestimonial - 1 + testimonials.length) % testimonials.length)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow hover:shadow-lg transition"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setCurrentTestimonial((currentTestimonial + 1) % testimonials.length)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow hover:shadow-lg transition"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </section>
+// Reusable Components
+function SectionHeader({ title, subtitle }: { title: string, subtitle: string }) {
+  return (
+    <div className="mb-12 border-l-8 border-red-600 pl-8">
+      <span className="text-red-600 font-black text-[10px] uppercase tracking-[0.5em]">{subtitle}</span>
+      <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase mt-2 italic leading-none">{title}</h2>
+    </div>
+  );
+}
 
-      {/* Newsletter */}
-      <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Get 15% Off Your First Order</h2>
-          <p className="text-lg mb-6">Join our newsletter for exclusive deals and design inspiration</p>
-          <div className="flex gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-full text-gray-900 focus:outline-none"
-            />
-            <button className="px-8 py-3 bg-white text-purple-600 rounded-full font-bold hover:bg-gray-100 transition">
-              Subscribe
-            </button>
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <Link href={`/products/${product.id}`} className="group">
+      <div className="relative aspect-[4/5] bg-zinc-100 rounded-[40px] overflow-hidden mb-6 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
+        {product.image ? (
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-zinc-300"><ShoppingBag className="w-12 h-12" /></div>
+        )}
+        <div className="absolute bottom-4 right-4 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+          <div className="bg-white p-4 rounded-2xl shadow-xl text-black">
+             <ArrowRight className="w-5 h-5" />
           </div>
         </div>
-      </section>
+      </div>
+      <div className="px-4">
+        <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">{product.category}</p>
+        <h3 className="font-black text-xl tracking-tight uppercase italic text-zinc-900 leading-tight mb-2 truncate">{product.name}</h3>
+        <p className="font-black text-sm text-zinc-400">₦{parseFloat(product.base_price).toLocaleString()}</p>
+      </div>
+    </Link>
+  );
+}
+
+function Badge({ icon, title, desc }: { icon: any, title: string, desc: string }) {
+  return (
+    <div className="flex flex-col items-center text-center group">
+      <div className="w-16 h-16 bg-white text-zinc-400 group-hover:text-red-600 group-hover:scale-110 shadow-sm rounded-3xl flex items-center justify-center mb-6 transition-all">{icon}</div>
+      <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-900">{title}</p>
+      <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">{desc}</p>
     </div>
   );
 }
