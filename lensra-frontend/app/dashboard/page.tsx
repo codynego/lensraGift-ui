@@ -70,40 +70,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-zinc-50/30 text-zinc-900 font-sans">
       
-      {/* 1. MINIMALIST NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-zinc-200">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 group">
-            <div className="w-6 h-6 bg-red-600 flex items-center justify-center rounded-sm group-hover:rotate-90 transition-transform">
-              <Zap className="w-4 h-4 text-white fill-current" />
-            </div>
-            <span className="font-bold text-lg tracking-tight uppercase">
-              Lensra<span className="text-red-600">.</span>
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 border-r border-zinc-100 pr-6">
-               <Activity className="w-3.5 h-3.5 text-zinc-300" />
-               <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">System Active</span>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="hidden md:block text-right">
-                <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest leading-none mb-1">Authenticated</p>
-                <p className="text-sm font-bold">{user?.first_name || "Agent"}</p>
-              </div>
-              <button 
-                onClick={logout} 
-                className="p-3 bg-zinc-100 text-zinc-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all border border-transparent hover:border-red-100"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <main className="max-w-7xl mx-auto px-6 py-10">
         {isOverview ? (
           <div className="space-y-12">

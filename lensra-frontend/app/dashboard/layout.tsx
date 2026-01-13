@@ -51,16 +51,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-zinc-50 border-r border-zinc-200 transform transition-transform duration-300 ease-in-out 
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
 
-        {/* Brand/Logo Area */}
-        <div className="h-20 flex items-center px-6 border-b border-zinc-200">
-           <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-6 h-6 bg-red-600 flex items-center justify-center rounded-sm group-hover:rotate-90 transition-transform">
-                <Zap className="w-4 h-4 text-white fill-current" />
-              </div>
-              <span className="font-bold text-lg tracking-tight uppercase">Lensra<span className="text-red-600">.</span></span>
-           </Link>
-        </div>
-
         {/* Profile Card Summary */}
         <div className="p-4 mx-4 my-6 bg-white border border-zinc-200 rounded-2xl shadow-sm">
             <div className="flex items-center gap-3">

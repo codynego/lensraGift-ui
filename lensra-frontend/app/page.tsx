@@ -49,6 +49,8 @@ export default function LensraHomepage() {
         ]);
         const prodData = await prodRes.json();
         const designData = await designRes.json();
+        console.log("Fetched Products:", prodData);
+        console.log("Fetched Designs:", designData);
 
         setProducts(Array.isArray(prodData) ? prodData : prodData.results || []);
         setFeaturedDesigns(Array.isArray(designData) ? designData : designData.results || []);
