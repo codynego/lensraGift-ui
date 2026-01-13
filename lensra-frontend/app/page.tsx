@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   ShoppingBag, Zap, TrendingUp, Award, ArrowRight, 
   ShieldCheck, Loader2, Edit3, Palette, ChevronRight,
-  Shirt, Coffee, Home, Briefcase, Gift
+  Shirt, Coffee, Home, Briefcase, Gift, FireExtinguisher // Added for style
 } from 'lucide-react';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
@@ -48,11 +48,11 @@ export default function LensraHomepage() {
           fetch(`${BaseUrl}api/designs/featured/`)
         ]);
         const prodData = await prodRes.json();
+        
         const designData = await designRes.json();
-        console.log("Fetched Products:", prodData);
-        console.log("Fetched Designs:", designData);
 
         setProducts(Array.isArray(prodData) ? prodData : prodData.results || []);
+        console.log("all",prodData)
         setFeaturedDesigns(Array.isArray(designData) ? designData : designData.results || []);
       } catch (err) {
         console.error("Fetch Error:", err);
@@ -99,7 +99,7 @@ export default function LensraHomepage() {
         </div>
       </section>
 
-      {/* 2. ENHANCED CATEGORY SECTION */}
+      {/* 2. CATEGORY BAR */}
       <section className="py-12 border-b border-zinc-100 bg-white sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-8 overflow-x-auto no-scrollbar pb-2">
@@ -121,7 +121,7 @@ export default function LensraHomepage() {
         </div>
       </section>
 
-      {/* 3. NEW DROPS */}
+      {/* 3. FRESH DROPS */}
       <section className="py-24 max-w-7xl mx-auto px-6">
         <SectionHeader title="Fresh Drops" subtitle="The Latest Gear" />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
@@ -131,7 +131,56 @@ export default function LensraHomepage() {
         </div>
       </section>
 
-      {/* 4. DESIGN SHOWCASE (4 COL DESKTOP / 2 COL MOBILE) */}
+      {/* 4. TRENDING PRODUCTS (NEW SECTION) */}
+      <section className="py-24 bg-zinc-50 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center gap-4 mb-12">
+            <div className="h-px bg-zinc-200 flex-grow" />
+            <div className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-full">
+              <TrendingUp className="w-4 h-4 text-red-600" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Hottest Now</span>
+            </div>
+            <div className="h-px bg-zinc-200 flex-grow" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            {/* Spotlight Card */}
+            <div className="lg:col-span-5">
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic leading-none mb-8">
+                Trending <br />On The <span className="text-red-600">Streets</span>
+              </h2>
+              <p className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest mb-10 leading-loose max-w-sm">
+                The pieces everyone is talking about. Hand-picked based on this week's most popular custom orders.
+              </p>
+              <Link href="/products" className="inline-flex items-center gap-4 text-xs font-black uppercase tracking-widest group">
+                View All Trending <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform text-red-600" />
+              </Link>
+            </div>
+
+            {/* Trending Grid */}
+            <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-6">
+              {/* Filter products that are active and NOT already in the "Fresh Drops" to avoid repetition */}
+              {products.filter(p => p.is_trending).slice(0, 8).map((product) => (
+                <div key={product.id} className="relative group">
+                  <Link href={`/products/${product.id}`}>
+                    <div className="aspect-[3/4] rounded-[32px] overflow-hidden bg-white mb-4 border border-zinc-100 group-hover:border-red-600 transition-colors">
+                      {product.image ? (
+                        <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-200"><ShoppingBag className="w-8 h-8" /></div>
+                      )}
+                    </div>
+                    <h4 className="text-[11px] font-black uppercase italic tracking-tight truncate">{product.name}</h4>
+                    <p className="text-[10px] font-bold text-red-600 mt-1">₦{parseFloat(product.base_price).toLocaleString()}</p>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. DESIGN SHOWCASE */}
       <section className="py-24 bg-zinc-950 text-white px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
@@ -166,8 +215,8 @@ export default function LensraHomepage() {
         </div>
       </section>
 
-      {/* 5. TRUST BADGES */}
-      <section className="py-24 px-6 bg-zinc-50">
+      {/* 6. TRUST BADGES */}
+      <section className="py-24 px-6 bg-white border-t border-zinc-100">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
           <Badge icon={<ShieldCheck className="w-6 h-6" />} title="Verified" desc="High Standards" />
           <Badge icon={<Zap className="w-6 h-6" />} title="Rapid" desc="24hr Service" />
@@ -216,7 +265,7 @@ function ProductCard({ product }: { product: Product }) {
 function Badge({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
     <div className="flex flex-col items-center text-center group">
-      <div className="w-16 h-16 bg-white text-zinc-400 group-hover:text-red-600 group-hover:scale-110 shadow-sm rounded-3xl flex items-center justify-center mb-6 transition-all">{icon}</div>
+      <div className="w-16 h-16 bg-white text-zinc-400 group-hover:text-red-600 group-hover:scale-110 shadow-sm rounded-3xl flex items-center justify-center mb-6 transition-all border border-zinc-100">{icon}</div>
       <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-900">{title}</p>
       <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">{desc}</p>
     </div>
