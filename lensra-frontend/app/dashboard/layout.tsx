@@ -39,9 +39,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const menuItems = [
     { href: '/dashboard', name: 'Overview', icon: <LayoutDashboard className="w-5 h-5" /> },
     { href: '/dashboard/designs', name: 'Design Vault', icon: <Palette className="w-5 h-5" />, badge: '03' },
-    { href: '/dashboard/orders', name: 'Deployments', icon: <Package className="w-5 h-5" />, badge: '02' },
-    { href: '/dashboard/wishlist', name: 'Archive', icon: <Heart className="w-5 h-5" /> },
-    { href: '/dashboard/profile', name: 'Identity', icon: <User className="w-5 h-5" /> }
+    { href: '/dashboard/orders', name: 'My Orders', icon: <Package className="w-5 h-5" />, badge: '02' },
+    { href: '/dashboard/wishlist', name: 'WishList', icon: <Heart className="w-5 h-5" /> },
+    { href: '/dashboard/rewards', name: 'Rewards', icon: <Zap className="w-5 h-5" /> },
+    { href: '/dashboard/profile', name: 'Profile', icon: <User className="w-5 h-5" /> },
   ];
 
   return (

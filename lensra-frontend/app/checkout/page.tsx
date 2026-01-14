@@ -19,7 +19,7 @@ const NIGERIAN_STATES = [
 ];
 
 export default function CheckoutPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   
   const [isProcessing, setIsProcessing] = useState(false);
@@ -38,34 +38,37 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    // 1. Fetch Cart Items
-    const fetchCart = async () => {
-      if (token) {
-        // Authenticated: Get from Backend
-        try {
-          const res = await fetch(`${BaseUrl}api/orders/cart/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const data = await res.json();
-          // Adjust based on your DRF response structure (usually data.items)
-          setCartItems(data.items || []);
-        } catch (err) {
-          console.error("Auth Cart Error:", err);
-        }
-      } else {
-        // Guest: Get from Local Storage
-        const localData = localStorage.getItem('local_cart');
-        if (localData) {
-          setCartItems(JSON.parse(localData));
-        } else {
-          // If cart is empty, redirect back to shop
-          // router.push('/products');
-        }
-      }
-    };
+    const loadCheckoutData = async () => {
+      const sessionId = localStorage.getItem('guest_session_id');
 
-    // 2. Fetch Addresses (Auth Only)
-    const fetchAddresses = async () => {
+      // 1. Fetch Cart Items from Backend
+      try {
+        // We fetch from the API using either the Token (Auth) or Session ID (Guest)
+        const cartUrl = token 
+          ? `${BaseUrl}api/orders/cart/` 
+          : `${BaseUrl}api/orders/cart/?session_id=${sessionId}`;
+
+        const res = await fetch(cartUrl, {
+          headers: { 
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : (data.results || []);
+          setCartItems(items);
+        } else {
+          // Fallback to localStorage if API fails or session is empty
+          const localData = localStorage.getItem(token ? 'user_cart' : 'guest_cart');
+          if (localData) setCartItems(JSON.parse(localData));
+        }
+      } catch (err) {
+        console.error("Cart Fetch Error:", err);
+      }
+
+      // 2. Fetch Addresses (Auth only)
       if (token) {
         try {
           const res = await fetch(`${BaseUrl}api/users/addresses/`, {
@@ -73,6 +76,7 @@ export default function CheckoutPage() {
           });
           const data = await res.json();
           setSavedAddresses(data);
+          
           if (data.length > 0) {
             const def = data.find((a: any) => a.is_default) || data[0];
             handleSelectAddress(def);
@@ -80,22 +84,21 @@ export default function CheckoutPage() {
             setShowManualForm(true);
           }
         } catch (err) {
-          console.error("Address Error:", err);
+          console.error("Address Fetch Error:", err);
         }
       } else {
         setShowManualForm(true);
       }
     };
 
-    fetchCart();
-    fetchAddresses();
+    loadCheckoutData();
   }, [token]);
 
   const handleSelectAddress = (addr: any) => {
     setSelectedAddressId(addr.id);
     setFormData({
       full_name: addr.full_name,
-      email: "", 
+      email: user?.email || "", 
       phone: addr.phone_number,
       address: addr.street_address,
       city: addr.city,
@@ -104,20 +107,21 @@ export default function CheckoutPage() {
     setShowManualForm(false);
   };
 
-  // Improved Price Calculation to handle both DB and LocalStorage formats
+  // --- SAFE PRICE CALCULATION ---
   const subtotal = useMemo(() => {
     return cartItems.reduce((acc, item) => {
-      // Priority 1: Backend structure (item.product.base_price)
-      // Priority 2: Backend placement structure (item.placement_details.product_price)
-      // Priority 3: Local storage structure (item.price)
-      const price = item.product?.base_price || 
-                    item.placement_details?.product_price || 
+      // Logic for price extraction:
+      // 1. Check placement_details (custom) 
+      // 2. Check product_details (plain)
+      // 3. Check direct properties (local storage fallback)
+      const price = item.placement_details?.product_price || 
+                    item.product_details?.base_price || 
                     item.price || 0;
       return acc + (parseFloat(price) * item.quantity);
     }, 0);
   }, [cartItems]);
 
-  const shipping = subtotal > 25000 || cartItems.length === 0 ? 0 : 2500;
+  const shipping = subtotal > 50000 || cartItems.length === 0 ? 0 : 3500;
   const total = subtotal + shipping;
 
   const handleOrder = async () => {
@@ -125,28 +129,28 @@ export default function CheckoutPage() {
       alert("Missing delivery information.");
       return;
     }
-    if (!token && !formData.email) {
-      alert("Please provide an email for your guest order.");
-      return;
-    }
 
     setIsProcessing(true);
+    const orderEmail = token ? (user?.email || formData.email) : formData.email;
+    const sessionId = localStorage.getItem('guest_session_id');
 
-    const orderPayload = {
+    const orderPayload: any = {
       shipping_address: formData.address,
       shipping_city: formData.city,
       shipping_state: formData.state,
       shipping_country: "Nigeria",
       phone_number: formData.phone,
-      ...(token ? { address_id: selectedAddressId } : { 
-        guest_email: formData.email,
-        guest_full_name: formData.full_name,
-        items_data: cartItems // Send the whole local cart to the backend
-      })
     };
 
+    if (!token) {
+      orderPayload.guest_email = formData.email;
+      orderPayload.session_id = sessionId; // Link the guest session to the order
+    } else {
+      orderPayload.address_id = selectedAddressId;
+    }
+
     try {
-      const res = await fetch(`${BaseUrl}api/orders/orders/`, {
+      const orderRes = await fetch(`${BaseUrl}api/orders/orders/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,12 +159,35 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderPayload)
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.removeItem('local_cart');
-        router.push(`/order-success?id=${data.order_number || data.id}`);
+      const orderData = await orderRes.json();
+
+      if (orderRes.ok) {
+        // Clear local storage carts
+        localStorage.removeItem('guest_cart');
+        localStorage.removeItem('user_cart');
+
+        const payRes = await fetch(`${BaseUrl}api/payments/initialize/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          },
+          body: JSON.stringify({
+            order_id: orderData.id,
+            email: orderEmail
+          })
+        });
+
+        const payData = await payRes.json();
+
+        if (payRes.ok && payData.authorization_url) {
+          window.location.href = payData.authorization_url;
+        } else {
+          router.push(`/order-success?id=${orderData.id}`);
+        }
       } else {
-        alert(data.error || "Order failed. Please check your details.");
+        const errorMsg = orderData.error || orderData.guest_email || "Order creation failed.";
+        alert(errorMsg);
       }
     } catch (err) { 
       console.error(err);
@@ -236,18 +263,27 @@ export default function CheckoutPage() {
             <div className="bg-zinc-950 text-white rounded-[48px] p-10 sticky top-12 shadow-2xl border border-white/5">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8 text-red-600">Review</h2>
               
-              {/* Item Mini-List */}
-              <div className="space-y-4 mb-8 max-h-40 overflow-y-auto pr-2 no-scrollbar">
-                {cartItems.map((item, i) => (
-                  <div key={i} className="flex justify-between items-center">
-                    <span className="text-[9px] font-bold uppercase text-zinc-400 truncate w-32">
-                      {item.quantity}x {item.product?.name || item.name}
-                    </span>
-                    <span className="text-[9px] font-black italic">
-                      ₦{(parseFloat(item.product?.base_price || item.price || 0) * item.quantity).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-4 mb-8 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                {cartItems.map((item, i) => {
+                  const name = item.placement_details?.product_name || 
+                               item.product_details?.name || 
+                               item.product_name || 
+                               item.name || "Custom Design";
+                  const price = item.placement_details?.product_price || 
+                                item.product_details?.base_price || 
+                                item.price || 0;
+
+                  return (
+                    <div key={i} className="flex justify-between items-center gap-4">
+                      <span className="text-[9px] font-bold uppercase text-zinc-400 truncate flex-1">
+                        {item.quantity}x {name}
+                      </span>
+                      <span className="text-[9px] font-black italic whitespace-nowrap">
+                        ₦{(parseFloat(price) * item.quantity).toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="space-y-4 mb-10 border-t border-white/10 pt-8">
@@ -271,7 +307,7 @@ export default function CheckoutPage() {
                 disabled={isProcessing || cartItems.length === 0}
                 className="w-full py-6 bg-red-600 hover:bg-white hover:text-black text-white rounded-3xl font-black uppercase tracking-[0.3em] text-xs transition-all flex items-center justify-center gap-3 disabled:opacity-30"
               >
-                {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <><CreditCard className="w-4 h-4" /> Complete Order</>}
+                {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <><CreditCard className="w-4 h-4" /> Complete & Pay</>}
               </button>
             </div>
           </div>
@@ -296,12 +332,10 @@ function ManualAddressForm({ formData, setFormData, isGuest, onCancel }: any) {
         <input type="text" value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase" />
       </div>
 
-      {isGuest && (
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><Mail className="w-3 h-3" /> Email Address</label>
-          <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-red-600 transition text-sm font-bold uppercase" />
-        </div>
-      )}
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><Mail className="w-3 h-3" /> Email Address</label>
+        <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-red-600 transition text-sm font-bold uppercase" />
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

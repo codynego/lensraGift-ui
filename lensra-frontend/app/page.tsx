@@ -5,18 +5,20 @@ import Link from 'next/link';
 import { 
   ShoppingBag, Zap, TrendingUp, Award, ArrowRight, 
   ShieldCheck, Loader2, Edit3, Palette, ChevronRight,
-  Shirt, Coffee, Home, Briefcase, Gift, FireExtinguisher // Added for style
+  Shirt, Coffee, Home, Briefcase, Gift
 } from 'lucide-react';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
 
 interface Product {
   id: number;
+  slug: string;
   name: string;
   base_price: string;
   category: string;
   image: string | null;
   is_active: boolean;
+  is_trending: boolean;
   is_featured: boolean;
 }
 
@@ -45,15 +47,20 @@ export default function LensraHomepage() {
         setLoading(true);
         const [prodRes, designRes] = await Promise.all([
           fetch(`${BaseUrl}api/products/`),
-          fetch(`${BaseUrl}api/designs/featured/`)
+          fetch(`${BaseUrl}api/designs/`)
         ]);
-        const prodData = await prodRes.json();
         
+        const prodData = await prodRes.json();
+        console.log("Products Data:", prodData);
         const designData = await designRes.json();
 
-        setProducts(Array.isArray(prodData) ? prodData : prodData.results || []);
-        console.log("all",prodData)
-        setFeaturedDesigns(Array.isArray(designData) ? designData : designData.results || []);
+        // FIX: Extracting results from paginated response
+        const extractedProducts = Array.isArray(prodData) ? prodData : (prodData.results || []);
+        console.log("Extracted Products:", extractedProducts);
+        const extractedDesigns = Array.isArray(designData) ? designData : (designData.results || []);
+
+        setProducts(extractedProducts);
+        setFeaturedDesigns(extractedDesigns);
       } catch (err) {
         console.error("Fetch Error:", err);
       } finally {
@@ -125,13 +132,17 @@ export default function LensraHomepage() {
       <section className="py-24 max-w-7xl mx-auto px-6">
         <SectionHeader title="Fresh Drops" subtitle="The Latest Gear" />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
-          {products.filter(p => p.is_featured).slice(0, 4).map((product) => (
+          {/* Fallback to all products if none are marked as featured */}
+          {(products.filter(p => p.is_featured).length > 0 
+            ? products.filter(p => p.is_featured) 
+            : products
+          ).slice(0, 4).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 4. TRENDING PRODUCTS (NEW SECTION) */}
+      {/* 4. TRENDING PRODUCTS */}
       <section className="py-24 bg-zinc-50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-4 mb-12">
@@ -144,7 +155,6 @@ export default function LensraHomepage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Spotlight Card */}
             <div className="lg:col-span-5">
               <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic leading-none mb-8">
                 Trending <br />On The <span className="text-red-600">Streets</span>
@@ -157,12 +167,13 @@ export default function LensraHomepage() {
               </Link>
             </div>
 
-            {/* Trending Grid */}
             <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-6">
-              {/* Filter products that are active and NOT already in the "Fresh Drops" to avoid repetition */}
-              {products.filter(p => p.is_trending).slice(0, 8).map((product) => (
+              {(products.filter(p => p.is_trending).length > 0 
+                ? products.filter(p => p.is_trending) 
+                : products
+              ).slice(0, 6).map((product) => (
                 <div key={product.id} className="relative group">
-                  <Link href={`/products/${product.id}`}>
+                  <Link href={`/products/${product.slug}`}>
                     <div className="aspect-[3/4] rounded-[32px] overflow-hidden bg-white mb-4 border border-zinc-100 group-hover:border-red-600 transition-colors">
                       {product.image ? (
                         <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -171,7 +182,9 @@ export default function LensraHomepage() {
                       )}
                     </div>
                     <h4 className="text-[11px] font-black uppercase italic tracking-tight truncate">{product.name}</h4>
-                    <p className="text-[10px] font-bold text-red-600 mt-1">₦{parseFloat(product.base_price).toLocaleString()}</p>
+                    <p className="text-[10px] font-bold text-red-600 mt-1">
+                      ₦{parseFloat(product.base_price || "0").toLocaleString()}
+                    </p>
                   </Link>
                 </div>
               ))}
@@ -228,7 +241,6 @@ export default function LensraHomepage() {
   );
 }
 
-// Reusable Components
 function SectionHeader({ title, subtitle }: { title: string, subtitle: string }) {
   return (
     <div className="mb-12 border-l-8 border-red-600 pl-8">
@@ -240,7 +252,7 @@ function SectionHeader({ title, subtitle }: { title: string, subtitle: string })
 
 function ProductCard({ product }: { product: Product }) {
   return (
-    <Link href={`/products/${product.id}`} className="group">
+    <Link href={`/products/${product.slug}`} className="group">
       <div className="relative aspect-[4/5] bg-zinc-100 rounded-[40px] overflow-hidden mb-6 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
@@ -256,7 +268,7 @@ function ProductCard({ product }: { product: Product }) {
       <div className="px-4">
         <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">{product.category}</p>
         <h3 className="font-black text-xl tracking-tight uppercase italic text-zinc-900 leading-tight mb-2 truncate">{product.name}</h3>
-        <p className="font-black text-sm text-zinc-400">₦{parseFloat(product.base_price).toLocaleString()}</p>
+        <p className="font-black text-sm text-zinc-400">₦{parseFloat(product.base_price || "0").toLocaleString()}</p>
       </div>
     </Link>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, ShoppingCart, User, Heart, Menu, X, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
@@ -9,6 +9,34 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+
+  // Local state for counts
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  // Sync counts from LocalStorage (or API if authenticated)
+  useEffect(() => {
+    const syncCounts = () => {
+      if (isAuthenticated) {
+        // Option A: Pull from your User Object/Context if you store counts there
+        // setCartCount(user?.cart_count || 0);
+        // setWishlistCount(user?.wishlist_count || 0);
+      } else {
+        // Option B: Pull from LocalStorage for Guests
+        const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const localWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        
+        setCartCount(localCart.length);
+        setWishlistCount(localWishlist.length);
+      }
+    };
+
+    syncCounts();
+
+    // Listen for storage changes (helpful if user adds to cart in another tab)
+    window.addEventListener('storage', syncCounts);
+    return () => window.removeEventListener('storage', syncCounts);
+  }, [isAuthenticated, user]);
 
   return (
     <>
@@ -70,12 +98,22 @@ export default function Navbar() {
               <div className="flex items-center border-l border-zinc-100 pl-4 md:pl-6">
                 <Link href="/wishlist" className="p-3 hover:text-red-600 transition relative group">
                   <Heart className="w-6 h-6 stroke-[2.5px]" />
-                  <span className="absolute top-2 right-2 bg-black text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">3</span>
+                  {/* WISHLIST BADGE - Only shows if > 0 */}
+                  {wishlistCount > 0 && (
+                    <span className="absolute top-2 right-2 bg-black text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border-2 border-white animate-in zoom-in duration-300">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Link>
 
                 <Link href="/cart" className="p-3 hover:text-red-600 transition relative">
                   <ShoppingCart className="w-6 h-6 stroke-[2.5px]" />
-                  <span className="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">2</span>
+                  {/* CART BADGE - Only shows if > 0 */}
+                  {cartCount > 0 && (
+                    <span className="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border-2 border-white animate-in zoom-in duration-300">
+                      {cartCount}
+                    </span>
+                  )}
                 </Link>
               </div>
 
@@ -149,16 +187,11 @@ export default function Navbar() {
   );
 }
 
-// Small UI Helpers
+// Sub-components...
 function NavItem({ href, label, hasDropdown = false, isHighlight = false }: { href: string, label: string, hasDropdown?: boolean, isHighlight?: boolean }) {
   return (
     <li>
-      <Link 
-        href={href} 
-        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${
-          isHighlight ? 'text-red-600 hover:text-red-700' : 'text-zinc-500 hover:text-black'
-        }`}
-      >
+      <Link href={href} className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${isHighlight ? 'text-red-600 hover:text-red-700' : 'text-zinc-500 hover:text-black'}`}>
         {label}
         {hasDropdown && <ChevronDown className="w-3 h-3 text-red-600" />}
       </Link>
@@ -168,11 +201,7 @@ function NavItem({ href, label, hasDropdown = false, isHighlight = false }: { hr
 
 function MobileLink({ href, label, onClick }: { href: string, label: string, onClick: () => void }) {
   return (
-    <Link 
-      href={href} 
-      onClick={onClick} 
-      className="text-4xl font-black uppercase italic tracking-tighter hover:text-red-600 transition"
-    >
+    <Link href={href} onClick={onClick} className="text-4xl font-black uppercase italic tracking-tighter hover:text-red-600 transition">
       {label}
     </Link>
   );

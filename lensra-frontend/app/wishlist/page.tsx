@@ -99,7 +99,7 @@ export default function LensraWishlist() {
                 <Share2 className="w-4 h-4" /> Share Collection
               </button>
               <button
-                onClick={() => router.push('/shop')}
+                onClick={() => router.push('/products')}
                 className="px-8 py-4 bg-red-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Add More

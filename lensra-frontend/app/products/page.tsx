@@ -12,6 +12,7 @@ const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/"
 interface Product {
   id: number;
   name: string;
+  slug: string;
   base_price: string;
   category_name: string; // Updated to match your Serializer source='category.name'
   image: string | null;
