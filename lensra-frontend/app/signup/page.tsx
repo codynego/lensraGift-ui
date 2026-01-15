@@ -27,11 +27,11 @@ export default function SignupPage() {
     setError(null);
 
     if (password !== passwordConfirm) {
-      setError({ password: ["Credentials mismatch: Passwords do not correlate."] });
+      setError({ password: ["Passwords do not match."] });
       return;
     }
     if (!agreeToTerms) {
-      setError({ non_field_errors: ["Policy acknowledgment required for initialization."] });
+      setError({ non_field_errors: ["Please agree to the terms to continue."] });
       return;
     }
 
@@ -47,7 +47,7 @@ export default function SignupPage() {
       });
       router.push('/dashboard'); 
     } catch (err: any) {
-      setError(err.response?.data || { non_field_errors: ["System error during initialization."] });
+      setError(err.response?.data || { non_field_errors: ["Something went wrong. Please try again."] });
     } finally {
       setIsLoading(false);
     }
@@ -63,10 +63,10 @@ export default function SignupPage() {
 
     const levels = [
       { strength: 0, text: '', color: 'bg-zinc-100' },
-      { strength: 1, text: 'VULNERABLE', color: 'bg-red-500' },
-      { strength: 2, text: 'BASIC', color: 'bg-orange-500' },
-      { strength: 3, text: 'SECURE', color: 'bg-zinc-900' },
-      { strength: 4, text: 'ENCRYPTED', color: 'bg-green-600' }
+      { strength: 1, text: 'WEAK', color: 'bg-red-500' },
+      { strength: 2, text: 'FAIR', color: 'bg-orange-500' },
+      { strength: 3, text: 'GOOD', color: 'bg-zinc-900' },
+      { strength: 4, text: 'STRONG', color: 'bg-green-600' }
     ];
     return levels[strength];
   };
@@ -82,26 +82,26 @@ export default function SignupPage() {
     <div className="min-h-screen bg-white text-zinc-900 selection:bg-red-600 selection:text-white">
       <div className="flex min-h-screen">
         
-        {/* LEFT SIDE: CREATOR BRANDING */}
-        <div className="hidden lg:flex lg:w-1/3 bg-zinc-900 text-white p-12 flex-col justify-between relative overflow-hidden border-r-[1px] border-zinc-800">
+        {/* LEFT SIDE: BRANDING */}
+        <div className="hidden lg:flex lg:w-1/3 bg-zinc-900 text-white p-12 flex-col justify-between relative overflow-hidden border-r border-zinc-800">
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '30px 30px' }} />
           
           <div className="relative z-10">
             <div className="flex items-center gap-2 text-red-600 mb-16">
               <Zap className="w-6 h-6 fill-current" />
-              <span className="font-bold uppercase tracking-[0.4em] text-[10px]">Lensra / Registry</span>
+              <span className="font-bold uppercase tracking-[0.4em] text-[10px]">Lensra Studio</span>
             </div>
             <h2 className="text-6xl font-bold uppercase tracking-tighter leading-[0.9] mb-8">
-              Initialize <br /> <span className="text-zinc-500">Creator</span><span className="text-red-600">.</span>
+              Join the <br /> <span className="text-zinc-500">Studio</span><span className="text-red-600">.</span>
             </h2>
             <p className="max-w-xs text-zinc-400 font-bold uppercase tracking-widest text-[9px] leading-relaxed border-l-2 border-red-600 pl-6">
-              Join the elite archive. Access cloud-based design suites and global distribution networks.
+              Create an account to start designing. Access professional tools and ship your products worldwide.
             </p>
           </div>
 
           <div className="relative z-10 space-y-6">
-            {['Cloud Design Archive', 'Real-time Telemetry', 'Production Pipeline'].map((feature) => (
+            {['Saved Designs', 'Track Orders', 'Business Tools'].map((feature) => (
               <div key={feature} className="flex items-center gap-4 group">
                 <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-500 group-hover:text-white transition-colors">{feature}</span>
@@ -110,12 +110,12 @@ export default function SignupPage() {
           </div>
         </div>
 
-        {/* RIGHT SIDE: REGISTRATION INTERFACE */}
+        {/* RIGHT SIDE: SIGNUP FORM */}
         <div className="w-full lg:w-2/3 flex items-center justify-center p-8 md:p-16 bg-white overflow-y-auto">
           <div className="w-full max-w-2xl">
             <div className="mb-12">
-              <h1 className="text-2xl font-bold uppercase tracking-tight text-zinc-900">Creator Registration</h1>
-              <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-1">Personnel Onboarding Protocol</p>
+              <h1 className="text-2xl font-bold uppercase tracking-tight text-zinc-900">Create Account</h1>
+              <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-1">Join our community today</p>
             </div>
 
             {error?.non_field_errors && (
@@ -128,7 +128,7 @@ export default function SignupPage() {
               {/* Name Row */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Legal First Name</label>
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">First Name</label>
                   <div className="relative group">
                     <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
                     <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase" placeholder="First Name" required />
@@ -136,7 +136,7 @@ export default function SignupPage() {
                   {renderError('first_name')}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Legal Last Name</label>
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Last Name</label>
                   <div className="relative group">
                     <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
                     <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase" placeholder="Last Name" required />
@@ -148,15 +148,15 @@ export default function SignupPage() {
               {/* Contact Row */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Communication Email</label>
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Email Address</label>
                   <div className="relative group">
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase" placeholder="email@lensra.com" required />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase" placeholder="name@email.com" required />
                   </div>
                   {renderError('email')}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Phone Protocol</label>
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Phone Number</label>
                   <div className="relative group">
                     <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
                     <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm" placeholder="+234 ..." required />
@@ -168,7 +168,7 @@ export default function SignupPage() {
               {/* Security Row */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Encryption Key</label>
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Password</label>
                   <div className="relative group">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
                     <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-14 pr-14 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm" placeholder="••••••••" required />
@@ -183,7 +183,7 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Confirm Key</label>
+                  <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Confirm Password</label>
                   <div className="relative group">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
                     <input type={showPasswordConfirm ? 'text' : 'password'} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} className={`w-full pl-14 pr-14 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm ${passwordConfirm && (password === passwordConfirm ? 'border-green-500/30' : 'border-red-500/30')}`} placeholder="••••••••" required />
@@ -200,7 +200,7 @@ export default function SignupPage() {
                     <CheckCircle className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
                   </div>
                   <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-900 transition leading-relaxed">
-                    I acknowledge the Lensra Studio <a href="#" className="text-red-600 hover:underline">Terms of Protocol</a> and <a href="#" className="text-red-600 hover:underline">Privacy Policy</a>
+                    I agree to the Lensra Studio <a href="#" className="text-red-600 hover:underline">Terms</a> and <a href="#" className="text-red-600 hover:underline">Privacy Policy</a>
                   </span>
                 </label>
               </div>
@@ -215,7 +215,7 @@ export default function SignupPage() {
                 ) : (
                   <>
                     <UserPlus className="w-3.5 h-3.5" />
-                    Initialize Account
+                    Create My Account
                   </>
                 )}
               </button>
@@ -223,12 +223,20 @@ export default function SignupPage() {
 
             <div className="mt-12 text-center border-t border-zinc-50 pt-10">
               <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                Authorized personnel? <a href="/login" className="text-red-600 hover:underline inline-flex items-center gap-1">Access Vault <ChevronRight className="w-3 h-3" /></a>
+                Already have an account? <a href="/login" className="text-red-600 hover:underline inline-flex items-center gap-1">Log In Here <ChevronRight className="w-3 h-3" /></a>
               </p>
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function Check(props: any) {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4} {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
   );
 }

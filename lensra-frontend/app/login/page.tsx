@@ -24,7 +24,7 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/dashboard'); 
     } catch (err: any) {
-      const msg = err.response?.data?.detail || err.response?.data?.error || 'ACCESS DENIED. VERIFY CREDENTIALS.';
+      const msg = err.response?.data?.detail || err.response?.data?.error || 'Login failed. Please check your email and password.';
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -35,45 +35,41 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white text-zinc-900 selection:bg-red-600 selection:text-white">
       <div className="flex min-h-screen">
         
-        {/* LEFT SIDE: COMMAND CENTER BRANDING */}
-        <div className="hidden lg:flex lg:w-1/2 bg-zinc-900 text-white p-16 flex-col justify-between relative overflow-hidden border-r-[1px] border-zinc-800">
-          {/* Subtle Grid Overlay */}
+        {/* LEFT SIDE: BRANDING */}
+        <div className="hidden lg:flex lg:w-1/2 bg-zinc-900 text-white p-16 flex-col justify-between relative overflow-hidden border-r border-zinc-800">
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           
           <div className="relative z-10">
             <div className="flex items-center gap-2 text-red-600 mb-16">
               <Zap className="w-6 h-6 fill-current" />
-              <span className="font-bold uppercase tracking-[0.4em] text-[10px]">Lensra Studio / Auth</span>
+              <span className="font-bold uppercase tracking-[0.4em] text-[10px]">Lensra Studio</span>
             </div>
             
             <h2 className="text-6xl xl:text-7xl font-bold uppercase tracking-tighter leading-[0.9] mb-8">
-              Terminal <br /> <span className="text-zinc-500">Access</span><span className="text-red-600">.</span>
+              Welcome <br /> <span className="text-zinc-500">Back</span><span className="text-red-600">.</span>
             </h2>
             
             <p className="max-w-sm text-zinc-400 font-bold uppercase tracking-widest text-[10px] leading-relaxed border-l-2 border-red-600 pl-6">
-              Authorize your session to manage active production pipelines and access the private asset archive.
+              Log in to manage your designs, track your orders, and access your saved templates.
             </p>
           </div>
 
-          <div className="relative z-10 space-y-12">
-            <div className="grid grid-cols-2 gap-12 border-t border-zinc-800 pt-10">
-              <div>
-                <div className="text-white font-bold text-lg mb-1 uppercase tracking-tighter">Encrypted</div>
-                <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-[0.2em]">AES-256 Standard</div>
-              </div>
-              <div>
-                <div className="text-red-600 font-bold text-lg mb-1 uppercase tracking-tighter">Synced</div>
-                <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-[0.2em]">Global Database</div>
-              </div>
+          <div className="relative z-10 grid grid-cols-2 gap-12 border-t border-zinc-800 pt-10">
+            <div>
+              <div className="text-white font-bold text-lg mb-1 uppercase tracking-tighter">Secure</div>
+              <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-[0.2em]">Safe & Protected</div>
+            </div>
+            <div>
+              <div className="text-red-600 font-bold text-lg mb-1 uppercase tracking-tighter">Fast</div>
+              <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-[0.2em]">Instant Access</div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT SIDE: AUTHENTICATION INTERFACE */}
+        {/* RIGHT SIDE: LOGIN FORM */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 bg-white">
           <div className="w-full max-w-md">
-            {/* Mobile Branding */}
             <div className="mb-12 lg:hidden">
                 <div className="flex items-center gap-2 text-red-600">
                   <Zap className="w-6 h-6 fill-current" />
@@ -82,11 +78,11 @@ export default function LoginPage() {
             </div>
 
             <div className="mb-10">
-              <h2 className="text-2xl font-bold uppercase tracking-tight text-zinc-900">Identity Verification</h2>
-              <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-1">Personnel Login Required</p>
+              <h2 className="text-2xl font-bold uppercase tracking-tight text-zinc-900">Log In</h2>
+              <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-1">Please enter your details</p>
             </div>
 
-            {/* Social Auth Terminal */}
+            {/* Social Login */}
             <div className="grid grid-cols-3 gap-3 mb-10">
               {[
                 { name: 'Google', icon: <Chrome className="w-4 h-4" /> },
@@ -107,7 +103,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-zinc-100"></div>
               </div>
               <div className="relative flex justify-center text-[9px] font-bold uppercase tracking-[0.3em]">
-                <span className="bg-white px-4 text-zinc-300">Internal Credentials</span>
+                <span className="bg-white px-4 text-zinc-300">Or use your email</span>
               </div>
             </div>
 
@@ -119,7 +115,7 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Operator Email</label>
+                <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Email Address</label>
                 <div className="relative group">
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
                   <input
@@ -127,14 +123,14 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-14 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:border-red-600/30 focus:outline-none transition-all font-bold text-sm uppercase placeholder:text-zinc-200"
-                    placeholder="email@lensra.com"
+                    placeholder="name@email.com"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Security Key</label>
+                <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300 group-focus-within:text-red-600 transition-colors" />
                   <input
@@ -166,10 +162,10 @@ export default function LoginPage() {
                     />
                     <Check className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-900 transition">Persistent Session</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-900 transition">Keep me logged in</span>
                 </label>
                 <a href="/forgot-password" className="text-[9px] font-bold uppercase tracking-widest text-red-600 hover:underline">
-                  Key Recovery
+                  Forgot Password?
                 </a>
               </div>
 
@@ -183,7 +179,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     <LogIn className="w-3.5 h-3.5" />
-                    Authorize Access
+                    Log In Now
                   </>
                 )}
               </button>
@@ -191,26 +187,19 @@ export default function LoginPage() {
 
             <div className="mt-12 text-center">
               <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                New to the Studio?{' '}
+                Don't have an account?{' '}
                 <a href="/signup" className="text-red-600 hover:underline inline-flex items-center gap-1">
-                  Create Account <ChevronRight className="w-3 h-3" />
+                  Sign Up <ChevronRight className="w-3 h-3" />
                 </a>
               </p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* FOOTER SECURITY BADGE */}
-      <div className="fixed bottom-8 left-8 hidden lg:flex items-center gap-2 text-zinc-600">
-        <ShieldCheck className="w-4 h-4 text-red-600" />
-        <span className="text-[8px] font-bold uppercase tracking-[0.3em]">System Status: Secured Session</span>
-      </div>
     </div>
   );
 }
 
-// Simple internal component for the checkbox checkmark
 function Check(props: any) {
   return (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4} {...props}>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { 
   Building2, Users, Package, TrendingUp, CheckCircle, 
   Truck, Headphones, Mail, Phone, MapPin, Star, 
-  ArrowRight, Zap, Briefcase, Globe, ShieldCheck 
+  ArrowRight, Zap, Briefcase, Globe, ShieldCheck, X 
 } from 'lucide-react';
 
 export default function LensraBusinessPage() {
@@ -21,7 +21,7 @@ export default function LensraBusinessPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Strategic partnership request received. Our corporate lead will contact you within 24 hours.');
+    alert('Thank you. Our business team will contact you within 24 hours.');
     setFormData({ companyName: '', contactName: '', email: '', phone: '', productType: '', quantity: '', budget: '', deadline: '', message: '' });
   };
 
@@ -30,64 +30,60 @@ export default function LensraBusinessPage() {
   };
 
   const benefits = [
-    { icon: <Package />, title: 'Volume Logistics', desc: 'Enterprise-grade savings up to 40% on bulk procurement.' },
-    { icon: <Users />, title: 'Identity Strategy', desc: 'Direct access to a dedicated brand design consultant.' },
-    { icon: <TrendingUp />, title: 'Brand Fidelity', desc: 'Precision-matched identity with total pantone accuracy.' },
-    { icon: <Zap />, title: 'Priority Slotting', desc: 'Accelerated production for time-critical corporate deployments.' },
-    { icon: <ShieldCheck />, title: 'Quality Protocol', desc: 'Multi-stage biometric QA for every single unit produced.' },
-    { icon: <Briefcase />, title: 'White Label', desc: 'Stealth shipping protocols for agency and resale partners.' }
+    { icon: <Package />, title: 'Bulk Savings', desc: 'Save up to 40% when you order in larger quantities.' },
+    { icon: <Users />, title: 'Design Support', desc: 'Work directly with our experts to perfect your brand look.' },
+    { icon: <TrendingUp />, title: 'Exact Colors', desc: 'We match your brand colors perfectly every single time.' },
+    { icon: <Zap />, title: 'Fast Tracking', desc: 'Your business orders move to the front of our production line.' },
+    { icon: <ShieldCheck />, title: 'Quality Check', desc: 'Every item is hand-inspected before it leaves our lab.' },
+    { icon: <Briefcase />, title: 'Reseller Ready', desc: 'We can ship directly to your clients with your branding.' }
   ];
 
   const pricingTiers = [
-    { range: '50-99 units', discount: '15%', label: 'TIER I', feature: 'Standard Support' },
-    { range: '100-249 units', discount: '25%', label: 'TIER II', feature: 'Priority Shipping' },
-    { range: '250-499 units', discount: '35%', label: 'PRO', feature: 'Custom Labelling' },
-    { range: '500+ units', discount: '40%', label: 'ENTERPRISE', feature: 'Dedicated Account Lead' }
+    { range: '50-99 units', discount: '15%', label: 'Tier 1' },
+    { range: '100-249 units', discount: '25%', label: 'Tier 2' },
+    { range: '250-499 units', discount: '35%', label: 'Pro' },
+    { range: '500+ units', discount: '40%', label: 'Enterprise' }
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-red-600">
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-red-600 overflow-x-hidden">
       
-      {/* 1. ARCHIVE HEADER: IMPACT SECTION */}
-      <section className="relative pt-40 pb-32 px-6 lg:px-12 overflow-hidden border-b-[1px] border-zinc-900">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-red-600/10 blur-[150px] -z-10 animate-pulse" />
-        <div className="max-w-[1600px] mx-auto">
-          <div className="grid lg:grid-cols-12 gap-20 items-center">
-            <div className="lg:col-span-7 space-y-10">
-              <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase tracking-[0.5em] text-red-600">
-                <Building2 className="w-3.5 h-3.5" />
-                Enterprise Operations
+      {/* 1. HERO SECTION */}
+      <section className="relative pt-32 pb-20 px-6 lg:px-12 border-b border-zinc-900">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-red-600/5 blur-[120px] -z-10" />
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-bold uppercase tracking-widest text-red-500">
+                <Building2 className="w-3 h-3" />
+                For Teams & Organizations
               </div>
-              <h1 className="text-7xl md:text-[10rem] font-black leading-[0.8] tracking-tighter uppercase italic">
-                Scale Your <br /> <span className="text-red-600">Identity.</span>
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tighter uppercase italic">
+                Grow Your <br /> <span className="text-red-600">Brand Image.</span>
               </h1>
-              <p className="text-xl text-zinc-400 font-bold max-w-xl leading-relaxed uppercase tracking-tight">
-                High-volume customization for elite teams. We transform corporate identity into physical benchmarks.
+              <p className="text-lg text-zinc-400 font-medium max-w-lg leading-relaxed">
+                High-quality custom products for elite teams. We help you turn your company logo into premium physical gear.
               </p>
-              <div className="flex flex-wrap gap-6 pt-6">
+              <div className="flex flex-wrap gap-4 pt-4">
                 <button 
-                  onClick={() => document.getElementById('strategic-brief')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-12 py-6 bg-red-600 text-white rounded-[24px] font-black uppercase text-xs tracking-[0.3em] hover:bg-white hover:text-black transition-all flex items-center gap-4 group shadow-2xl shadow-red-600/20"
+                  onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-10 py-5 bg-red-600 text-white rounded-2xl font-bold uppercase text-xs tracking-widest hover:bg-white hover:text-black transition-all flex items-center gap-3 group"
                 >
-                  Initiate Brief <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-                </button>
-                <button className="px-12 py-6 bg-zinc-900 border border-zinc-800 text-white rounded-[24px] font-black uppercase text-xs tracking-[0.3em] hover:bg-zinc-800 transition">
-                  System Catalog
+                  Start an Order <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
 
-            {/* Metrics Dashboard */}
-            <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {[
-                { label: 'Network Partners', val: '10K+' },
-                { label: 'Assets Deployed', val: '500K+' },
-                { label: 'Uptime Protocol', val: '99.9%' },
-                { label: 'Sync Time', val: '<24H' }
+                { label: 'Partners', val: '10K+' },
+                { label: 'Items Made', val: '500K+' },
+                { label: 'Reliability', val: '99.9%' },
+                { label: 'Support', val: '24/7' }
               ].map((stat, i) => (
-                <div key={i} className="p-10 rounded-[40px] bg-zinc-900/50 border border-zinc-800 hover:border-red-600/40 transition-colors group">
-                  <div className="text-5xl font-black tracking-tighter mb-2 italic group-hover:text-red-500 transition-colors">{stat.val}</div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic">{stat.label}</div>
+                <div key={i} className="p-8 rounded-[32px] bg-zinc-900/40 border border-zinc-800 transition-colors">
+                  <div className="text-4xl font-black mb-1 italic text-white">{stat.val}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -95,49 +91,43 @@ export default function LensraBusinessPage() {
         </div>
       </section>
 
-      {/* 2. CORE PROTOCOLS (BENEFITS) */}
-      <section className="py-32 bg-white text-zinc-950">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-          <div className="mb-20">
-            <span className="text-red-600 font-black text-[10px] uppercase tracking-[0.6em] mb-4 block italic">Process 01.</span>
-            <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8]">
-              Volume <br /> <span className="text-zinc-400">Engineering.</span>
+      {/* 2. BENEFITS */}
+      <section className="py-24 bg-white text-zinc-950">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-16">
+            <span className="text-red-600 font-bold text-[10px] uppercase tracking-widest mb-2 block">Our Services</span>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
+              Built for <span className="text-zinc-400">Scale.</span>
             </h2>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-200 border border-zinc-200 overflow-hidden rounded-[40px]">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((benefit, idx) => (
-              <div key={idx} className="bg-white p-16 hover:bg-zinc-50 transition-all group relative">
-                <div className="text-zinc-950 mb-10 group-hover:text-red-600 transition-colors">
+              <div key={idx} className="bg-zinc-50 p-10 rounded-[32px] border border-zinc-100 hover:shadow-xl transition-all group">
+                <div className="text-red-600 mb-6 group-hover:scale-110 transition-transform">
                   {cloneIcon(benefit.icon)}
                 </div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter mb-4 italic italic">{benefit.title}</h3>
-                <p className="text-sm text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">{benefit.desc}</p>
-                <div className="absolute top-8 right-8 text-[10px] font-black text-zinc-200 uppercase tracking-widest">
-                  MOD_0{idx + 1}
-                </div>
+                <h3 className="text-xl font-black uppercase tracking-tighter mb-3 italic">{benefit.title}</h3>
+                <p className="text-sm text-zinc-500 font-medium leading-relaxed">{benefit.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 3. DISCOUNT MATRIX (TIERS) */}
-      <section className="py-32 bg-zinc-950 border-t border-zinc-900">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-          <div className="grid md:grid-cols-4 gap-6">
+      {/* 3. PRICING TIERS */}
+      <section className="py-24 bg-zinc-950">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {pricingTiers.map((tier, idx) => (
-              <div key={idx} className="group relative p-12 rounded-[48px] border-2 border-zinc-900 bg-zinc-900/20 hover:border-red-600 hover:bg-zinc-900 transition-all duration-500">
-                <div className="text-[10px] font-black tracking-[0.5em] text-red-600 mb-8 uppercase">{tier.label}</div>
-                <div className="text-7xl font-black tracking-tighter mb-4 italic">{tier.discount}</div>
-                <div className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-10 italic">Tier Rebate</div>
-                <div className="space-y-4 pt-8 border-t border-zinc-800">
-                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest">
-                      <CheckCircle className="w-3 h-3 text-red-600" /> {tier.range}
-                   </div>
-                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                      <CheckCircle className="w-3 h-3 text-zinc-700" /> {tier.feature}
-                   </div>
+              <div key={idx} className="p-10 rounded-[32px] border border-zinc-900 bg-zinc-900/30 hover:border-red-600 transition-all">
+                <div className="text-[10px] font-bold tracking-widest text-red-500 mb-6 uppercase">{tier.label}</div>
+                <div className="text-6xl font-black tracking-tighter mb-2 italic">{tier.discount}</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-8 italic">Off Total Order</div>
+                <div className="pt-6 border-t border-zinc-800">
+                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase">
+                    <CheckCircle className="w-3 h-3 text-red-600" /> {tier.range}
+                  </div>
                 </div>
               </div>
             ))}
@@ -145,82 +135,81 @@ export default function LensraBusinessPage() {
         </div>
       </section>
 
-      {/* 4. STRATEGIC BRIEF (FORM) */}
-      <section id="strategic-brief" className="py-40 relative">
-        <div className="absolute inset-0 bg-red-600 -z-10 translate-y-1/2 opacity-10 blur-[120px]" />
-        <div className="max-w-5xl mx-auto px-6 lg:px-12">
-          <div className="text-center mb-20 space-y-6">
-            <h2 className="text-7xl md:text-9xl font-black tracking-tighter uppercase italic text-white leading-[0.8]">Brief <br /> <span className="text-red-600">Operations.</span></h2>
-            <p className="text-zinc-500 font-black uppercase text-[10px] tracking-[0.4em]">Response Window: 24-Hour Cycle</p>
+      {/* 4. FORM */}
+      <section id="contact-form" className="py-24 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-5xl font-black tracking-tighter uppercase italic mb-4">Get a Quote</h2>
+            <p className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest">We respond to all inquiries within 24 hours</p>
           </div>
           
-          <div className="bg-zinc-900 p-10 lg:p-20 rounded-[60px] border border-zinc-800 shadow-3xl">
-            <form onSubmit={handleSubmit} className="space-y-12">
-              <div className="grid md:grid-cols-2 gap-12">
-                <FormInput label="Corporation" name="companyName" value={formData.companyName} onChange={handleChange} placeholder="LENSRA GMBH" />
-                <FormInput label="Officer" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="KLEIN SMITH" />
+          <div className="bg-zinc-900 p-8 md:p-12 rounded-[40px] border border-zinc-800">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormInput label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Lensra Ltd" />
+                <FormInput label="Your Name" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="John Doe" />
               </div>
-              <div className="grid md:grid-cols-2 gap-12">
-                <FormInput label="Network Email" name="email" value={formData.email} onChange={handleChange} placeholder="K.SMITH@BRAND.COM" type="email" />
-                <FormInput label="Direct Line" name="phone" value={formData.phone} onChange={handleChange} placeholder="+234..." />
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} placeholder="john@company.com" type="email" />
+                <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="+234..." />
               </div>
-              <div className="grid md:grid-cols-2 gap-12">
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">Mission Objective</label>
-                  <select name="productType" className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[20px] px-8 py-6 outline-none focus:border-red-600 transition uppercase text-xs font-black tracking-[0.2em] text-white appearance-none">
-                    <option value="">Select Protocol</option>
-                    <option value="apparel">Bulk Apparel Deployment</option>
-                    <option value="events">Strategic Event Assets</option>
-                    <option value="branding">Full Ecosystem Identity</option>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">What do you need?</label>
+                  <select name="productType" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-6 py-4 outline-none focus:border-red-600 transition text-xs font-bold text-white appearance-none">
+                    <option value="">Select Service</option>
+                    <option value="apparel">Bulk Apparel</option>
+                    <option value="events">Event Merchandise</option>
+                    <option value="branding">Full Brand Kit</option>
                   </select>
                 </div>
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">Deployment Scale</label>
-                  <select name="quantity" className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[20px] px-8 py-6 outline-none focus:border-red-600 transition uppercase text-xs font-black tracking-[0.2em] text-white appearance-none">
-                    <option value="">Asset Count</option>
-                    <option value="50">50-100 Units</option>
-                    <option value="500">500+ Units</option>
-                    <option value="1000">1000+ (Enterprise Level)</option>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Estimated Quantity</label>
+                  <select name="quantity" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-6 py-4 outline-none focus:border-red-600 transition text-xs font-bold text-white appearance-none">
+                    <option value="">Select Amount</option>
+                    <option value="50">50-100 items</option>
+                    <option value="500">100-500 items</option>
+                    <option value="1000">500+ items</option>
                   </select>
                 </div>
               </div>
-              <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">The Mission Brief</label>
-                  <textarea name="message" rows={5} className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[32px] px-8 py-8 outline-none focus:border-red-600 transition text-[13px] font-bold uppercase tracking-tight placeholder:text-zinc-800" placeholder="DESCRIBE YOUR VISION IN DETAIL..." />
+              <div className="space-y-3">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Additional Details</label>
+                  <textarea name="message" rows={4} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-6 py-5 outline-none focus:border-red-600 transition text-sm font-medium" placeholder="Tell us more about your project..." />
               </div>
-              <button type="submit" className="w-full py-8 bg-red-600 hover:bg-white hover:text-black text-white rounded-[32px] font-black uppercase tracking-[0.4em] text-xs transition-all transform active:scale-[0.98] shadow-2xl shadow-red-600/20">
-                Transmit Strategic Briefing
+              <button type="submit" className="w-full py-6 bg-red-600 hover:bg-white hover:text-black text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-600/10">
+                Send Request
               </button>
             </form>
           </div>
         </div>
       </section>
 
-      {/* 5. LOGISTICS FOOTER */}
-      <section className="py-24 border-t border-zinc-900 bg-black">
-        <div className="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-16">
-            <ContactBlock icon={<Mail className="w-6 h-6" />} title="Secure Email" val="operations@lensra.com" />
-            <ContactBlock icon={<Phone className="w-6 h-6" />} title="Priority Line" val="+234 812 000 0000" />
-            <ContactBlock icon={<MapPin className="w-6 h-6" />} title="Main Lab" val="Lagos, Nigeria" />
-            <ContactBlock icon={<Globe className="w-6 h-6" />} title="Logistics" val="Global Deployment" />
+      {/* 5. FOOTER */}
+      <footer className="py-16 border-t border-zinc-900 bg-black px-6">
+        <div className="max-w-7xl mx-auto flex flex-wrap justify-between gap-10">
+            <ContactBlock icon={<Mail className="w-5 h-5" />} title="Email" val="hello@lensra.com" />
+            <ContactBlock icon={<Phone className="w-5 h-5" />} title="Call Us" val="+234 800 000 0000" />
+            <ContactBlock icon={<MapPin className="w-5 h-5" />} title="Location" val="Lagos, Nigeria" />
+            <ContactBlock icon={<Globe className="w-5 h-5" />} title="Shipping" val="Worldwide" />
         </div>
-      </section>
+      </footer>
     </div>
   );
 }
 
-// Sub-components
+// Helpers
 function cloneIcon(icon: any) {
-    return <icon.type {...icon.props} className="w-12 h-12" strokeWidth={1.5} />;
+    return <icon.type {...icon.props} className="w-10 h-10" strokeWidth={2} />;
 }
 
 function FormInput({ label, ...props }: any) {
   return (
-    <div className="space-y-4">
-      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-2">{label}</label>
+    <div className="space-y-3">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">{label}</label>
       <input 
         {...props} 
-        className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-[20px] px-8 py-6 outline-none focus:border-red-600 transition text-xs font-black uppercase tracking-[0.2em] placeholder:text-zinc-800"
+        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-6 py-4 outline-none focus:border-red-600 transition text-xs font-bold placeholder:text-zinc-700"
       />
     </div>
   );
@@ -228,13 +217,13 @@ function FormInput({ label, ...props }: any) {
 
 function ContactBlock({ icon, title, val }: any) {
     return (
-        <div className="flex items-center gap-6 group cursor-pointer">
-            <div className="w-16 h-16 rounded-[24px] bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-500">
+        <div className="flex items-center gap-4 group">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center text-red-500 border border-zinc-800">
                 {icon}
             </div>
             <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-1 italic">{title}</p>
-                <p className="text-lg font-black tracking-tighter uppercase italic">{val}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">{title}</p>
+                <p className="text-sm font-black uppercase italic">{val}</p>
             </div>
         </div>
     );
