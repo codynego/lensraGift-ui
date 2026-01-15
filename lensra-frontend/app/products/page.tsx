@@ -9,12 +9,13 @@ import {
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
 
+// Define the shape of your product for TypeScript
 interface Product {
   id: number;
   name: string;
   slug: string;
   base_price: string;
-  category_name: string; // Updated to match your Serializer source='category.name'
+  category_name: string;
   image: string | null;
   is_active: boolean;
 }
@@ -29,68 +30,58 @@ export default function ProductsPage() {
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const [totalProductsCount, setTotalProductsCount] = useState(0);
+  const itemsPerPage = 6; 
 
   const sidebarCategories = ["All Products", "Apparel", "Drinkware", "Home Decor", "Accessories", "Stationery"];
+  
   const priceRanges = [
     { label: "Any Price", value: "all" },
-    { label: "Under ₦3,000", value: "under-3k" },
-    { label: "₦3,000 - ₦5,000", value: "3k-5k" },
-    { label: "Over ₦5,000", value: "over-5k" },
+    { label: "Under ₦3,000", value: "under-3k", min: 0, max: 2999 },
+    { label: "₦3,000 - ₦5,000", value: "3k-5k", min: 3000, max: 5000 },
+    { label: "Over ₦5,000", value: "over-5k", min: 5001, max: 1000000 },
   ];
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${BaseUrl}api/products/`);
+        const params = new URLSearchParams();
+        
+        if (searchQuery) params.append('search', searchQuery);
+        if (selectedCategory !== 'All Products') {
+          params.append('category__name', selectedCategory);
+        }
+        params.append('page', currentPage.toString());
+
+        const response = await fetch(`${BaseUrl}api/products/?${params.toString()}`);
         const data = await response.json();
         
-        // FIX: Handle the "results" key from paginated DRF response
-        const rawResults = data.results || (Array.isArray(data) ? data : []);
-        
-        // Filter for active products only
-        const activeProducts = rawResults.filter((p: Product) => p.is_active !== false);
-        setProducts(activeProducts);
+        // Handle paginated vs non-paginated data safely
+        setProducts(data.results || (Array.isArray(data) ? data : []));
+        setTotalProductsCount(data.count || 0);
       } catch (err) { 
         console.error("Fetch Error:", err); 
       } finally { 
         setLoading(false); 
       }
     };
-    fetchProducts();
-  }, []);
 
-  // Filter Logic
-  const filteredProducts = useMemo(() => {
-    let result = products;
+    const timer = setTimeout(() => fetchProducts(), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedCategory, currentPage]);
 
-    if (searchQuery) {
-      result = result.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }
-    if (selectedCategory !== 'All Products') {
-      // Checking category_name from serializer
-      result = result.filter(p => p.category_name?.toLowerCase() === selectedCategory.toLowerCase());
-    }
-    if (selectedPriceRange !== 'all') {
-      result = result.filter(p => {
-        const price = parseFloat(p.base_price);
-        if (selectedPriceRange === 'under-3k') return price < 3000;
-        if (selectedPriceRange === '3k-5k') return price >= 3000 && price <= 5000;
-        if (selectedPriceRange === 'over-5k') return price > 5000;
-        return true;
-      });
-    }
-    return result;
-  }, [products, searchQuery, selectedCategory, selectedPriceRange]);
+  const finalDisplayItems = useMemo(() => {
+    if (selectedPriceRange === 'all') return products;
+    
+    const range = priceRanges.find(r => r.value === selectedPriceRange);
+    return products.filter((p: Product) => {
+      const price = parseFloat(p.base_price);
+      return range ? (price >= (range.min ?? 0) && price <= (range.max ?? Infinity)) : true;
+    });
+  }, [products, selectedPriceRange]);
 
-  // Pagination Logic
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const currentItems = useMemo(() => {
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    return filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
-  }, [filteredProducts, currentPage]);
+  const totalPages = Math.ceil(totalProductsCount / itemsPerPage);
 
   useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedPriceRange]);
 
@@ -125,6 +116,62 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      {/* MOBILE FILTERS DRAWER */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-50 bg-black/50 lg:hidden" onClick={() => setShowMobileFilters(false)}>
+          <div 
+            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 space-y-8 max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300">Filters</h3>
+              <button onClick={() => setShowMobileFilters(false)} className="p-2">
+                <X className="w-5 h-5 text-zinc-600" />
+              </button>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Categories</h4>
+              <div className="space-y-2">
+                {sidebarCategories.map((cat) => (
+                  <button 
+                    key={cat} 
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setShowMobileFilters(false);
+                    }} 
+                    className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${selectedCategory === cat ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'}`}
+                  >
+                    {cat} <ChevronRight className="w-3 h-3" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-zinc-100">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Price Range</h4>
+              <div className="space-y-4">
+                {priceRanges.map((range) => (
+                  <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio" 
+                      name="price-mobile" 
+                      checked={selectedPriceRange === range.value} 
+                      onChange={() => {
+                        setSelectedPriceRange(range.value);
+                        setShowMobileFilters(false);
+                      }} 
+                      className="w-4 h-4 accent-red-600" 
+                    />
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{range.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-10">
         <div className="flex flex-col lg:flex-row gap-16">
           
@@ -150,7 +197,13 @@ export default function ProductsPage() {
               <div className="space-y-4">
                 {priceRanges.map((range) => (
                   <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
-                    <input type="radio" name="price" checked={selectedPriceRange === range.value} onChange={() => setSelectedPriceRange(range.value)} className="w-4 h-4 accent-red-600" />
+                    <input 
+                      type="radio" 
+                      name="price" 
+                      checked={selectedPriceRange === range.value} 
+                      onChange={() => setSelectedPriceRange(range.value)} 
+                      className="w-4 h-4 accent-red-600" 
+                    />
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{range.label}</span>
                   </label>
                 ))}
@@ -158,7 +211,7 @@ export default function ProductsPage() {
             </div>
           </aside>
 
-          {/* MAIN GRID */}
+          {/* MAIN CONTENT */}
           <div className="flex-1">
             <div className="hidden lg:flex items-center justify-between mb-12 border-b border-zinc-100 pb-10">
               <div className="relative w-full max-w-md">
@@ -171,7 +224,7 @@ export default function ProductsPage() {
                   className="w-full bg-transparent border-none pl-8 text-[11px] font-black uppercase tracking-widest focus:ring-0"
                 />
               </div>
-              <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{filteredProducts.length} Products</p>
+              <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{totalProductsCount} Products Total</p>
             </div>
 
             {loading ? (
@@ -181,25 +234,25 @@ export default function ProductsPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-12 lg:gap-x-10 lg:gap-y-20">
-                  {currentItems.map((product) => (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 lg:gap-x-6 lg:gap-y-12">
+                  {finalDisplayItems.map((product: Product) => (
                     <div key={product.id} className="group flex flex-col">
-                      <Link href={`/products/${product.slug}`} className="relative aspect-[4/5] bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100">
+                      <Link href={`/products/${product.slug}`} className="relative aspect-square bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100 group-hover:shadow-xl transition-shadow duration-300">
                         {product.image ? (
                           <img src={product.image} alt={product.name} className="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center uppercase font-black text-[8px] text-zinc-300 italic">No Preview</div>
                         )}
                         <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="bg-white text-zinc-900 px-6 py-3 rounded-2xl text-[8px] font-black uppercase tracking-widest flex items-center gap-2">Customize <ArrowUpRight className="w-3 h-3" /></div>
+                          <div className="bg-white text-zinc-900 px-6 py-3 rounded-2xl text-[8px] font-black uppercase tracking-widest flex items-center gap-2">View Details <ArrowUpRight className="w-3 h-3" /></div>
                         </div>
                       </Link>
-                      <div className="mt-6 space-y-2">
+                      <div className="mt-4 space-y-1">
                         <div className="flex justify-between items-start gap-2">
-                          <h3 className="text-sm lg:text-lg font-black uppercase tracking-tight italic text-zinc-900 leading-tight">{product.name}</h3>
-                          <p className="text-sm lg:text-lg font-black text-red-600 italic">₦{parseFloat(product.base_price).toLocaleString()}</p>
+                          <h3 className="text-base lg:text-xl font-black uppercase tracking-tight italic text-zinc-900 leading-tight">{product.name}</h3>
+                          <p className="text-base lg:text-xl font-black text-red-600 italic">₦{parseFloat(product.base_price).toLocaleString()}</p>
                         </div>
-                        <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 bg-zinc-50 px-2 py-1 rounded inline-block">{product.category_name}</span>
+                        <span className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-zinc-400 bg-zinc-50 px-2 py-1 rounded inline-block">{product.category_name}</span>
                       </div>
                     </div>
                   ))}
@@ -207,7 +260,7 @@ export default function ProductsPage() {
 
                 {/* PAGINATION */}
                 {totalPages > 1 && (
-                  <div className="mt-20 flex items-center justify-center gap-4 border-t border-zinc-100 pt-10">
+                  <div className="mt-16 flex items-center justify-center gap-4 border-t border-zinc-100 pt-8">
                     <button 
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(p => p - 1)}
@@ -242,30 +295,6 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-
-      {/* MOBILE FILTERS SHEET */}
-      {showMobileFilters && (
-        <div className="fixed inset-0 z-[100] lg:hidden">
-          <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm" onClick={() => setShowMobileFilters(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[40px] p-8 pb-12 animate-in slide-in-from-bottom duration-500">
-            <div className="flex justify-between items-center mb-10">
-              <h2 className="text-2xl font-black uppercase italic tracking-tighter">Filter Price</h2>
-              <button onClick={() => setShowMobileFilters(false)} className="p-2 bg-zinc-100 rounded-full"><X className="w-4 h-4" /></button>
-            </div>
-            <div className="grid grid-cols-1 gap-3">
-              {priceRanges.map((range) => (
-                <button
-                  key={range.value}
-                  onClick={() => { setSelectedPriceRange(range.value); setShowMobileFilters(false); }}
-                  className={`py-5 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest border text-left transition-all ${selectedPriceRange === range.value ? 'bg-zinc-900 text-white border-zinc-900' : 'bg-zinc-50 border-transparent text-zinc-400'}`}
-                >
-                  {range.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

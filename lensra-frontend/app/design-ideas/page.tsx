@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Heart, Zap, Loader2, ArrowUpRight, LayoutGrid, Type, Fingerprint } from 'lucide-react';
 
 interface Design {
@@ -18,9 +19,17 @@ interface Design {
   category?: string;
 }
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/").replace(/\/$/, '');
+
+// Helper to fix 404 errors by ensuring image points to Backend
+const getImageUrl = (path: string | null | undefined) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${BaseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 export default function LensraDesignIdeas() {
+  const router = useRouter();
   const [designs, setDesigns] = useState<Design[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,13 +38,14 @@ export default function LensraDesignIdeas() {
   useEffect(() => {
     const fetchDesigns = async () => {
       try {
-        const response = await fetch(`${BaseUrl}api/designs/featured/`);
+        setIsLoading(true);
+        // Updated to the public designs endpoint
+        const response = await fetch(`${BaseUrl}/api/designs/public/`);
         const data = await response.json();
-        if (Array.isArray(data)) {
-          setDesigns(data);
-        } else if (data?.results) {
-          setDesigns(data.results);
-        }
+        
+        // Handle both direct arrays and DRF paginated results
+        const extracted = Array.isArray(data) ? data : (data.results || []);
+        setDesigns(extracted);
       } catch (error) {
         console.error("Archive Access Error:", error);
       } finally {
@@ -62,7 +72,6 @@ export default function LensraDesignIdeas() {
       
       {/* 1. BRUTALIST HERO UNIT */}
       <section className="bg-zinc-950 text-white pt-32 pb-20 px-6 lg:px-12 border-b-[16px] border-red-600 relative overflow-hidden">
-        {/* Abstract Background Detail */}
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-red-600/10 to-transparent pointer-events-none" />
         
         <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-12 relative z-10">
@@ -149,7 +158,7 @@ export default function LensraDesignIdeas() {
                   >
                     <div className="aspect-[4/5] flex flex-col items-center justify-center p-12 transition-all duration-700 group-hover:scale-90">
                       <img 
-                        src={design.preview_image || design.design_image} 
+                        src={getImageUrl(design.preview_image || design.design_image)} 
                         alt={design.name}
                         className="w-full h-full object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
                       />
@@ -167,10 +176,13 @@ export default function LensraDesignIdeas() {
                       <div className="space-y-6 w-full">
                         <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500">
                           <span>Base Unit</span>
-                          <span className="text-white">{design.product_details?.name}</span>
+                          <span className="text-white truncate max-w-[120px]">{design.product_details?.name || 'Standard'}</span>
                         </div>
                         
-                        <button className="w-full py-5 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-2xl shadow-red-600/20 hover:scale-105 active:scale-95 transition-all">
+                        <button 
+                          onClick={() => router.push(`/editor?template=${design.id}`)}
+                          className="w-full py-5 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-2xl shadow-red-600/20 hover:scale-105 active:scale-95 transition-all"
+                        >
                           Inject Design
                         </button>
                         
