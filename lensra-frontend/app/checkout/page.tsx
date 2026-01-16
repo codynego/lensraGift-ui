@@ -39,11 +39,46 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const loadCheckoutData = async () => {
-      const sessionId = localStorage.getItem('guest_session_id');
+      let sessionId = localStorage.getItem('guest_session_id');
+      if (!token) {
+        if (!sessionId) {
+          sessionId = crypto.randomUUID();
+          localStorage.setItem('guest_session_id', sessionId);
+        }
+      }
 
-      // 1. Fetch Cart Items from Backend
+      // 1. Sync Guest Cart if Authenticated
+      if (token) {
+        const localGuestCart = localStorage.getItem('guest_cart');
+        if (localGuestCart) {
+          const guestItems = JSON.parse(localGuestCart);
+          if (guestItems.length > 0) {
+            try {
+              await Promise.all(guestItems.map((item: any) => 
+                fetch(`${BaseUrl}api/orders/cart/`, {
+                  method: 'POST',
+                  headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json' 
+                  },
+                  body: JSON.stringify({
+                    product: item.product_id || item.product,
+                    placement: item.placement || null,
+                    quantity: item.quantity
+                  })
+                })
+              ));
+              localStorage.removeItem('guest_cart');
+              localStorage.removeItem('guest_session_id'); // Optional: Clean up old session
+            } catch (syncError) {
+              console.error("Cart sync failed:", syncError);
+            }
+          }
+        }
+      }
+
+      // 2. Fetch Cart Items from Backend
       try {
-        // We fetch from the API using either the Token (Auth) or Session ID (Guest)
         const cartUrl = token 
           ? `${BaseUrl}api/orders/cart/` 
           : `${BaseUrl}api/orders/cart/?session_id=${sessionId}`;
@@ -60,15 +95,19 @@ export default function CheckoutPage() {
           const items = Array.isArray(data) ? data : (data.results || []);
           setCartItems(items);
         } else {
-          // Fallback to localStorage if API fails or session is empty
-          const localData = localStorage.getItem(token ? 'user_cart' : 'guest_cart');
+          // Fallback to localStorage if API fails
+          const localKey = token ? 'user_cart' : 'guest_cart';
+          const localData = localStorage.getItem(localKey);
           if (localData) setCartItems(JSON.parse(localData));
         }
       } catch (err) {
         console.error("Cart Fetch Error:", err);
+        const localKey = token ? 'user_cart' : 'guest_cart';
+        const localData = localStorage.getItem(localKey);
+        if (localData) setCartItems(JSON.parse(localData));
       }
 
-      // 2. Fetch Addresses (Auth only)
+      // 3. Fetch Addresses (Auth only)
       if (token) {
         try {
           const res = await fetch(`${BaseUrl}api/users/addresses/`, {
@@ -92,7 +131,7 @@ export default function CheckoutPage() {
     };
 
     loadCheckoutData();
-  }, [token]);
+  }, [token, user]);
 
   const handleSelectAddress = (addr: any) => {
     setSelectedAddressId(addr.id);
@@ -125,16 +164,21 @@ export default function CheckoutPage() {
   const total = subtotal + shipping;
 
   const handleOrder = async () => {
-    if (!formData.address || !formData.phone || !formData.state) {
+    if (!formData.full_name || !formData.address || !formData.phone || !formData.state) {
       alert("Missing delivery information.");
       return;
     }
 
     setIsProcessing(true);
     const orderEmail = token ? (user?.email || formData.email) : formData.email;
-    const sessionId = localStorage.getItem('guest_session_id');
+    let sessionId = localStorage.getItem('guest_session_id');
+    if (!token && !sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem('guest_session_id', sessionId);
+    }
 
     const orderPayload: any = {
+      shipping_name: formData.full_name,
       shipping_address: formData.address,
       shipping_city: formData.city,
       shipping_state: formData.state,
@@ -145,8 +189,11 @@ export default function CheckoutPage() {
     if (!token) {
       orderPayload.guest_email = formData.email;
       orderPayload.session_id = sessionId; // Link the guest session to the order
-    } else {
+    } else if (selectedAddressId) {
       orderPayload.address_id = selectedAddressId;
+    } else {
+      // For new address on authenticated user, perhaps create address first or include in payload
+      // Assuming backend handles new address creation if no address_id
     }
 
     try {
@@ -160,11 +207,23 @@ export default function CheckoutPage() {
       });
 
       const orderData = await orderRes.json();
+      console.log("Order Response:", orderData);
 
       if (orderRes.ok) {
         // Clear local storage carts
         localStorage.removeItem('guest_cart');
         localStorage.removeItem('user_cart');
+        if (!token) localStorage.removeItem('guest_session_id');
+
+        const payPayload: any = {
+          order_id: orderData.id,
+          email: orderEmail
+        };
+        console.log("Payment Payload:", payPayload);
+        console.log("order:", orderData)
+        if (!token) {
+          payPayload.session_id = sessionId; // Include session_id for guest payments
+        }
 
         const payRes = await fetch(`${BaseUrl}api/payments/initialize/`, {
           method: 'POST',
@@ -172,10 +231,7 @@ export default function CheckoutPage() {
             'Content-Type': 'application/json',
             ...(token && { 'Authorization': `Bearer ${token}` })
           },
-          body: JSON.stringify({
-            order_id: orderData.id,
-            email: orderEmail
-          })
+          body: JSON.stringify(payPayload)
         });
 
         const payData = await payRes.json();
@@ -332,10 +388,12 @@ function ManualAddressForm({ formData, setFormData, isGuest, onCancel }: any) {
         <input type="text" value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase" />
       </div>
 
-      <div className="space-y-2">
-        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><Mail className="w-3 h-3" /> Email Address</label>
-        <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-red-600 transition text-sm font-bold uppercase" />
-      </div>
+      {isGuest && (
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><Mail className="w-3 h-3" /> Email Address</label>
+          <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-red-600 transition text-sm font-bold uppercase" />
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

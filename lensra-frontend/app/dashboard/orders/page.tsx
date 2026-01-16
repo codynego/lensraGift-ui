@@ -3,14 +3,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
   Package, Clock, Printer, Truck, CheckCircle, Search, 
-  Eye, RotateCcw, Loader2, Zap, Filter, ChevronRight
+  Loader2, Zap, ChevronRight, AlertCircle, ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
 
 export default function OrdersDashboard() {
-  const { token } = useAuth();
+  const { token, isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -52,7 +52,7 @@ export default function OrdersDashboard() {
         const data = await response.json();
         setOrders([data]);
       } else {
-        alert("Order not found. Please check your ID.");
+        alert("Order not found. Please check your Order ID.");
       }
     } catch (err) {
       console.error(err);
@@ -66,9 +66,9 @@ export default function OrdersDashboard() {
     const configs: Record<string, { label: string; color: string; bgColor: string; icon: any }> = {
       pending: { label: 'PENDING', color: 'text-orange-600', bgColor: 'bg-orange-50', icon: <Clock className="w-3 h-3" /> },
       printing: { label: 'PRINTING', color: 'text-blue-600', bgColor: 'bg-blue-50', icon: <Printer className="w-3 h-3" /> },
-      shipping: { label: 'ON THE WAY', color: 'text-purple-600', bgColor: 'bg-purple-50', icon: <Truck className="w-3 h-3" /> },
+      shipping: { label: 'SHIPPING', color: 'text-purple-600', bgColor: 'bg-purple-50', icon: <Truck className="w-3 h-3" /> },
       delivered: { label: 'DELIVERED', color: 'text-emerald-600', bgColor: 'bg-emerald-50', icon: <CheckCircle className="w-3 h-3" /> },
-      cancelled: { label: 'CANCELLED', color: 'text-zinc-400', bgColor: 'bg-zinc-100', icon: <RotateCcw className="w-3 h-3" /> }
+      cancelled: { label: 'CANCELLED', color: 'text-zinc-400', bgColor: 'bg-zinc-100', icon: <AlertCircle className="w-3 h-3" /> }
     };
     return configs[s] || configs.pending;
   };
@@ -88,123 +88,135 @@ export default function OrdersDashboard() {
   }, [orders, searchQuery, statusFilter, sortBy]);
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh]">
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
       <Loader2 className="w-10 h-10 text-red-600 animate-spin mb-4" />
-      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">Loading Orders</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Syncing with Lensra...</p>
     </div>
   );
 
   return (
-    <div className="space-y-10">
-      {/* 1. HEADER SECTION */}
-      <section className="bg-zinc-900 rounded-[32px] p-8 md:p-12 relative overflow-hidden text-white shadow-2xl">
-        <div className="absolute right-0 top-0 w-1/3 h-full bg-red-600/10 blur-[100px] rounded-full" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+    <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+      
+      {/* 1. HERO HEADER */}
+      <section className="bg-black rounded-[40px] p-10 md:p-16 relative overflow-hidden text-white shadow-2xl">
+        <div className="absolute right-[-10%] top-[-20%] w-80 h-80 bg-red-600/20 blur-[120px] rounded-full" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <span className="text-red-500 font-bold text-[10px] uppercase tracking-[0.4em] mb-4 block">Delivery Status</span>
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight uppercase leading-none">
-              {token ? 'Order History' : 'Track Order'}<span className="text-red-600">.</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-800 rounded-full text-[9px] font-black uppercase tracking-widest mb-6">
+              <Zap className="w-3 h-3 text-red-500 fill-red-500" /> Live Tracking Enabled
+            </div>
+            <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter leading-none uppercase">
+              {isAuthenticated ? 'Your Orders' : 'Track Order'}<span className="text-red-600">.</span>
             </h1>
           </div>
           
-          {token && (
-            <div className="flex gap-3">
-              <div className="bg-zinc-800 border border-zinc-700 px-6 py-4 rounded-2xl text-center">
-                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Total Orders</p>
-                <p className="text-2xl font-bold">{orders.length}</p>
-              </div>
+          {isAuthenticated && (
+            <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 p-6 rounded-[28px] min-w-[180px]">
+              <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2">Total Purchases</p>
+              <p className="text-4xl font-black italic tracking-tighter">
+                {orders.length < 10 ? `0${orders.length}` : orders.length}
+              </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* 2. CONTROLS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-1 relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+      {/* 2. SEARCH & FILTERS */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1 relative group">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black transition-colors" />
           <input
             type="text"
-            placeholder="ORDER ID..."
-            className="w-full pl-12 pr-4 py-4 bg-white border border-zinc-200 rounded-2xl outline-none font-bold text-[10px] tracking-[0.2em] transition-all uppercase focus:border-black"
+            placeholder="ENTER ORDER NUMBER (E.G. LRG-XXXX)..."
+            className="w-full pl-14 pr-6 py-5 bg-zinc-50 border-2 border-transparent focus:border-black focus:bg-white rounded-2xl outline-none font-bold text-[11px] tracking-widest transition-all uppercase"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !token && handleGuestSearch()}
+            onKeyDown={(e) => e.key === 'Enter' && !isAuthenticated && handleGuestSearch()}
           />
-          {!token && searchQuery && (
-             <button onClick={handleGuestSearch} className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-red-600">SEARCH</button>
+          {!isAuthenticated && (
+            <button 
+              onClick={handleGuestSearch}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase hover:bg-red-600 transition-colors"
+            >
+              Search
+            </button>
           )}
         </div>
         
-        {token && (
-          <div className="flex gap-4 md:col-span-2">
-            <div className="flex-1 relative">
-              <select 
-                className="w-full pl-6 pr-10 py-4 bg-white border border-zinc-200 rounded-2xl outline-none font-bold text-[10px] tracking-[0.2em] appearance-none cursor-pointer"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">ALL STATUS</option>
-                <option value="pending">PENDING</option>
-                <option value="delivered">DELIVERED</option>
-              </select>
-              <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 rotate-90 pointer-events-none" />
-            </div>
+        {isAuthenticated && (
+          <div className="flex gap-4">
+            <select 
+              className="px-6 py-5 bg-white border-2 border-zinc-100 rounded-2xl outline-none font-black text-[10px] tracking-widest appearance-none cursor-pointer hover:border-zinc-300"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">ALL STATUS</option>
+              <option value="pending">PENDING</option>
+              <option value="delivered">DELIVERED</option>
+            </select>
             
-            <div className="flex-1 relative">
-              <select 
-                className="w-full px-6 py-4 bg-zinc-900 text-white rounded-2xl outline-none font-bold text-[10px] tracking-[0.2em] appearance-none cursor-pointer"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="recent">NEWEST FIRST</option>
-                <option value="price-high">HIGHEST PRICE</option>
-              </select>
-              <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 rotate-90 pointer-events-none" />
-            </div>
+            <select 
+              className="px-6 py-5 bg-zinc-900 text-white rounded-2xl outline-none font-black text-[10px] tracking-widest cursor-pointer hover:bg-red-600 transition-colors"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="recent">NEWEST</option>
+              <option value="price-high">HIGHEST VALUE</option>
+            </select>
           </div>
         )}
       </div>
 
-      {/* 3. ORDER LIST */}
+      {/* 3. ORDER ITEMS */}
       {filteredOrders.length > 0 ? (
-        <div className="space-y-4">
+        <div className="grid gap-6">
           {filteredOrders.map((order) => {
             const status = getStatusConfig(order.status);
             return (
-              <div key={order.id} className="group bg-white rounded-3xl border border-zinc-200 overflow-hidden hover:border-black transition-all">
-                <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div key={order.id} className="group bg-white rounded-[32px] border border-zinc-100 overflow-hidden hover:shadow-xl hover:border-zinc-300 transition-all duration-300">
+                <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
                   <div className="flex items-center gap-6">
-                    <div className="w-14 h-14 bg-zinc-50 rounded-xl flex items-center justify-center border border-zinc-100 group-hover:bg-black group-hover:text-white transition-colors">
-                      <Package className="w-5 h-5" />
+                    <div className="w-16 h-16 bg-zinc-50 rounded-2xl flex items-center justify-center border border-zinc-100 group-hover:bg-black group-hover:text-white transition-all duration-500">
+                      <Package className="w-6 h-6" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="text-lg font-bold uppercase">{order.order_number}</span>
-                        <span className={`${status.bgColor} ${status.color} px-3 py-1 rounded-lg text-[8px] font-black tracking-widest flex items-center gap-1.5`}>
+                      <div className="flex flex-wrap items-center gap-3 mb-2">
+                        <h3 className="text-xl font-black tracking-tight">{order.order_number}</h3>
+                        <span className={`${status.bgColor} ${status.color} px-3 py-1.5 rounded-full text-[9px] font-black tracking-tighter flex items-center gap-1.5 border border-current opacity-80`}>
                           {status.icon} {status.label}
                         </span>
                       </div>
                       <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                        {new Date(order.created_at).toLocaleDateString()} — {order.shipping_city}
+                        Placed on {new Date(order.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:items-end">
-                    <p className="text-2xl font-black italic">₦{parseFloat(order.total_amount).toLocaleString()}</p>
-                    <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">{order.is_paid ? 'PAID' : 'UNPAID'}</p>
+                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 pt-6 md:pt-0 border-zinc-50">
+                    <p className="text-3xl font-black italic tracking-tighter">₦{parseFloat(order.total_amount).toLocaleString()}</p>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${order.is_paid ? 'bg-green-500' : 'bg-red-500'}`} />
+                      <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{order.is_paid ? 'Payment Received' : 'Awaiting Payment'}</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="px-8 pb-8 flex flex-wrap gap-3">
+                {/* ITEMS SUB-GRID */}
+                <div className="bg-zinc-50/50 p-6 md:px-8 border-t border-zinc-50 flex flex-wrap gap-4">
                   {order.items?.map((item: any) => (
-                    <div key={item.id} className="flex items-center gap-2 bg-zinc-50 p-2 rounded-xl border border-zinc-100">
-                      <div className="w-10 h-10 rounded-lg bg-white border overflow-hidden">
-                        <img src={item.design_preview || '/placeholder.png'} className="w-full h-full object-cover" alt="" />
+                    <div key={item.id} className="flex items-center gap-4 bg-white p-3 pr-6 rounded-2xl border border-zinc-100 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden flex-shrink-0">
+                        <img 
+                          src={item.design_preview || '/placeholder.png'} 
+                          className="w-full h-full object-cover" 
+                          alt={item.product_name} 
+                        />
                       </div>
-                      <span className="text-[9px] font-black uppercase text-zinc-600">
-                        {item.product_name} <span className="text-red-600 ml-1">×{item.quantity}</span>
-                      </span>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-tight line-clamp-1">{item.product_name}</p>
+                        <p className="text-[9px] font-bold text-red-600 uppercase">Qty: {item.quantity}</p>
+                        {item.attributes && <p className="text-[8px] font-bold text-zinc-400 uppercase">{item.attributes}</p>}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -213,12 +225,14 @@ export default function OrdersDashboard() {
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-[32px] py-24 text-center border-2 border-dashed border-zinc-100">
-            <Zap className="w-12 h-12 text-zinc-100 mx-auto mb-4" />
-            <h2 className="text-lg font-bold uppercase tracking-widest text-zinc-400">No Orders</h2>
-            <p className="text-[9px] font-bold text-zinc-300 uppercase tracking-widest mt-1">
-              {token ? 'No orders found.' : 'Enter your Order ID to see status.'}
-            </p>
+        <div className="bg-zinc-50 rounded-[40px] py-32 text-center border-2 border-dashed border-zinc-200">
+          <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <ShoppingBag className="w-8 h-8 text-zinc-200" />
+          </div>
+          <h2 className="text-xl font-black uppercase italic tracking-tighter text-zinc-400">Empty Horizon</h2>
+          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-2">
+            {isAuthenticated ? "You haven't placed any orders yet." : "Search using your Order ID to track progress."}
+          </p>
         </div>
       )}
     </div>

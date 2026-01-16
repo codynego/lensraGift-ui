@@ -43,10 +43,12 @@ export default function CartPage() {
 
   const fetchCart = async () => {
     setLoading(true);
-    const sessionId = localStorage.getItem('guest_session_id');
-    
-    // 1. Handling GUEST users
+    let sessionId = localStorage.getItem('guest_session_id');
     if (!token) {
+      if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        localStorage.setItem('guest_session_id', sessionId);
+      }
       try {
         const res = await fetch(`${BaseUrl}api/orders/cart/?session_id=${sessionId}`);
         if (res.ok) {
@@ -59,6 +61,8 @@ export default function CartPage() {
         }
       } catch (err) {
         console.error("Guest cart fetch failed:", err);
+        const localData = localStorage.getItem('cart');
+        setCartItems(localData ? JSON.parse(localData) : []);
       } finally {
         setLoading(false);
       }
@@ -109,6 +113,16 @@ export default function CartPage() {
     fetchCart(); 
   }, [token]);
 
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'cart_updated') {
+        fetchCart();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [token]);
+
   const updateQuantity = async (itemId: number | undefined, newQty: number) => {
     if (!itemId || newQty < 1) return;
     
@@ -119,12 +133,16 @@ export default function CartPage() {
     }));
 
     try {
-      const sessionId = localStorage.getItem('guest_session_id');
+      let sessionId = localStorage.getItem('guest_session_id');
+      if (!token && !sessionId) {
+        sessionId = crypto.randomUUID();
+        localStorage.setItem('guest_session_id', sessionId);
+      }
       const url = token 
         ? `${BaseUrl}api/orders/cart/${itemId}/` 
         : `${BaseUrl}api/orders/cart/${itemId}/?session_id=${sessionId}`;
 
-      await fetch(url, {
+      const res = await fetch(url, {
         method: 'PATCH',
         headers: { 
           ...(token && { 'Authorization': `Bearer ${token}` }),
@@ -132,33 +150,52 @@ export default function CartPage() {
         },
         body: JSON.stringify({ quantity: newQty })
       });
+
+      if (res.ok) {
+        window.dispatchEvent(new Event('cart-updated'));
+        localStorage.setItem('cart_updated', Date.now().toString());
+      }
     } catch (err) {
       console.error("Update failed:", err);
+      // Revert optimistic update if failed
+      fetchCart();
     }
   };
 
   const removeItem = async (itemId: number | undefined) => {
     if (!itemId) return;
 
+    // Optimistic UI Update
     setCartItems(prev => prev.filter(item => {
       const idToMatch = token ? item.id : (item.id || item.product_id);
       return idToMatch !== itemId;
     }));
 
     try {
-      const sessionId = localStorage.getItem('guest_session_id');
+      let sessionId = localStorage.getItem('guest_session_id');
+      if (!token && !sessionId) {
+        sessionId = crypto.randomUUID();
+        localStorage.setItem('guest_session_id', sessionId);
+      }
       const url = token 
         ? `${BaseUrl}api/orders/cart/${itemId}/` 
         : `${BaseUrl}api/orders/cart/${itemId}/?session_id=${sessionId}`;
 
-      await fetch(url, {
+      const res = await fetch(url, {
         method: 'DELETE',
         headers: { 
           ...(token && { 'Authorization': `Bearer ${token}` })
         }
       });
+
+      if (res.ok) {
+        window.dispatchEvent(new Event('cart-updated'));
+        localStorage.setItem('cart_updated', Date.now().toString());
+      }
     } catch (err) {
       console.error("Delete failed:", err);
+      // Revert optimistic update if failed
+      fetchCart();
     }
   };
 

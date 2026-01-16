@@ -49,6 +49,7 @@ export default function Footer() {
               <li><Link href="/track" className="hover:text-white transition">Where is my order?</Link></li>
               <li><Link href="/shipping" className="hover:text-white transition">Delivery Info</Link></li>
               <li><Link href="/returns" className="hover:text-white transition">Easy Returns</Link></li>
+              <li><Link href="/reseller" className="hover:text-white transition">Resellers</Link></li>
             </ul>
           </div>
 

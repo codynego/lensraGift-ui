@@ -40,6 +40,7 @@ interface ProductDetail {
   gallery: ProductImage[];
   variants: ProductVariant[];
   min_order_quantity: number;
+  is_customizable: boolean;
 }
 
 export default function ProductDetailPage() {
@@ -103,21 +104,24 @@ export default function ProductDetailPage() {
   }, [params.id]);
 
   const activeVariant = useMemo(() => {
-    if (!product?.variants) return null;
+    if (!product?.variants || product.variants.length === 0) return null;
     return product.variants.find(v => 
       v.attributes.every(attr => selectedAttributes[attr.attribute_name] === attr.value)
     );
   }, [selectedAttributes, product]);
 
   const currentPrice = activeVariant?.price_override || product?.base_price || "0";
-  const attributeTypes = Array.from(new Set(product?.variants?.flatMap(v => v.attributes.map(a => a.attribute_name))));
-  const allImages = product ? [product.image, ...product.gallery.map(g => g.image)].filter(Boolean) : [];
+  const attributeTypes = Array.from(new Set(product?.variants?.flatMap(v => v.attributes.map(a => a.attribute_name)) || []));
+  const allImages = product ? [product.image, ...product.gallery.map(g => g.image)].filter(Boolean) as string[] : [];
 
   const handleAddToCart = async () => {
     if (!product) return;
     setIsAdding(true);
-    let sessionId = localStorage.getItem('guest_session_id') || crypto.randomUUID();
-    if (!localStorage.getItem('guest_session_id')) localStorage.setItem('guest_session_id', sessionId);
+    let sessionId = localStorage.getItem('guest_session_id');
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem('guest_session_id', sessionId);
+    }
 
     try {
       const res = await fetch(`${BaseUrl}api/orders/cart/`, {
@@ -125,7 +129,7 @@ export default function ProductDetailPage() {
         headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
         body: JSON.stringify({ 
           product: product.id, 
-          variant: activeVariant?.id, 
+          variant: activeVariant?.id || null, 
           quantity: quantity,
           ...(!token && { session_id: sessionId })
         })
@@ -164,10 +168,10 @@ export default function ProductDetailPage() {
               {allImages.map((img, idx) => (
                 <button 
                   key={idx} 
-                  onClick={() => setSelectedImage(img as string)} 
+                  onClick={() => setSelectedImage(img)} 
                   className={`relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-zinc-900 scale-95 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <img src={img as string} alt={`Angle ${idx}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`Angle ${idx}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -199,8 +203,8 @@ export default function ProductDetailPage() {
                     )).map(val => (
                       <button
                         key={val}
-                        onClick={() => setSelectedAttributes(prev => ({ ...prev, [type as string]: val }))}
-                        className={`px-6 py-3 rounded-full border-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedAttributes[type as string] === val ? 'border-zinc-900 bg-zinc-900 text-white shadow-xl scale-105' : 'border-zinc-100 text-zinc-400 hover:border-zinc-300'}`}
+                        onClick={() => setSelectedAttributes(prev => ({ ...prev, [type]: val }))}
+                        className={`px-6 py-3 rounded-full border-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedAttributes[type] === val ? 'border-zinc-900 bg-zinc-900 text-white shadow-xl scale-105' : 'border-zinc-100 text-zinc-400 hover:border-zinc-300'}`}
                       >
                         {val}
                       </button>
@@ -214,7 +218,7 @@ export default function ProductDetailPage() {
                 <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 block mb-4">Quantity</label>
                 <div className="flex items-center w-fit border-2 border-zinc-100 rounded-full p-1">
                   <button 
-                    onClick={() => setQuantity(Math.max(product.min_order_quantity, quantity - 1))}
+                    onClick={() => setQuantity(Math.max(product.min_order_quantity || 1, quantity - 1))}
                     className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-50"
                   >
                     <Minus className="w-4 h-4" />
@@ -231,13 +235,16 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 mb-12">
-               <button onClick={() => router.push(`/editor?product=${product.id}`)} className="group relative w-full py-8 bg-zinc-900 text-white rounded-full font-black text-xs uppercase tracking-[0.4em] overflow-hidden active:scale-95 shadow-2xl">
+              {product.is_customizable ? (
+                <button onClick={() => router.push(`/editor?product=${product.id}`)} className="group relative w-full py-8 bg-zinc-900 text-white rounded-full font-black text-xs uppercase tracking-[0.4em] overflow-hidden active:scale-95 shadow-2xl">
                   <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                   <span className="relative z-10 flex items-center justify-center gap-4">Customize Now <Palette className="w-4 h-4" /></span>
-               </button>
-               <button onClick={handleAddToCart} disabled={isAdding || !activeVariant} className="py-6 border-2 border-zinc-900 text-zinc-900 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50">
+                </button>
+              ) : (
+                <button onClick={handleAddToCart} disabled={isAdding || (product.variants.length > 0 && !activeVariant)} className="py-6 border-2 border-zinc-900 text-zinc-900 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50">
                   {isAdding ? <Loader2 className="animate-spin w-4 h-4" /> : <><ShoppingBag className="w-4 h-4" /> Add to Cart</>}
-               </button>
+                </button>
+              )}
             </div>
 
             {/* TABS */}
@@ -260,8 +267,8 @@ export default function ProductDetailPage() {
         {relatedProducts.length > 0 && (
           <section className="border-t border-zinc-100 pt-20">
             <div className="flex justify-between items-end mb-12">
-               <h2 className="text-3xl font-black uppercase italic tracking-tighter">Related in {product.category_name}</h2>
-               <button onClick={() => router.push('/shop')} className="text-[10px] font-black uppercase tracking-widest border-b-2 border-zinc-900 pb-1">View All</button>
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Related in {product.category_name}</h2>
+              <button onClick={() => router.push('/shop')} className="text-[10px] font-black uppercase tracking-widest border-b-2 border-zinc-900 pb-1">View All</button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {relatedProducts.map((item) => (
@@ -284,6 +291,30 @@ export default function ProductDetailPage() {
           </section>
         )}
       </main>
+
+      {/* SUCCESS MODAL */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl">
+            <h2 className="text-2xl font-black uppercase italic mb-4 text-zinc-900">Added to Cart!</h2>
+            <p className="text-zinc-500 mb-6 font-bold text-sm uppercase tracking-wide">Your item has been added successfully.</p>
+            <div className="flex gap-4 justify-center">
+              <button 
+                onClick={() => { setShowSuccessModal(false); router.push('/cart'); }} 
+                className="px-6 py-3 bg-zinc-900 text-white rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-red-600 transition-colors"
+              >
+                View Cart
+              </button>
+              <button 
+                onClick={() => setShowSuccessModal(false)} 
+                className="px-6 py-3 border-2 border-zinc-900 text-zinc-900 rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-colors"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
