@@ -70,7 +70,10 @@ export default function WithdrawForm({ balance, onSuccess }: WithdrawFormProps) 
         <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
           ₦{withdrawAmount.toLocaleString()} is being processed.
         </p>
-        <button onClick={() => { setStatus('idle'); setAmount(""); }} className="text-red-600 text-[10px] font-black uppercase tracking-[0.3em] pt-4">
+        <button 
+          onClick={() => { setStatus('idle'); setAmount(""); }} 
+          className="text-red-600 text-[10px] font-black uppercase tracking-[0.3em] pt-4"
+        >
           Make Another Request
         </button>
       </div>
