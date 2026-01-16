@@ -2,22 +2,16 @@
 
 import { useState } from 'react';
 import { 
-  Banknote, 
-  ArrowRight, 
-  Loader2, 
-  CheckCircle2, 
-  AlertCircle,
-  Building2,
-  User,
-  CreditCard
+  Banknote, ArrowRight, Loader2, CheckCircle2, 
+  AlertCircle, Building2, User, CreditCard 
 } from 'lucide-react';
 
-interface WithdrawProps {
-  balance?: number; // Made optional to handle undefined states
+interface WithdrawFormProps {
+  balance: number;
   onSuccess?: () => void;
 }
 
-export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps) {
+export default function WithdrawForm({ balance, onSuccess }: WithdrawFormProps) {
   const [amount, setAmount] = useState("");
   const [bankDetails, setBankDetails] = useState({
     bankName: "",
@@ -27,7 +21,6 @@ export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  // --- FIX: Ensure balance is treated as a number and amount is parsed safely ---
   const currentBalance = Number(balance ?? 0);
   const withdrawAmount = parseFloat(amount || "0");
 
@@ -69,16 +62,16 @@ export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps)
 
   if (status === 'success') {
     return (
-      <div className="bg-zinc-950 text-white rounded-[48px] p-10 text-center space-y-6">
+      <div className="bg-zinc-950 text-white rounded-[48px] p-10 text-center space-y-6 border border-white/5">
         <div className="bg-red-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-4xl font-black italic uppercase tracking-tighter">Request Sent</h2>
+        <h2 className="text-3xl font-black uppercase tracking-tighter">Request Sent</h2>
         <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
-          ₦{withdrawAmount.toLocaleString()} is on its way.
+          ₦{withdrawAmount.toLocaleString()} is being processed.
         </p>
         <button onClick={() => { setStatus('idle'); setAmount(""); }} className="text-red-600 text-[10px] font-black uppercase tracking-[0.3em] pt-4">
-          Back to Wallet
+          Make Another Request
         </button>
       </div>
     );
@@ -90,7 +83,6 @@ export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps)
         <div>
           <h2 className="text-3xl font-black italic uppercase tracking-tighter text-red-600">Withdraw</h2>
           <p className="text-zinc-500 font-bold uppercase text-[9px] tracking-widest mt-1">
-            {/* FIX: Fallback to 0 if balance is undefined */}
             Available: ₦{currentBalance.toLocaleString()}
           </p>
         </div>
@@ -107,7 +99,7 @@ export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps)
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-3xl pl-12 pr-6 py-6 outline-none focus:border-red-600 transition text-2xl font-black italic tracking-tighter"
+              className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-3xl pl-12 pr-6 py-6 outline-none focus:border-red-600 transition text-2xl font-black italic tracking-tighter text-white"
             />
           </div>
           {withdrawAmount > currentBalance && (
@@ -127,7 +119,7 @@ export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps)
               placeholder="E.G. ACCESS BANK"
               value={bankDetails.bankName}
               onChange={(e) => setBankDetails({...bankDetails, bankName: e.target.value})}
-              className="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-xs font-bold uppercase tracking-widest"
+              className="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-xs font-bold uppercase tracking-widest text-white"
             />
           </div>
 
@@ -141,7 +133,7 @@ export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps)
               placeholder="0123456789"
               value={bankDetails.accountNumber}
               onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value.replace(/\D/g, '')})}
-              className="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-xs font-bold uppercase tracking-widest"
+              className="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-xs font-bold uppercase tracking-widest text-white"
             />
           </div>
 
@@ -154,7 +146,7 @@ export default function WithdrawFunds({ balance = 0, onSuccess }: WithdrawProps)
               placeholder="NAME ON ACCOUNT"
               value={bankDetails.accountName}
               onChange={(e) => setBankDetails({...bankDetails, accountName: e.target.value})}
-              className="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-xs font-bold uppercase tracking-widest"
+              className="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-xs font-bold uppercase tracking-widest text-white"
             />
           </div>
         </div>
