@@ -284,7 +284,7 @@ function EditorContent() {
         product_name: selectedProduct.name,
         variant_label: (selectedVariant?.attribute_values || []).map((av: any) => av.value).join(' / '),
         price: selectedVariant?.price || selectedProduct.base_price,
-        image: selectedProduct.image,
+        image: selectedProduct.image_url,
         quantity: 1,
         added_at: new Date().toISOString()
       };
