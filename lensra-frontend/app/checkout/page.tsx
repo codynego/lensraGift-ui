@@ -4,11 +4,20 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, ShieldCheck, MapPin, Phone, User, 
-  CreditCard, Mail, Loader2, Globe, Plus, CheckCircle2, X 
+  CreditCard, Mail, Loader2, Globe, Plus, CheckCircle2, X, Star 
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
+// --- CONFIG ---
+const EMOTIONS = [
+  { id: 'loved', label: 'Loved', emoji: '❤️' },
+  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
+  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
+  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
+  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
+];
 
 const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
@@ -330,13 +339,22 @@ export default function CheckoutPage() {
                                 item.price || 0;
 
                   return (
-                    <div key={i} className="flex justify-between items-center gap-4">
-                      <span className="text-[9px] font-bold uppercase text-zinc-400 truncate flex-1">
-                        {item.quantity}x {name}
-                      </span>
-                      <span className="text-[9px] font-black italic whitespace-nowrap">
-                        ₦{(parseFloat(price) * item.quantity).toLocaleString()}
-                      </span>
+                    <div key={i} className="space-y-2">
+                      <div className="flex justify-between items-center gap-4">
+                        <span className="text-[9px] font-bold uppercase text-zinc-400 truncate flex-1">
+                          {item.quantity}x {name}
+                        </span>
+                        <span className="text-[9px] font-black italic whitespace-nowrap">
+                          ₦{(parseFloat(price) * item.quantity).toLocaleString()}
+                        </span>
+                      </div>
+                      {item.secret_message && (
+                        <div className="flex items-center gap-2 bg-zinc-800 px-4 py-2 rounded-full">
+                          <Star className="w-3 h-3 text-red-600 fill-red-600" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Surprise Reveal</span>
+                          {item.emotion && <span>{EMOTIONS.find(e => e.id === item.emotion)?.emoji}</span>}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

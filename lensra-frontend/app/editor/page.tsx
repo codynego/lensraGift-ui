@@ -5,11 +5,21 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   X, Type, MessageSquare, Plus, Check, 
   Loader2, ArrowLeft, Image as ImageIcon, RefreshCw, ShoppingBag,
-  Palette, Ruler, Grid3x3, Sparkles
+  Palette, Ruler, Grid3x3, Sparkles, ChevronDown, ChevronUp
 } from 'lucide-react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
+// --- CONFIG ---
+const EMOTIONS = [
+  { id: 'loved', label: 'Loved', emoji: '❤️' },
+  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
+  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
+  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
+  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
+];
 
 const getGuestSessionId = () => {
   if (typeof window === 'undefined') return '';
@@ -64,6 +74,11 @@ function EditorContent() {
   
   const [isSaving, setIsSaving] = useState(false);
   const [placementId, setPlacementId] = useState<number | null>(null);
+
+  // --- SURPRISE REVEAL STATE ---
+  const [showSurprise, setShowSurprise] = useState(false);
+  const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
+  const [secretMessage, setSecretMessage] = useState("");
 
   // Fetch products and template design
   useEffect(() => {
@@ -219,7 +234,8 @@ function EditorContent() {
             platform: "web",
             custom_text: effectiveCustomText,
             special_instructions: effectiveOverallNote,
-            template_used: templateDesign ? templateDesign.id : null
+            template_used: templateDesign ? templateDesign.id : null,
+            ...(showSurprise && { secret_message: secretMessage, emotion: selectedEmotion })
           }
         }),
       });
@@ -253,7 +269,9 @@ function EditorContent() {
           product: selectedProduct.id,
           variant: selectedVariant?.id || null,
           quantity: 1,
-          session_id: token ? null : sessionId
+          session_id: token ? null : sessionId,
+          secret_message: showSurprise ? secretMessage : null,
+          emotion: showSurprise ? selectedEmotion : null
         }),
       });
 
@@ -702,6 +720,68 @@ function EditorContent() {
                   className="w-full bg-zinc-900 border-none text-white placeholder:text-zinc-600 text-xs font-bold uppercase outline-none resize-none min-h-[100px]"
                 />
               </div>
+            </div>
+
+            {/* --- NEW: SURPRISE REVEAL COLLAPSIBLE --- */}
+            <div className="space-y-5 pt-8 border-t-2 border-zinc-100">
+              <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
+                <Sparkles className="w-5 h-5" />
+                <span>Include Surprise Experience</span>
+              </label>
+
+              <button 
+                onClick={() => setShowSurprise(!showSurprise)}
+                className={`w-full flex items-center justify-between p-6 rounded-[32px] border-2 transition-all duration-500 ${showSurprise ? 'border-red-600 bg-red-50/20' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200'}`}
+              >
+                <div className="flex items-center gap-4 text-left">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${showSurprise ? 'bg-red-600 text-white' : 'bg-white text-zinc-400 border border-zinc-100 shadow-sm'}`}>
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black uppercase italic tracking-tight text-zinc-900">Digital Secret Message</h3>
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Emotional Reveal</p>
+                  </div>
+                </div>
+                {showSurprise ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+
+              <AnimatePresence>
+                {showSurprise && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-4 p-8 bg-zinc-50 rounded-[40px] border-2 border-zinc-100 space-y-8">
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">1. What do you want them to feel?</label>
+                        <div className="flex flex-wrap gap-2">
+                          {EMOTIONS.map((e) => (
+                            <button
+                              key={e.id}
+                              onClick={() => setSelectedEmotion(e.id)}
+                              className={`px-5 py-3 rounded-full border-2 text-[10px] font-black uppercase transition-all ${selectedEmotion === e.id ? 'border-red-600 bg-white text-red-600 shadow-lg' : 'border-zinc-200 bg-white text-zinc-400'}`}
+                            >
+                              {e.emoji} {e.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">2. Type your secret message</label>
+                        <textarea 
+                          value={secretMessage}
+                          onChange={(e) => setSecretMessage(e.target.value)}
+                          placeholder="Type your secret message here... (50–300 characters)"
+                          className="w-full bg-white border-2 border-zinc-200 rounded-3xl p-6 text-sm outline-none focus:border-red-600 transition-all h-32 font-medium"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Final Action (Desktop Only) */}

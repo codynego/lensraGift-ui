@@ -2,10 +2,19 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Plus, Minus, ShoppingBag, Lock, ArrowLeft, Loader2 } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, Lock, ArrowLeft, Loader2, Star } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
+// --- CONFIG ---
+const EMOTIONS = [
+  { id: 'loved', label: 'Loved', emoji: '❤️' },
+  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
+  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
+  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
+  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
+];
 
 // --- TYPESCRIPT INTERFACES ---
 interface ProductDetails {
@@ -33,6 +42,8 @@ interface CartItem {
   name?: string;         
   placement_details?: PlacementDetails; 
   product_details?: ProductDetails; 
+  secret_message?: string;
+  emotion?: string;
 }
 
 export default function CartPage() {
@@ -279,6 +290,13 @@ export default function CartPage() {
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                               {item.placement_details ? `Custom: ${item.placement_details.design_name}` : 'Standard Edition'}
                             </p>
+                            {item.secret_message && (
+                              <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded-full border border-zinc-100 mt-2">
+                                <Star className="w-3 h-3 text-red-600 fill-red-600" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Surprise Reveal</span>
+                                {item.emotion && <span>{EMOTIONS.find(e => e.id === item.emotion)?.emoji}</span>}
+                              </div>
+                            )}
                           </div>
                           <button onClick={() => removeItem(displayId)} className="p-2 text-zinc-200 hover:text-red-600 transition-colors">
                             <Trash2 className="w-5 h-5" />

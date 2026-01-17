@@ -204,61 +204,63 @@ export default function ProductDetailPage() {
             </div>
 
             {/* --- NEW: SURPRISE REVEAL COLLAPSIBLE --- */}
-            <div className="mb-12">
-              <button 
-                onClick={() => setShowSurprise(!showSurprise)}
-                className={`w-full flex items-center justify-between p-6 rounded-[32px] border-2 transition-all duration-500 ${showSurprise ? 'border-red-600 bg-red-50/20' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200'}`}
-              >
-                <div className="flex items-center gap-4 text-left">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${showSurprise ? 'bg-red-600 text-white' : 'bg-white text-zinc-400 border border-zinc-100 shadow-sm'}`}>
-                    <Sparkles className="w-5 h-5" />
+            {!product.is_customizable && (
+              <div className="mb-12">
+                <button 
+                  onClick={() => setShowSurprise(!showSurprise)}
+                  className={`w-full flex items-center justify-between p-6 rounded-[32px] border-2 transition-all duration-500 ${showSurprise ? 'border-red-600 bg-red-50/20' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200'}`}
+                >
+                  <div className="flex items-center gap-4 text-left">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${showSurprise ? 'bg-red-600 text-white' : 'bg-white text-zinc-400 border border-zinc-100 shadow-sm'}`}>
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-black uppercase italic tracking-tight text-zinc-900">Include Surprise Experience</h3>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Digital Secret Message Reveal</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xs font-black uppercase italic tracking-tight text-zinc-900">Include Surprise Experience</h3>
-                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Digital Secret Message Reveal</p>
-                  </div>
-                </div>
-                {showSurprise ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
+                  {showSurprise ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </button>
 
-              <AnimatePresence>
-                {showSurprise && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="mt-4 p-8 bg-zinc-50 rounded-[40px] border-2 border-zinc-100 space-y-8">
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">1. What do you want them to feel?</label>
-                        <div className="flex flex-wrap gap-2">
-                          {EMOTIONS.map((e) => (
-                            <button
-                              key={e.id}
-                              onClick={() => setSelectedEmotion(e.id)}
-                              className={`px-5 py-3 rounded-full border-2 text-[10px] font-black uppercase transition-all ${selectedEmotion === e.id ? 'border-red-600 bg-white text-red-600 shadow-lg' : 'border-zinc-200 bg-white text-zinc-400'}`}
-                            >
-                              {e.emoji} {e.label}
-                            </button>
-                          ))}
+                <AnimatePresence>
+                  {showSurprise && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-4 p-8 bg-zinc-50 rounded-[40px] border-2 border-zinc-100 space-y-8">
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">1. What do you want them to feel?</label>
+                          <div className="flex flex-wrap gap-2">
+                            {EMOTIONS.map((e) => (
+                              <button
+                                key={e.id}
+                                onClick={() => setSelectedEmotion(e.id)}
+                                className={`px-5 py-3 rounded-full border-2 text-[10px] font-black uppercase transition-all ${selectedEmotion === e.id ? 'border-red-600 bg-white text-red-600 shadow-lg' : 'border-zinc-200 bg-white text-zinc-400'}`}
+                              >
+                                {e.emoji} {e.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">2. Type your secret message</label>
+                          <textarea 
+                            value={secretMessage}
+                            onChange={(e) => setSecretMessage(e.target.value)}
+                            placeholder="Type your secret message here... (50–300 characters)"
+                            className="w-full bg-white border-2 border-zinc-200 rounded-3xl p-6 text-sm outline-none focus:border-red-600 transition-all h-32 font-medium"
+                          />
                         </div>
                       </div>
-
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">2. Type your secret message</label>
-                        <textarea 
-                          value={secretMessage}
-                          onChange={(e) => setSecretMessage(e.target.value)}
-                          placeholder="Type your secret message here... (50–300 characters)"
-                          className="w-full bg-white border-2 border-zinc-200 rounded-3xl p-6 text-sm outline-none focus:border-red-600 transition-all h-32 font-medium"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
             {/* VARIANT SELECTORS */}
             <div className="space-y-8 mb-10">
