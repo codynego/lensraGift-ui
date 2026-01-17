@@ -8,12 +8,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 // --- INTERFACES ---
 interface ProductImage {
   id: number;
-  image: string;
+  image_url: string;
   alt_text: string;
 }
 
@@ -36,7 +36,7 @@ interface ProductDetail {
   description: string;
   base_price: string;
   category_name: string;
-  image: string | null;
+  image_url: string | null;
   gallery: ProductImage[];
   variants: ProductVariant[];
   min_order_quantity: number;
@@ -112,7 +112,7 @@ export default function ProductDetailPage() {
 
   const currentPrice = activeVariant?.price_override || product?.base_price || "0";
   const attributeTypes = Array.from(new Set(product?.variants?.flatMap(v => v.attributes.map(a => a.attribute_name)) || []));
-  const allImages = product ? [product.image, ...product.gallery.map(g => g.image)].filter(Boolean) as string[] : [];
+  const allImages = product ? [product.image_url, ...product.gallery.map(g => g.image_url)].filter(Boolean) as string[] : [];
 
   const handleAddToCart = async () => {
     if (!product) return;

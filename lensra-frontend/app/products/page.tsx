@@ -16,7 +16,7 @@ interface Product {
   slug: string;
   base_price: string;
   category_name: string;
-  image: string | null;
+  image_url: string | null;
   is_active: boolean;
 }
 
@@ -238,8 +238,8 @@ export default function ProductsPage() {
                   {finalDisplayItems.map((product: Product) => (
                     <div key={product.id} className="group flex flex-col">
                       <Link href={`/products/${product.slug}`} className="relative aspect-square bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100 group-hover:shadow-xl transition-shadow duration-300">
-                        {product.image ? (
-                          <img src={product.image} alt={product.name} className="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+                        {product.image_url ? (
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center uppercase font-black text-[8px] text-zinc-300 italic">No Preview</div>
                         )}
