@@ -42,7 +42,6 @@ interface UploadedImage {
   note: string;
 }
 
-
 const EMOTIONS = [
   { id: 'loved', label: 'Loved', emoji: '❤️' },
   { id: 'joyful', label: 'Joyful', emoji: '🎉' },
@@ -276,25 +275,25 @@ function EditorContent() {
       if (!designRes.ok) throw new Error("Design creation failed");
       designId = designData.id;
 
-      // Create placement
+      // Create placement using FormData to avoid explicit Content-Type
+      const placementFormData = new FormData();
+      placementFormData.append('design', designId.toString());
+      placementFormData.append('product', selectedProduct.id.toString());
+      if (selectedVariant?.id) {
+        placementFormData.append('variant', selectedVariant.id.toString());
+      }
+      placementFormData.append('layout_data', JSON.stringify({
+        editor_version: "2.0", 
+        platform: "web",
+        custom_text: effectiveCustomText,
+        special_instructions: effectiveOverallNote,
+        template_used: templateDesign ? templateDesign.id : null
+      }));
+
       const placementRes = await fetch(`${BaseUrl}api/products/placements/create/`, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          design: designId,
-          product: selectedProduct.id,
-          variant: selectedVariant?.id || null,
-          layout_data: { 
-            editor_version: "2.0", 
-            platform: "web",
-            custom_text: effectiveCustomText,
-            special_instructions: effectiveOverallNote,
-            template_used: templateDesign ? templateDesign.id : null
-          }
-        }),
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        body: placementFormData,
       });
       
       if (!placementRes.ok) throw new Error("Placement failed");
@@ -316,21 +315,26 @@ function EditorContent() {
     const sessionId = getGuestSessionId();
 
     try {
+      // Similarly, use FormData for order cart to avoid Content-Type issue if needed
+      const cartFormData = new FormData();
+      cartFormData.append('placement', placementId.toString());
+      cartFormData.append('product', selectedProduct.id.toString());
+      if (selectedVariant?.id) {
+        cartFormData.append('variant', selectedVariant.id.toString());
+      }
+      cartFormData.append('quantity', '1');
+      if (!token) {
+        cartFormData.append('session_id', sessionId);
+      }
+      if (showSurprise) {
+        cartFormData.append('secret_message', secretMessage);
+        cartFormData.append('emotion', selectedEmotion || '');
+      }
+
       const res = await fetch(`${BaseUrl}api/orders/cart/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          placement: placementId,
-          product: selectedProduct.id,
-          variant: selectedVariant?.id || null,
-          quantity: 1,
-          session_id: token ? null : sessionId,
-          secret_message: showSurprise ? secretMessage : null,
-          emotion: showSurprise ? selectedEmotion : null,
-        }),
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        body: cartFormData,
       });
 
       if (!res.ok) throw new Error("API Cart add failed");
