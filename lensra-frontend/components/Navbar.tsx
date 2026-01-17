@@ -140,7 +140,137 @@ export default function Navbar() {
         {/* MOBILE MENU */}
         {mobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 z-[60] bg-white p-8 animate-in slide-in-from-right duration-300">
-            {/* ... same mobile menu code as before ... */}
+            <div className="flex flex-col h-full">
+              <div className="flex justify-between items-center mb-12">
+                <Link href="/" className="text-3xl font-black tracking-tighter uppercase italic">
+                  Lensra<span className="text-red-600">.</span>
+                </Link>
+                <button onClick={() => setMobileMenuOpen(false)}>
+                  <X className="w-8 h-8 text-zinc-800" />
+                </button>
+              </div>
+
+              <div className="relative mb-8">
+                <input
+                  type="text"
+                  placeholder="SEARCH FOR A GIFT OR DESIGN..."
+                  className="w-full px-6 py-3 bg-zinc-50 text-[10px] font-black tracking-widest uppercase rounded-2xl border-2 border-transparent outline-none focus:border-black transition"
+                />
+                <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              </div>
+
+              <ul className="flex flex-col gap-6 mb-12">
+                <li>
+                  <Link 
+                    href="/products" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black flex items-center gap-2"
+                  >
+                    All Gifts <ChevronDown className="w-3 h-3 text-red-600" />
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/design-ideas" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
+                  >
+                    Trending Designs
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/sale" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 hover:text-red-700"
+                  >
+                    Discount Sale
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/business" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
+                  >
+                    Business
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/about" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
+                  >
+                    Our Studio
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/contact" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+              </ul>
+
+              <div className="mt-auto border-t border-zinc-100 pt-6">
+                {isAuthenticated ? (
+                  <div className="space-y-4">
+                    <Link 
+                      href="/dashboard" 
+                      onClick={() => setMobileMenuOpen(false)} 
+                      className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest"
+                    >
+                      <User className="w-5 h-5" /> Dashboard
+                    </Link>
+                    <button 
+                      onClick={() => { logout(); setMobileMenuOpen(false); }} 
+                      className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-red-600"
+                    >
+                      <LogOut className="w-5 h-5" /> Logout
+                    </button>
+                  </div>
+                ) : (
+                  <Link 
+                    href="/login" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest"
+                  >
+                    <User className="w-5 h-5" /> Sign In
+                  </Link>
+                )}
+
+                <div className="flex gap-6 mt-6">
+                  <Link 
+                    href="/wishlist" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest relative"
+                  >
+                    <Heart className="w-5 h-5" /> Wishlist
+                    {wishlistCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-black text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-white">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link 
+                    href="/cart" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest relative"
+                  >
+                    <ShoppingCart className="w-5 h-5" /> Cart
+                    {cartCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-white">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </header>

@@ -113,7 +113,7 @@ function EditorContent() {
               setSelectedVariant(firstVariant);
               
               const initialAttrs: Record<string, string> = {};
-              (firstVariant.attribute_values || []).forEach((av: any) => {
+              (firstVariant.attributes || []).forEach((av: any) => {
                 initialAttrs[av.attribute_name] = av.value;
               });
               setSelectedAttributes(initialAttrs);
@@ -134,7 +134,7 @@ function EditorContent() {
     if (variants.length === 0) return;
     
     const match = variants.find((v: any) => 
-      (v.attribute_values || []).every((av: any) => 
+      (v.attributes || []).every((av: any) => 
         selectedAttributes[av.attribute_name] === av.value
       )
     );
@@ -147,7 +147,7 @@ function EditorContent() {
     const groups: Record<string, Set<string>> = {};
     
     variants.forEach((v: any) => {
-      (v.attribute_values || []).forEach((av: any) => {
+      (v.attributes || []).forEach((av: any) => {
         if (!groups[av.attribute_name]) groups[av.attribute_name] = new Set();
         groups[av.attribute_name].add(av.value);
       });
@@ -282,8 +282,8 @@ function EditorContent() {
         product_id: selectedProduct.id,
         variant_id: selectedVariant?.id,
         product_name: selectedProduct.name,
-        variant_label: (selectedVariant?.attribute_values || []).map((av: any) => av.value).join(' / '),
-        price: selectedVariant?.price || selectedProduct.base_price,
+        variant_label: (selectedVariant?.attributes || []).map((av: any) => av.value).join(' / '),
+        price: selectedVariant?.price_override || selectedProduct.base_price,
         image: selectedProduct.image_url,
         quantity: 1,
         added_at: new Date().toISOString()
@@ -549,14 +549,14 @@ function EditorContent() {
                       Estimated Price
                     </p>
                     <p className="text-4xl font-black italic bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-                      ₦{parseFloat(selectedVariant?.price || selectedProduct?.base_price || "0").toLocaleString()}
+                      ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
                     </p>
                   </div>
                   {selectedVariant && (
                     <div className="text-right">
                       <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Variant</p>
                       <p className="text-xs font-bold text-zinc-600">
-                        {(selectedVariant.attribute_values || []).map((av: any) => av.value).join(' · ')}
+                        {(selectedVariant.attributes || []).map((av: any) => av.value).join(' · ')}
                       </p>
                     </div>
                   )}
@@ -837,7 +837,7 @@ function EditorContent() {
             className="w-full py-5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
           >
             <ShoppingBag className="w-4 h-4" />
-            Checkout - ₦{parseFloat(selectedVariant?.price || selectedProduct?.base_price || "0").toLocaleString()}
+            Checkout - ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
           </button>
         )}
       </div>
