@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 export default function OrdersDashboard() {
   const { token, isAuthenticated } = useAuth();
@@ -207,7 +207,7 @@ export default function OrdersDashboard() {
                     <div key={item.id} className="flex items-center gap-4 bg-white p-3 pr-6 rounded-2xl border border-zinc-100 shadow-sm">
                       <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden flex-shrink-0">
                         <img 
-                          src={item.design_preview || '/placeholder.png'} 
+                          src={item.design_preview_url || '/placeholder.png'} 
                           className="w-full h-full object-cover" 
                           alt={item.product_name} 
                         />

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 export default function TemplateVault() {
   const { token } = useAuth();
@@ -155,7 +155,7 @@ export default function TemplateVault() {
             <div key={template.id} className="bg-white rounded-[2rem] border border-zinc-100 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group">
               <div className="relative aspect-square bg-zinc-50 overflow-hidden">
                 <img
-                  src={getFullImageUrl(template.preview_image)}
+                  src={getFullImageUrl(template.preview_image_url)}
                   alt={template.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />

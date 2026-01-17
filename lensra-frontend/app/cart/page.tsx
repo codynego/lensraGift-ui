@@ -21,15 +21,15 @@ interface ProductDetails {
   id: number;
   name: string;
   base_price: string;
-  image: string;
+  image_url: string;
 }
 
 interface PlacementDetails {
   product_name: string;
   product_price: string;
-  product_image: string;
+  product_image_url: string;
   design_name: string;
-  design_image: string;
+  design_image_url: string;
 }
 
 interface CartItem {
@@ -38,7 +38,7 @@ interface CartItem {
   placement?: number;    
   quantity: number;
   price?: string;        
-  image?: string;        
+  image_url?: string;        
   name?: string;         
   placement_details?: PlacementDetails; 
   product_details?: ProductDetails; 
@@ -264,18 +264,18 @@ export default function CartPage() {
                     item.price || "0"
                   );
 
-                  const displayImage = item.placement_details?.product_image || 
-                                     item.product_details?.image || 
-                                     item.image;
+                  const displayImage = item.placement_details?.product_image_url || 
+                                     item.product_details?.image_url || 
+                                     item.image_url;
                   
                   return (
                     <div key={displayId || index} className="py-8 flex flex-col md:flex-row gap-8 group">
                       <div className="relative w-44 h-44 bg-zinc-50 rounded-[30px] overflow-hidden flex-shrink-0 border border-zinc-100">
                         {item.placement_details ? (
                           <div className="relative w-full h-full">
-                            <img src={item.placement_details.product_image} className="absolute inset-0 w-full h-full object-contain p-4" alt="Base" />
+                            <img src={item.placement_details.product_image_url} className="absolute inset-0 w-full h-full object-contain p-4" alt="Base" />
                             <div className="absolute bottom-3 right-3 w-16 h-16 bg-white rounded-xl shadow-2xl border border-zinc-100 p-1 overflow-hidden">
-                              <img src={item.placement_details.design_image} className="w-full h-full object-cover rounded-lg" alt="Design" />
+                              <img src={item.placement_details.design_image_url} className="w-full h-full object-cover rounded-lg" alt="Design" />
                             </div>
                           </div>
                         ) : (
