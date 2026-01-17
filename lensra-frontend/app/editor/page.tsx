@@ -42,6 +42,7 @@ interface UploadedImage {
   note: string;
 }
 
+
 const EMOTIONS = [
   { id: 'loved', label: 'Loved', emoji: '❤️' },
   { id: 'joyful', label: 'Joyful', emoji: '🎉' },

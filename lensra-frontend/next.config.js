@@ -3,19 +3,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: '127.0.0.1',
-        port: '8000',
-        pathname: '/media/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '8000',
-        pathname: '/media/**',
+        protocol: 'http',  // Enforce HTTPS for security
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',  // Allow all paths under this hostname
       },
     ],
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
