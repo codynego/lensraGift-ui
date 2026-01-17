@@ -305,6 +305,7 @@ function EditorContent() {
     const gallery = selectedProduct?.gallery || [];
     const mainImage = selectedProduct?.image_url;
     
+    console.log("Gallery:", gallery, "Main Image:", mainImage);
     if (gallery.length > 0) {
       return gallery.map((g: any) => getImageUrl(g.image_url));
     } else if (mainImage) {
