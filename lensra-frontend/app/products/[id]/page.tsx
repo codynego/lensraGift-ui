@@ -3,12 +3,22 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
-  Heart, Share2, ChevronRight, Check, Palette, 
-  Loader2, ArrowLeft, ShoppingBag, Info, Plus, Minus 
+  Heart, Palette, Loader2, ShoppingBag, Plus, Minus, 
+  Sparkles, Check, ChevronDown, ChevronUp, Star
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
+// --- CONFIG ---
+const EMOTIONS = [
+  { id: 'loved', label: 'Loved', emoji: '❤️' },
+  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
+  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
+  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
+  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
+];
 
 // --- INTERFACES ---
 interface ProductImage {
@@ -58,6 +68,11 @@ export default function ProductDetailPage() {
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
 
+  // --- SURPRISE REVEAL STATE ---
+  const [showSurprise, setShowSurprise] = useState(false);
+  const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
+  const [secretMessage, setSecretMessage] = useState("");
+
   useEffect(() => {
     const fetchProductData = async () => {
       try {
@@ -70,23 +85,13 @@ export default function ProductDetailPage() {
         setSelectedImage(data.image_url);
         setQuantity(data.min_order_quantity || 1);
         
-        // Fetch Related Products
         const relatedRes = await fetch(`${BaseUrl}api/products/?category__name=${data.category_name}`);
         if (relatedRes.ok) {
           const relatedData = await relatedRes.json();
-          
-          // 1. Extract the actual array (handles both paginated and non-paginated responses)
           const productsArray = Array.isArray(relatedData) ? relatedData : (relatedData.results || []);
-
-          // 2. Filter and set state
-          setRelatedProducts(
-            productsArray
-              .filter((p: any) => p.id !== data.id)
-              .slice(0, 4)
-          );
+          setRelatedProducts(productsArray.filter((p: any) => p.id !== data.id).slice(0, 4));
         }
 
-        // Auto-select variants
         if (data.variants?.length > 0) {
           const initialAttrs: Record<string, string> = {};
           data.variants[0].attributes.forEach((attr: AttributeValue) => {
@@ -131,12 +136,14 @@ export default function ProductDetailPage() {
           product: product.id, 
           variant: activeVariant?.id || null, 
           quantity: quantity,
+          secret_message: showSurprise ? secretMessage : null,
+          emotion: showSurprise ? selectedEmotion : null,
           ...(!token && { session_id: sessionId })
         })
       });
       if (res.ok) {
         setShowSuccessModal(true);
-        window.dispatchEvent(new Event('storage')); // Update cart count in Navbar
+        window.dispatchEvent(new Event('storage'));
       }
     } catch (err) { console.error(err); } finally { setIsAdding(false); }
   };
@@ -186,10 +193,71 @@ export default function ProductDetailPage() {
             
             <h1 className="text-4xl md:text-5xl font-black text-zinc-900 uppercase italic tracking-tighter leading-[0.85] mb-6">{product.name}</h1>
             
-            <div className="flex items-baseline gap-4 mb-10">
+            <div className="flex items-center gap-6 mb-10">
               <span className="text-4xl font-black text-zinc-900 tracking-tighter italic">
                 ₦{parseFloat(currentPrice).toLocaleString()}
               </span>
+              <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded-full border border-zinc-100">
+                <Star className="w-3 h-3 text-red-600 fill-red-600" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Includes Surprise Reveal</span>
+              </div>
+            </div>
+
+            {/* --- NEW: SURPRISE REVEAL COLLAPSIBLE --- */}
+            <div className="mb-12">
+              <button 
+                onClick={() => setShowSurprise(!showSurprise)}
+                className={`w-full flex items-center justify-between p-6 rounded-[32px] border-2 transition-all duration-500 ${showSurprise ? 'border-red-600 bg-red-50/20' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200'}`}
+              >
+                <div className="flex items-center gap-4 text-left">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${showSurprise ? 'bg-red-600 text-white' : 'bg-white text-zinc-400 border border-zinc-100 shadow-sm'}`}>
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black uppercase italic tracking-tight text-zinc-900">Include Surprise Experience</h3>
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Digital Secret Message Reveal</p>
+                  </div>
+                </div>
+                {showSurprise ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+
+              <AnimatePresence>
+                {showSurprise && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-4 p-8 bg-zinc-50 rounded-[40px] border-2 border-zinc-100 space-y-8">
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">1. What do you want them to feel?</label>
+                        <div className="flex flex-wrap gap-2">
+                          {EMOTIONS.map((e) => (
+                            <button
+                              key={e.id}
+                              onClick={() => setSelectedEmotion(e.id)}
+                              className={`px-5 py-3 rounded-full border-2 text-[10px] font-black uppercase transition-all ${selectedEmotion === e.id ? 'border-red-600 bg-white text-red-600 shadow-lg' : 'border-zinc-200 bg-white text-zinc-400'}`}
+                            >
+                              {e.emoji} {e.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">2. Type your secret message</label>
+                        <textarea 
+                          value={secretMessage}
+                          onChange={(e) => setSecretMessage(e.target.value)}
+                          placeholder="Type your secret message here... (50–300 characters)"
+                          className="w-full bg-white border-2 border-zinc-200 rounded-3xl p-6 text-sm outline-none focus:border-red-600 transition-all h-32 font-medium"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* VARIANT SELECTORS */}
@@ -241,8 +309,12 @@ export default function ProductDetailPage() {
                   <span className="relative z-10 flex items-center justify-center gap-4">Customize Now <Palette className="w-4 h-4" /></span>
                 </button>
               ) : (
-                <button onClick={handleAddToCart} disabled={isAdding || (product.variants.length > 0 && !activeVariant)} className="py-6 border-2 border-zinc-900 text-zinc-900 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50">
-                  {isAdding ? <Loader2 className="animate-spin w-4 h-4" /> : <><ShoppingBag className="w-4 h-4" /> Add to Cart</>}
+                <button 
+                  onClick={handleAddToCart} 
+                  disabled={isAdding || (product.variants.length > 0 && !activeVariant)} 
+                  className="py-8 border-2 border-zinc-900 text-zinc-900 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg active:scale-95"
+                >
+                  {isAdding ? <Loader2 className="animate-spin w-5 h-5" /> : <><ShoppingBag className="w-5 h-5" /> Add to Cart</>}
                 </button>
               )}
             </div>
@@ -281,7 +353,7 @@ export default function ProductDetailPage() {
                   className="group cursor-pointer"
                 >
                   <div className="aspect-[3/4] rounded-[30px] overflow-hidden bg-zinc-50 mb-6 border border-zinc-100">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <img src={item.image_url || ''} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   </div>
                   <h3 className="text-[11px] font-black uppercase tracking-widest mb-1 group-hover:text-red-600 transition-colors">{item.name}</h3>
                   <p className="text-[11px] font-bold text-zinc-400 italic">₦{parseFloat(item.base_price).toLocaleString()}</p>
@@ -293,28 +365,38 @@ export default function ProductDetailPage() {
       </main>
 
       {/* SUCCESS MODAL */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl">
-            <h2 className="text-2xl font-black uppercase italic mb-4 text-zinc-900">Added to Cart!</h2>
-            <p className="text-zinc-500 mb-6 font-bold text-sm uppercase tracking-wide">Your item has been added successfully.</p>
-            <div className="flex gap-4 justify-center">
-              <button 
-                onClick={() => { setShowSuccessModal(false); router.push('/cart'); }} 
-                className="px-6 py-3 bg-zinc-900 text-white rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-red-600 transition-colors"
-              >
-                View Cart
-              </button>
-              <button 
-                onClick={() => setShowSuccessModal(false)} 
-                className="px-6 py-3 border-2 border-zinc-900 text-zinc-900 rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-colors"
-              >
-                Continue Shopping
-              </button>
-            </div>
+      <AnimatePresence>
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white p-10 rounded-[40px] max-w-md w-full text-center shadow-2xl border border-zinc-100"
+            >
+              <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8">
+                <Check className="w-10 h-10" />
+              </div>
+              <h2 className="text-3xl font-black uppercase italic mb-4 text-zinc-900">Added to Cart!</h2>
+              <p className="text-zinc-500 mb-10 font-bold text-xs uppercase tracking-widest leading-relaxed">Your custom experience has been saved to your bag.</p>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => { setShowSuccessModal(false); router.push('/cart'); }} 
+                  className="w-full py-5 bg-zinc-900 text-white rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-red-600 transition-all active:scale-95"
+                >
+                  View Cart & Checkout
+                </button>
+                <button 
+                  onClick={() => setShowSuccessModal(false)} 
+                  className="w-full py-5 border-2 border-zinc-100 text-zinc-400 rounded-full font-black text-xs uppercase tracking-[0.2em] hover:border-zinc-900 hover:text-zinc-900 transition-all"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
