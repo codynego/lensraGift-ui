@@ -91,6 +91,7 @@ function EditorContent() {
         const productsData = await productsRes.json();
         const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
         const productList = rawList.filter((p: any) => p.is_customizable === true);
+        console.log("Fetched Products:", productList);
         setAllProducts(productList);
 
         // Fetch template design if provided
@@ -375,9 +376,9 @@ function EditorContent() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-50 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="aspect-square relative rounded-2xl overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100 mb-4 ring-1 ring-zinc-200/50 group-hover:ring-red-200 transition-all">
-                  {p.image && (
+                  {p.image_url && (
                     <Image 
-                      src={getImageUrl(p.image)} 
+                      src={getImageUrl(p.image_url)} 
                       alt={p.name} 
                       fill 
                       className="object-cover group-hover:scale-105 transition-transform duration-300" 
