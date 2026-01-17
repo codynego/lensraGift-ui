@@ -66,9 +66,7 @@ export default function DramaticSecretReveal() {
   const params = useParams();
   const token = params.token as string;
 
-  console.log('Component mounted');
-  console.log('Params:', params);
-  console.log('Token from params:', token);
+
 
   const [isRevealed, setIsRevealed] = useState(false);
   const [displayText, setDisplayText] = useState("");
@@ -82,7 +80,7 @@ export default function DramaticSecretReveal() {
     emotion: "loved"
   });
 
-  console.log('Component state:', { loading, error, token, hasData: !!data.secret_message });
+
 
   // Get emotion config
   const emotionConfig = EMOTION_CONFIG[data.emotion as keyof typeof EMOTION_CONFIG] || EMOTION_CONFIG.loved;
@@ -108,12 +106,9 @@ export default function DramaticSecretReveal() {
         const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lensra.com/';
         const url = `${API_BASE_URL}api/orders/secret-message/${token}/`;
         
-        console.log('Fetching from:', url);
-        console.log('Token:', token);
         
         const response = await fetch(url);
         
-        console.log('Response status:', response.status);
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -126,8 +121,7 @@ export default function DramaticSecretReveal() {
         }
 
         const json = await response.json();
-        console.log('Success! Data:', json);
-        
+
         // Handle null values from API
         if (!json.secret_message) {
           throw new Error('No secret message found for this token');
