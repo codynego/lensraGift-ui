@@ -636,7 +636,7 @@ function EditorContent() {
                 {images.map((img, idx) => (
                   <div key={idx} className="group flex gap-4 p-5 bg-white rounded-3xl border border-zinc-200/50 shadow-md hover:shadow-xl transition-all">
                     <div className="w-24 h-24 relative rounded-2xl overflow-hidden flex-shrink-0 ring-2 ring-zinc-100">
-                      <img src={img.preview} className="object-cover w-full h-full" alt="upload" />
+                      <img src={img.preview_url} className="object-cover w-full h-full" alt="upload" />
                       <button 
                         onClick={() => setImages(images.filter((_, i) => i !== idx))} 
                         className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg"
