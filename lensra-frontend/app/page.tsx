@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Zap, TrendingUp, Award, ArrowRight, 
   ShieldCheck, Loader2, Edit3, Palette, ChevronRight,
-  Shirt, Coffee, Home, Briefcase, Gift, Sparkles, Clock, MapPin, Eye, Search, User, Heart, Menu, X
+  Shirt, Coffee, Home, Briefcase, Gift, Sparkles, Clock, MapPin, Eye, Search, User, Heart, Menu, X, Cake, Image, ThumbsUp, HandHeart
 } from 'lucide-react';
 
 const BaseUrl = "https://api.lensra.com/";
@@ -41,13 +41,42 @@ export default function LensraHomepage() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // const categories = [
+  //   { name: "Shirts", icon: <Shirt className="w-5 h-5" />, color: "from-blue-500 to-blue-600" },
+  //   { name: "Mugs", icon: <Coffee className="w-5 h-5" />, color: "from-orange-500 to-orange-600" },
+  //   { name: "Home", icon: <Home className="w-5 h-5" />, color: "from-green-500 to-green-600" },
+  //   { name: "Office", icon: <Briefcase className="w-5 h-5" />, color: "from-purple-500 to-purple-600" },
+  //   { name: "Gifts", icon: <Gift className="w-5 h-5" />, color: "from-pink-500 to-pink-600" },
+
+  // ];
   const categories = [
-    { name: "Shirts", icon: <Shirt className="w-5 h-5" />, color: "from-blue-500 to-blue-600" },
-    { name: "Mugs", icon: <Coffee className="w-5 h-5" />, color: "from-orange-500 to-orange-600" },
-    { name: "Home", icon: <Home className="w-5 h-5" />, color: "from-green-500 to-green-600" },
-    { name: "Office", icon: <Briefcase className="w-5 h-5" />, color: "from-purple-500 to-purple-600" },
-    { name: "Gifts", icon: <Gift className="w-5 h-5" />, color: "from-pink-500 to-pink-600" },
-  ];
+  {
+    name: "For Love",
+    icon: <Heart className="w-5 h-5" />,
+    color: "from-red-500 to-red-600",
+  },
+  {
+    name: "For Birthdays",
+    icon: <Cake className="w-5 h-5" />,
+    color: "from-pink-500 to-pink-600",
+  },
+  {
+    name: "For Memories",
+    icon: <Image className="w-5 h-5" />,
+    color: "from-rose-500 to-rose-600",
+  },
+  {
+    name: "For Thanks",
+    icon: <ThumbsUp className="w-5 h-5" />,
+    color: "from-orange-500 to-orange-600",
+  },
+  {
+    name: "Just Because",
+    icon: <Sparkles className="w-5 h-5" />,
+    color: "from-emerald-500 to-emerald-600",
+  },
+];
+
 
   useEffect(() => {
     const fetchData = async () => {
