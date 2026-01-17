@@ -66,6 +66,10 @@ export default function DramaticSecretReveal() {
   const params = useParams();
   const token = params.token as string;
 
+  console.log('Component mounted');
+  console.log('Params:', params);
+  console.log('Token from params:', token);
+
   const [isRevealed, setIsRevealed] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -77,6 +81,8 @@ export default function DramaticSecretReveal() {
     secret_message: "",
     emotion: "loved"
   });
+
+  console.log('Component state:', { loading, error, token, hasData: !!data.secret_message });
 
   // Get emotion config
   const emotionConfig = EMOTION_CONFIG[data.emotion as keyof typeof EMOTION_CONFIG] || EMOTION_CONFIG.loved;
@@ -122,8 +128,13 @@ export default function DramaticSecretReveal() {
         const json = await response.json();
         console.log('Success! Data:', json);
         
+        // Handle null values from API
+        if (!json.secret_message) {
+          throw new Error('No secret message found for this token');
+        }
+        
         setData({
-          secret_message: json.secret_message,
+          secret_message: json.secret_message || '',
           emotion: json.emotion || 'loved'
         });
         setLoading(false);
