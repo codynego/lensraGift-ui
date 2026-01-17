@@ -474,9 +474,9 @@ function EditorContent() {
                 <div className="p-6 bg-gradient-to-br from-red-50 to-white rounded-3xl border border-red-200 shadow-lg">
                   <div className="flex gap-4">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden bg-zinc-950 flex-shrink-0">
-                      {templateDesign.preview_image && (
+                      {templateDesign.preview_image_url && (
                         <img 
-                          src={getImageUrl(templateDesign.preview_image)} 
+                          src={getImageUrl(templateDesign.preview_image_url)} 
                           alt={templateDesign.name}
                           className="w-full h-full object-cover"
                         />
