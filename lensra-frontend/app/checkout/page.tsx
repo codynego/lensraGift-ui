@@ -63,20 +63,22 @@ export default function CheckoutPage() {
           const guestItems = JSON.parse(localGuestCart);
           if (guestItems.length > 0) {
             try {
-              await Promise.all(guestItems.map((item: any) => 
-                fetch(`${BaseUrl}api/orders/cart/`, {
+              await Promise.all(guestItems.map(async (item: any) => {
+                const formData = new FormData();
+                formData.append('product', item.product_id || item.product);
+                if (item.placement) {
+                  formData.append('placement', item.placement);
+                }
+                formData.append('quantity', item.quantity.toString());
+
+                await fetch(`${BaseUrl}api/orders/cart/`, {
                   method: 'POST',
                   headers: { 
-                    'Authorization': `Bearer ${token}`, 
-                    'Content-Type': 'application/json' 
+                    'Authorization': `Bearer ${token}`
                   },
-                  body: JSON.stringify({
-                    product: item.product_id || item.product,
-                    placement: item.placement || null,
-                    quantity: item.quantity
-                  })
-                })
-              ));
+                  body: formData
+                });
+              }));
               localStorage.removeItem('guest_cart');
               localStorage.removeItem('guest_session_id'); // Optional: Clean up old session
             } catch (syncError) {
@@ -186,33 +188,30 @@ export default function CheckoutPage() {
       localStorage.setItem('guest_session_id', sessionId);
     }
 
-    const orderPayload: any = {
-      shipping_name: formData.full_name,
-      shipping_address: formData.address,
-      shipping_city: formData.city,
-      shipping_state: formData.state,
-      shipping_country: "Nigeria",
-      phone_number: formData.phone,
-    };
+    const orderFormData = new FormData();
+    orderFormData.append('shipping_name', formData.full_name);
+    orderFormData.append('shipping_address', formData.address);
+    orderFormData.append('shipping_city', formData.city);
+    orderFormData.append('shipping_state', formData.state);
+    orderFormData.append('shipping_country', "Nigeria");
+    orderFormData.append('phone_number', formData.phone);
 
     if (!token) {
-      orderPayload.guest_email = formData.email;
-      orderPayload.session_id = sessionId; // Link the guest session to the order
+      orderFormData.append('guest_email', formData.email);
+      if (sessionId) {
+        orderFormData.append('session_id', sessionId); // Link the guest session to the order
+      }
     } else if (selectedAddressId) {
-      orderPayload.address_id = selectedAddressId;
-    } else {
-      // For new address on authenticated user, perhaps create address first or include in payload
-      // Assuming backend handles new address creation if no address_id
-    }
+      orderFormData.append('address_id', selectedAddressId.toString());
+    } // For new address on authenticated user, assuming backend handles it
 
     try {
       const orderRes = await fetch(`${BaseUrl}api/orders/orders/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
         },
-        body: JSON.stringify(orderPayload)
+        body: orderFormData
       });
 
       const orderData = await orderRes.json();
@@ -224,23 +223,21 @@ export default function CheckoutPage() {
         localStorage.removeItem('user_cart');
         if (!token) localStorage.removeItem('guest_session_id');
 
-        const payPayload: any = {
-          order_id: orderData.id,
-          email: orderEmail
-        };
-        console.log("Payment Payload:", payPayload);
+        const payFormData = new FormData();
+        payFormData.append('order_id', orderData.id.toString());
+        payFormData.append('email', orderEmail);
+        console.log("Payment Payload:", { order_id: orderData.id, email: orderEmail });
         console.log("order:", orderData)
-        if (!token) {
-          payPayload.session_id = sessionId; // Include session_id for guest payments
+        if (!token && sessionId) {
+          payFormData.append('session_id', sessionId); // Include session_id for guest payments
         }
 
         const payRes = await fetch(`${BaseUrl}api/payments/initialize/`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             ...(token && { 'Authorization': `Bearer ${token}` })
           },
-          body: JSON.stringify(payPayload)
+          body: payFormData
         });
 
         const payData = await payRes.json();
