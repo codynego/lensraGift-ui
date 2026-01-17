@@ -285,10 +285,10 @@ function EditorContent() {
 
   const displayImages = useMemo(() => {
     const gallery = selectedProduct?.gallery || [];
-    const mainImage = selectedProduct?.image;
+    const mainImage = selectedProduct?.image_url;
     
     if (gallery.length > 0) {
-      return gallery.map((g: any) => getImageUrl(g.image));
+      return gallery.map((g: any) => getImageUrl(g.image_url));
     } else if (mainImage) {
       return [getImageUrl(mainImage)];
     }
@@ -323,7 +323,7 @@ function EditorContent() {
           {templateDesign && (
             <div className="max-w-md mx-auto">
               <div className="relative aspect-square rounded-3xl overflow-hidden bg-zinc-950 border-2 border-zinc-800 shadow-2xl">
-                {templateDesign.preview_image && (
+                {templateDesign.preview_image_url && (
                   <Image 
                     src={getImageUrl(templateDesign.preview_image)} 
                     alt={templateDesign.name}
@@ -358,9 +358,9 @@ function EditorContent() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-50 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="aspect-square relative rounded-2xl overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100 mb-4 ring-1 ring-zinc-200/50 group-hover:ring-red-200 transition-all">
-                  {p.image && (
+                  {p.image_url && (
                     <Image 
-                      src={getImageUrl(p.image)} 
+                      src={getImageUrl(p.image_url)} 
                       alt={p.name} 
                       fill 
                       className="object-cover group-hover:scale-105 transition-transform duration-300" 
@@ -456,9 +456,9 @@ function EditorContent() {
                 <div className="p-6 bg-gradient-to-br from-red-50 to-white rounded-3xl border border-red-200 shadow-lg">
                   <div className="flex gap-4">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden bg-zinc-950 flex-shrink-0">
-                      {templateDesign.preview_image && (
+                      {templateDesign.preview_image_url && (
                         <img 
-                          src={getImageUrl(templateDesign.preview_image)} 
+                          src={getImageUrl(templateDesign.preview_image_url)} 
                           alt={templateDesign.name}
                           className="w-full h-full object-cover"
                         />
