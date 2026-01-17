@@ -7,7 +7,7 @@ import {
   ChevronLeft, X 
 } from 'lucide-react';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 // Define the shape of your product for TypeScript
 interface Product {

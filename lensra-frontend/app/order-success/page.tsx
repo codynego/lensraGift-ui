@@ -9,7 +9,7 @@ import {
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 // 1. Create a "Inner" component for the logic
 function OrderSuccessContent() {
