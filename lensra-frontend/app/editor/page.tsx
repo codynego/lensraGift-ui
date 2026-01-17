@@ -10,16 +10,7 @@ import {
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
-
-// --- CONFIG ---
-const EMOTIONS = [
-  { id: 'loved', label: 'Loved', emoji: '❤️' },
-  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
-  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
-  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
-  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
-];
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
 
 const getGuestSessionId = () => {
   if (typeof window === 'undefined') return '';
@@ -36,6 +27,15 @@ const getImageUrl = (path: string | null | undefined): string => {
   if (path.startsWith('http')) return path;
   return `${BaseUrl.replace(/\/$/, '')}${path.startsWith('/') ? path : '/' + path}`;
 };
+
+// --- CONFIG ---
+const EMOTIONS = [
+  { id: 'loved', label: 'Loved', emoji: '❤️' },
+  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
+  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
+  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
+  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
+];
 
 export default function ProductEditor() {
   return (
@@ -113,7 +113,7 @@ function EditorContent() {
               setSelectedVariant(firstVariant);
               
               const initialAttrs: Record<string, string> = {};
-              (firstVariant.attributes || []).forEach((av: any) => {
+              (firstVariant.attribute_values || []).forEach((av: any) => {
                 initialAttrs[av.attribute_name] = av.value;
               });
               setSelectedAttributes(initialAttrs);
@@ -134,7 +134,7 @@ function EditorContent() {
     if (variants.length === 0) return;
     
     const match = variants.find((v: any) => 
-      (v.attributes || []).every((av: any) => 
+      (v.attribute_values || []).every((av: any) => 
         selectedAttributes[av.attribute_name] === av.value
       )
     );
@@ -147,7 +147,7 @@ function EditorContent() {
     const groups: Record<string, Set<string>> = {};
     
     variants.forEach((v: any) => {
-      (v.attributes || []).forEach((av: any) => {
+      (v.attribute_values || []).forEach((av: any) => {
         if (!groups[av.attribute_name]) groups[av.attribute_name] = new Set();
         groups[av.attribute_name].add(av.value);
       });
@@ -234,8 +234,7 @@ function EditorContent() {
             platform: "web",
             custom_text: effectiveCustomText,
             special_instructions: effectiveOverallNote,
-            template_used: templateDesign ? templateDesign.id : null,
-            ...(showSurprise && { secret_message: secretMessage, emotion: selectedEmotion })
+            template_used: templateDesign ? templateDesign.id : null
           }
         }),
       });
@@ -271,7 +270,7 @@ function EditorContent() {
           quantity: 1,
           session_id: token ? null : sessionId,
           secret_message: showSurprise ? secretMessage : null,
-          emotion: showSurprise ? selectedEmotion : null
+          emotion: showSurprise ? selectedEmotion : null,
         }),
       });
 
@@ -282,9 +281,9 @@ function EditorContent() {
         product_id: selectedProduct.id,
         variant_id: selectedVariant?.id,
         product_name: selectedProduct.name,
-        variant_label: (selectedVariant?.attributes || []).map((av: any) => av.value).join(' / '),
-        price: selectedVariant?.price_override || selectedProduct.base_price,
-        image: selectedProduct.image_url,
+        variant_label: (selectedVariant?.attribute_values || []).map((av: any) => av.value).join(' / '),
+        price: selectedVariant?.price || selectedProduct.base_price,
+        image: selectedProduct.image,
         quantity: 1,
         added_at: new Date().toISOString()
       };
@@ -303,11 +302,10 @@ function EditorContent() {
 
   const displayImages = useMemo(() => {
     const gallery = selectedProduct?.gallery || [];
-    const mainImage = selectedProduct?.image_url;
+    const mainImage = selectedProduct?.image;
     
-    console.log("Gallery:", gallery, "Main Image:", mainImage);
     if (gallery.length > 0) {
-      return gallery.map((g: any) => getImageUrl(g.image_url));
+      return gallery.map((g: any) => getImageUrl(g.image));
     } else if (mainImage) {
       return [getImageUrl(mainImage)];
     }
@@ -342,9 +340,9 @@ function EditorContent() {
           {templateDesign && (
             <div className="max-w-md mx-auto">
               <div className="relative aspect-square rounded-3xl overflow-hidden bg-zinc-950 border-2 border-zinc-800 shadow-2xl">
-                {templateDesign.preview_image_url && (
+                {templateDesign.preview_image && (
                   <Image 
-                    src={getImageUrl(templateDesign.preview_image_url)} 
+                    src={getImageUrl(templateDesign.preview_image)} 
                     alt={templateDesign.name}
                     fill
                     className="object-cover"
@@ -377,9 +375,9 @@ function EditorContent() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-50 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="aspect-square relative rounded-2xl overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100 mb-4 ring-1 ring-zinc-200/50 group-hover:ring-red-200 transition-all">
-                  {p.image_url && (
+                  {p.image && (
                     <Image 
-                      src={getImageUrl(p.image_url)} 
+                      src={getImageUrl(p.image)} 
                       alt={p.name} 
                       fill 
                       className="object-cover group-hover:scale-105 transition-transform duration-300" 
@@ -475,9 +473,9 @@ function EditorContent() {
                 <div className="p-6 bg-gradient-to-br from-red-50 to-white rounded-3xl border border-red-200 shadow-lg">
                   <div className="flex gap-4">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden bg-zinc-950 flex-shrink-0">
-                      {templateDesign.preview_image_url && (
+                      {templateDesign.preview_image && (
                         <img 
-                          src={getImageUrl(templateDesign.preview_image_url)} 
+                          src={getImageUrl(templateDesign.preview_image)} 
                           alt={templateDesign.name}
                           className="w-full h-full object-cover"
                         />
@@ -550,14 +548,14 @@ function EditorContent() {
                       Estimated Price
                     </p>
                     <p className="text-4xl font-black italic bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-                      ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
+                      ₦{parseFloat(selectedVariant?.price || selectedProduct?.base_price || "0").toLocaleString()}
                     </p>
                   </div>
                   {selectedVariant && (
                     <div className="text-right">
                       <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Variant</p>
                       <p className="text-xs font-bold text-zinc-600">
-                        {(selectedVariant.attributes || []).map((av: any) => av.value).join(' · ')}
+                        {(selectedVariant.attribute_values || []).map((av: any) => av.value).join(' · ')}
                       </p>
                     </div>
                   )}
@@ -724,12 +722,7 @@ function EditorContent() {
             </div>
 
             {/* --- NEW: SURPRISE REVEAL COLLAPSIBLE --- */}
-            <div className="space-y-5 pt-8 border-t-2 border-zinc-100">
-              <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
-                <Sparkles className="w-5 h-5" />
-                <span>Include Surprise Experience</span>
-              </label>
-
+            <div className="mb-12 pt-8 border-t-2 border-zinc-100">
               <button 
                 onClick={() => setShowSurprise(!showSurprise)}
                 className={`w-full flex items-center justify-between p-6 rounded-[32px] border-2 transition-all duration-500 ${showSurprise ? 'border-red-600 bg-red-50/20' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200'}`}
@@ -739,8 +732,8 @@ function EditorContent() {
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black uppercase italic tracking-tight text-zinc-900">Digital Secret Message</h3>
-                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Emotional Reveal</p>
+                    <h3 className="text-xs font-black uppercase italic tracking-tight text-zinc-900">Include Surprise Experience</h3>
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Digital Secret Message Reveal</p>
                   </div>
                 </div>
                 {showSurprise ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -838,7 +831,7 @@ function EditorContent() {
             className="w-full py-5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
           >
             <ShoppingBag className="w-4 h-4" />
-            Checkout - ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
+            Checkout - ₦{parseFloat(selectedVariant?.price || selectedProduct?.base_price || "0").toLocaleString()}
           </button>
         )}
       </div>
