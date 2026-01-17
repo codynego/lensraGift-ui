@@ -67,7 +67,7 @@ export default function ProductDetailPage() {
         const data = await response.json();
         
         setProduct(data);
-        setSelectedImage(data.image);
+        setSelectedImage(data.image_url);
         setQuantity(data.min_order_quantity || 1);
         
         // Fetch Related Products
