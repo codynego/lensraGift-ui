@@ -167,7 +167,7 @@ export default function LensraHomepage() {
             {/* Right Hero Image */}
             <div className="relative bg-zinc-100 min-h-[400px] lg:min-h-[600px] overflow-hidden">
               <img 
-                src="/heroimg-2.png" 
+                src="/heroimg-4.png" 
                 alt="Hero Banner" 
                 className="w-full h-full object-cover"
               />
