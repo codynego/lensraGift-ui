@@ -103,7 +103,7 @@ export default function DramaticSecretReveal() {
     const fetchSecret = async () => {
       try {
         // Replace with your actual API base URL
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lensra.com/';
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lensra.com';
         const url = `${API_BASE_URL}/api/orders/secret-message/${token}/`;
         
         console.log('Fetching from:', url);
