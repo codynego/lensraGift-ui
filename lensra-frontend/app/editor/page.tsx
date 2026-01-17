@@ -23,6 +23,7 @@ const getGuestSessionId = () => {
 };
 
 const getImageUrl = (path: string | null | undefined): string => {
+  console.log("getImageUrl called with path:", path);
   if (!path) return '';
   if (path.startsWith('http')) return path;
   return `${BaseUrl.replace(/\/$/, '')}${path.startsWith('/') ? path : '/' + path}`;
@@ -303,10 +304,10 @@ function EditorContent() {
 
   const displayImages = useMemo(() => {
     const gallery = selectedProduct?.gallery || [];
-    const mainImage = selectedProduct?.image;
+    const mainImage = selectedProduct?.image_url;
     
     if (gallery.length > 0) {
-      return gallery.map((g: any) => getImageUrl(g.image));
+      return gallery.map((g: any) => getImageUrl(g.image_url));
     } else if (mainImage) {
       return [getImageUrl(mainImage)];
     }
@@ -341,9 +342,9 @@ function EditorContent() {
           {templateDesign && (
             <div className="max-w-md mx-auto">
               <div className="relative aspect-square rounded-3xl overflow-hidden bg-zinc-950 border-2 border-zinc-800 shadow-2xl">
-                {templateDesign.preview_image && (
+                {templateDesign.preview_image_url && (
                   <Image 
-                    src={getImageUrl(templateDesign.preview_image)} 
+                    src={getImageUrl(templateDesign.preview_image_url)} 
                     alt={templateDesign.name}
                     fill
                     className="object-cover"
@@ -474,9 +475,9 @@ function EditorContent() {
                 <div className="p-6 bg-gradient-to-br from-red-50 to-white rounded-3xl border border-red-200 shadow-lg">
                   <div className="flex gap-4">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden bg-zinc-950 flex-shrink-0">
-                      {templateDesign.preview_image && (
+                      {templateDesign.preview_image_url && (
                         <img 
-                          src={getImageUrl(templateDesign.preview_image)} 
+                          src={getImageUrl(templateDesign.preview_image_url)} 
                           alt={templateDesign.name}
                           className="w-full h-full object-cover"
                         />
