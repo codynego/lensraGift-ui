@@ -305,6 +305,7 @@ function EditorContent() {
   const displayImages = useMemo(() => {
     const gallery = selectedProduct?.gallery || [];
     const mainImage = selectedProduct?.image_url;
+    console.log("Calculating displayImages with gallery:", gallery, "and mainImage:", mainImage);
     
     if (gallery.length > 0) {
       return gallery.map((g: any) => getImageUrl(g.image_url));
@@ -379,7 +380,7 @@ function EditorContent() {
                 <div className="aspect-square relative rounded-2xl overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100 mb-4 ring-1 ring-zinc-200/50 group-hover:ring-red-200 transition-all">
                   {p.image_url && (
                     <Image 
-                      src={getImageUrl(p.image_url)} 
+                      src={getImageUrl(p.image)} 
                       alt={p.name} 
                       fill 
                       className="object-cover group-hover:scale-105 transition-transform duration-300" 
