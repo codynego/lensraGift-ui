@@ -17,7 +17,7 @@ interface Product {
   name: string;
   base_price: string;
   category: string;
-  image: string | null;
+  image_url: string | null;
   is_active: boolean;
   is_trending: boolean;
   is_featured: boolean;
@@ -408,7 +408,7 @@ function SectionHeader({ title, subtitle, description }: { title: string, subtit
 }
 
 function ProductCard({ product }: { product: Product }) {
-  const imageUrl = getImageUrl(product.image);
+  const imageUrl = getImageUrl(product.image_url);
   
   return (
     <Link href={`/products/${product.slug}`} className="group">
@@ -452,7 +452,7 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 function TrendingCard({ product, index }: { product: Product, index: number }) {
-  const imageUrl = getImageUrl(product.image);
+  const imageUrl = getImageUrl(product.image_url);
   
   return (
     <Link 
