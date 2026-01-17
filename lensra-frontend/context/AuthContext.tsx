@@ -36,7 +36,7 @@ type AuthContextType = {
   logout: () => Promise<void>;
 };
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://api.lensra.com/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 

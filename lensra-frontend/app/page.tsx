@@ -9,7 +9,7 @@ import {
   Shirt, Coffee, Home, Briefcase, Gift, Sparkles, Clock, MapPin, Eye
 } from 'lucide-react';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://api.lensra.com/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 interface Product {
   id: number;
