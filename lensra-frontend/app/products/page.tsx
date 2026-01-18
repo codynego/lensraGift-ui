@@ -45,21 +45,11 @@ function ProductsContent() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedOccasion, setSelectedOccasion] = useState('any');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProductsCount, setTotalProductsCount] = useState(0);
 
   const itemsPerPage = 6;
-
-  const occasionOptions = [
-    { label: "Any Occasion", value: "any" },
-    { label: "For Love", value: "For Love" },
-    { label: "Birthday", value: "Birthday" },
-    { label: "Wedding", value: "Wedding" },
-    { label: "Anniversary", value: "Anniversary" },
-    { label: "Graduation", value: "Graduation" },
-  ];
   
   const priceRanges: PriceRange[] = [
     { label: "Any Price", value: "all" },
@@ -75,8 +65,7 @@ function ProductsContent() {
         setCategoriesLoading(true);
         const response = await fetch(`${BaseUrl}api/products/categories/`);
         const data = await response.json();
-        // Handle paginated response
-        setCategories(data.results || (Array.isArray(data) ? data : []));
+        setCategories(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Categories Fetch Error:", err);
         setCategories([]);
@@ -92,13 +81,11 @@ function ProductsContent() {
   useEffect(() => {
     const q = searchParams.get('q') || '';
     const category = searchParams.get('category') || 'all';
-    const occasion = searchParams.get('occasion') || 'any';
     const price = searchParams.get('price') || 'all';
     const page = Number(searchParams.get('page')) || 1;
 
     setSearchQuery(q);
     setSelectedCategory(category);
-    setSelectedOccasion(occasion);
     setSelectedPriceRange(price);
     setCurrentPage(page);
   }, [searchParams]);
@@ -112,10 +99,7 @@ function ProductsContent() {
         
         if (searchQuery) params.append('search', searchQuery);
         if (selectedCategory !== 'all') {
-          params.append('category__slug', selectedCategory);
-        }
-        if (selectedOccasion !== 'any') {
-          params.append('occasion', selectedOccasion);
+          params.append('category', selectedCategory);
         }
 
         const range = priceRanges.find(r => r.value === selectedPriceRange);
@@ -126,8 +110,13 @@ function ProductsContent() {
 
         params.append('page', currentPage.toString());
 
-        const response = await fetch(`${BaseUrl}api/products/?${params.toString()}`);
+        const url = `${BaseUrl}api/products/?${params.toString()}`;
+        console.log('Fetching products:', url);
+        
+        const response = await fetch(url);
         const data = await response.json();
+        
+        console.log('Products response:', data);
         
         setProducts(data.results || (Array.isArray(data) ? data : []));
         setTotalProductsCount(data.count || 0);
@@ -140,7 +129,7 @@ function ProductsContent() {
 
     const timer = setTimeout(() => fetchProducts(), 300);
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategory, selectedOccasion, selectedPriceRange, currentPage]);
+  }, [searchQuery, selectedCategory, selectedPriceRange, currentPage]);
 
   // Update URL when filters change
   const updateURL = useCallback(() => {
@@ -148,13 +137,12 @@ function ProductsContent() {
 
     if (searchQuery) params.set('q', searchQuery);
     if (selectedCategory !== 'all') params.set('category', selectedCategory);
-    if (selectedOccasion !== 'any') params.set('occasion', selectedOccasion);
     if (selectedPriceRange !== 'all') params.set('price', selectedPriceRange);
     if (currentPage > 1) params.set('page', currentPage.toString());
 
     const newUrl = params.toString() ? `/products?${params.toString()}` : '/products';
     router.push(newUrl, { scroll: false });
-  }, [searchQuery, selectedCategory, selectedOccasion, selectedPriceRange, currentPage, router]);
+  }, [searchQuery, selectedCategory, selectedPriceRange, currentPage, router]);
 
   useEffect(() => {
     updateURL();
@@ -164,11 +152,6 @@ function ProductsContent() {
 
   const handleCategoryChange = (slug: string) => {
     setSelectedCategory(slug);
-    setCurrentPage(1);
-  };
-
-  const handleOccasionChange = (value: string) => {
-    setSelectedOccasion(value);
     setCurrentPage(1);
   };
 
@@ -269,32 +252,6 @@ function ProductsContent() {
               </div>
             </div>
 
-            {/* Occasions */}
-            <div className="pt-6 border-t border-zinc-100">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Occasions</h4>
-              <div className="space-y-4">
-                {occasionOptions.map((occ) => (
-                  <label key={occ.value} className="flex items-center gap-3 cursor-pointer group">
-                    <input 
-                      type="radio" 
-                      name="occasion-mobile" 
-                      checked={selectedOccasion === occ.value} 
-                      onChange={() => {
-                        handleOccasionChange(occ.value);
-                        setShowMobileFilters(false);
-                      }} 
-                      className="w-4 h-4 accent-red-600" 
-                    />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'
-                    }`}>
-                      {occ.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
             {/* Price Range */}
             <div className="pt-6 border-t border-zinc-100">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Price Range</h4>
@@ -359,29 +316,6 @@ function ProductsContent() {
                   ))}
                 </div>
               )}
-            </div>
-
-            {/* Occasions */}
-            <div className="pt-10 border-t border-zinc-100">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Occasions</h3>
-              <div className="space-y-4">
-                {occasionOptions.map((occ) => (
-                  <label key={occ.value} className="flex items-center gap-3 cursor-pointer group">
-                    <input 
-                      type="radio" 
-                      name="occasion" 
-                      checked={selectedOccasion === occ.value} 
-                      onChange={() => handleOccasionChange(occ.value)} 
-                      className="w-4 h-4 accent-red-600" 
-                    />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'
-                    }`}>
-                      {occ.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
             </div>
 
             {/* Price Range */}
