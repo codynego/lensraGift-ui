@@ -41,6 +41,7 @@ export default function LensraHomepage() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   const occasions = [
     {
@@ -148,6 +149,13 @@ export default function LensraHomepage() {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -353,7 +361,7 @@ export default function LensraHomepage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
             {occasions.map((occasion) => (
               <a 
                 key={occasion.name} 
@@ -458,6 +466,17 @@ export default function LensraHomepage() {
               ))}
             </div>
           )}
+
+          {/* See All Products Button */}
+          <div className="text-center mt-12">
+            <a 
+              href="/products" 
+              className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full text-xs font-black uppercase tracking-widest hover:shadow-2xl hover:shadow-red-600/30 transition-all"
+            >
+              See All Products
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          </div>
         </div>
       </section>
 
@@ -484,11 +503,10 @@ export default function LensraHomepage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
             {[
               { name: "Love Edition", stock: 5, items: "1 premium gift + 1 surprise item" },
-              { name: "Birthday Special", stock: 3, items: "2 personalized gifts + 1 surprise" },
-              { name: "Deluxe Bundle", stock: 2, items: "3 premium items + special surprise" }
+              { name: "Birthday Special", stock: 3, items: "2 personalized gifts + 1 surprise" }
             ].map((box) => (
               <div key={box.name} className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all">
                 <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -544,26 +562,41 @@ export default function LensraHomepage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {testimonials.map((testimonial, idx) => (
-              <div key={idx} className="bg-zinc-50 rounded-2xl p-8 border border-zinc-200">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-red-600 fill-red-600" />
+          {/* Auto-sliding carousel for all screen sizes */}
+          <div className="mb-12 max-w-3xl mx-auto">
+            <div className="relative">
+              <div className="bg-zinc-50 rounded-2xl p-8 md:p-12 border border-zinc-200">
+                <div className="flex gap-1 mb-4 justify-center">
+                  {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-red-600 fill-red-600" />
                   ))}
                 </div>
-                <p className="text-sm text-zinc-700 mb-6 leading-relaxed">"{testimonial.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center">
-                    <span className="text-white font-black text-lg">{testimonial.name[0]}</span>
+                <p className="text-base md:text-lg text-zinc-700 mb-8 leading-relaxed text-center">"{testimonials[currentTestimonial].text}"</p>
+                <div className="flex items-center gap-3 justify-center">
+                  <div className="w-14 h-14 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center">
+                    <span className="text-white font-black text-xl">{testimonials[currentTestimonial].name[0]}</span>
                   </div>
                   <div>
-                    <p className="text-sm font-black uppercase text-zinc-900">{testimonial.name}</p>
-                    <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">{testimonial.location}</p>
+                    <p className="text-sm font-black uppercase text-zinc-900">{testimonials[currentTestimonial].name}</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">{testimonials[currentTestimonial].location}</p>
                   </div>
                 </div>
               </div>
-            ))}
+              
+              {/* Carousel indicators */}
+              <div className="flex justify-center gap-2 mt-6">
+                {testimonials.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentTestimonial(idx)}
+                    className={`h-2 rounded-full transition-all ${
+                      idx === currentTestimonial ? 'w-8 bg-red-600' : 'w-2 bg-zinc-300'
+                    }`}
+                    aria-label={`Go to testimonial ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Instagram CTA */}
