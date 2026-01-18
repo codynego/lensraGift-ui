@@ -84,6 +84,8 @@ function ProductsContent() {
     const price = searchParams.get('price') || 'all';
     const page = Number(searchParams.get('page')) || 1;
 
+    console.log('URL Params:', { q, category, price, page });
+
     setSearchQuery(q);
     setSelectedCategory(category);
     setSelectedPriceRange(price);
@@ -98,8 +100,12 @@ function ProductsContent() {
         const params = new URLSearchParams();
         
         if (searchQuery) params.append('search', searchQuery);
+        
+        // Try different possible parameter names for category filtering
         if (selectedCategory !== 'all') {
-          params.append('category', selectedCategory);
+          console.log('Selected category slug:', selectedCategory);
+          // Add the category slug - try the most common Django filter patterns
+          params.append('category__slug', selectedCategory);
         }
 
         const range = priceRanges.find(r => r.value === selectedPriceRange);
@@ -111,12 +117,13 @@ function ProductsContent() {
         params.append('page', currentPage.toString());
 
         const url = `${BaseUrl}api/products/?${params.toString()}`;
-        console.log('Fetching products:', url);
+        console.log('Fetching products from:', url);
         
         const response = await fetch(url);
         const data = await response.json();
         
         console.log('Products response:', data);
+        console.log('Number of products:', data.results?.length || 0);
         
         setProducts(data.results || (Array.isArray(data) ? data : []));
         setTotalProductsCount(data.count || 0);
