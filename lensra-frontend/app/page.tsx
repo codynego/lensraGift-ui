@@ -210,7 +210,9 @@ export default function LensraHomepage() {
 
                 {/* Visual Process Carousel */}
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
-                <h1>How it works</h1>
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase italic text-white mb-6">
+                    How It Works
+                  </h1>
                   <div className="flex items-center justify-between mb-4">
                     {heroSlides.map((_, idx) => (
                       <div
