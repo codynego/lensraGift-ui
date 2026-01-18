@@ -790,7 +790,7 @@ function EnhancedProductCard({ product }: { product: Product }) {
 }
 
 function DesignCard({ design }: { design: Design }) {
-  const imageUrl = getImageUrl(design.preview_image);
+  const imageUrl = getImageUrl(design.preview_image_url);
   const [showPreview, setShowPreview] = useState(false);
   
   return (
