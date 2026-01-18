@@ -117,7 +117,7 @@ export default function ProductsPage() {
         }
 
         const range = priceRanges.find(r => r.value === selectedPriceRange);
-        if (range && range.min !== undefined) {
+        if (range && range.min !== undefined && range.max !== undefined) {
           params.append('min_price', range.min.toString());
           params.append('max_price', range.max.toString());
         }
