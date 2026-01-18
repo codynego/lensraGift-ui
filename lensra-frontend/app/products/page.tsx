@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -33,7 +33,7 @@ interface PriceRange {
   max?: number;
 }
 
-export default function ProductsPage() {
+function ProductsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -75,9 +75,11 @@ export default function ProductsPage() {
         setCategoriesLoading(true);
         const response = await fetch(`${BaseUrl}api/products/categories/`);
         const data = await response.json();
-        setCategories(data);
+        // Ensure data is an array
+        setCategories(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Categories Fetch Error:", err);
+        setCategories([]);
       } finally {
         setCategoriesLoading(false);
       }
@@ -544,5 +546,22 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+          <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300">
+            Loading Products
+          </span>
+        </div>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   );
 }
