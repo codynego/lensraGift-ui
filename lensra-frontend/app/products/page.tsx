@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -34,6 +34,26 @@ interface PriceRange {
 }
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductsPageSkeleton />}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-10">
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
