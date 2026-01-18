@@ -291,7 +291,7 @@ export default function LensraHomepage() {
         </div>
       </section>
 
-      {/* HOW IT WORKS - Simple 3-step process */}
+      {/* HOW IT WORKS - Simple 3-step process
       <section className="py-16 bg-zinc-50">
         <div className="max-w-[1600px] mx-auto px-4">
           <div className="text-center mb-12">
@@ -350,7 +350,7 @@ export default function LensraHomepage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* OCCASIONS/BUNDLES - Enhanced with taglines and hover effects */}
       <section className="py-16 bg-white">
