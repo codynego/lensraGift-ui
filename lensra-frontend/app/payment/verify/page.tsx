@@ -14,36 +14,72 @@ function VerifyPaymentContent() {
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Verifying your payment...');
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const verifyStarted = useRef(false);
 
+  // Helper to add debug logs
+  const addDebug = (log: string) => {
+    console.log(`[DEBUG] ${log}`);
+    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${log}`]);
+  };
+
   useEffect(() => {
+    addDebug(`Component mounted. Reference: ${reference || 'MISSING'}`);
+    addDebug(`Base URL: ${BaseUrl}`);
+    
     if (!reference) {
+      addDebug('ERROR: No reference parameter found in URL');
       setStatus('error');
       setMessage('No payment reference found.');
       return;
     }
 
-    if (verifyStarted.current) return;
+    if (verifyStarted.current) {
+      addDebug('Verification already started, skipping duplicate call');
+      return;
+    }
+    
     verifyStarted.current = true;
+    addDebug('Starting payment verification...');
 
     const verifyPayment = async () => {
       try {
-        const res = await fetch(`${BaseUrl}api/payments/verify/`, {
+        const url = `${BaseUrl}api/payments/verify/`;
+        const payload = { reference };
+        
+        addDebug(`Making POST request to: ${url}`);
+        addDebug(`Payload: ${JSON.stringify(payload)}`);
+
+        const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reference })
+          body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
+        addDebug(`Response status: ${res.status} ${res.statusText}`);
+
+        let data;
+        try {
+          data = await res.json();
+          addDebug(`Response data: ${JSON.stringify(data)}`);
+        } catch (jsonErr) {
+          addDebug(`ERROR: Failed to parse JSON response - ${jsonErr}`);
+          throw new Error('Invalid response from server');
+        }
 
         if (res.ok) {
+          addDebug('SUCCESS: Payment verified successfully');
           setStatus('success');
-          setMessage('Funds secured successfully. Your order is now in production.');
+          setMessage(data.message || 'Funds secured successfully. Your order is now in production.');
         } else {
+          addDebug(`ERROR: Server returned error - ${data.error || 'Unknown error'}`);
           setStatus('error');
-          setMessage(data.error || 'Payment verification failed.');
+          setMessage(data.error || data.message || 'Payment verification failed.');
         }
       } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+        addDebug(`CATCH ERROR: ${errorMsg}`);
+        console.error('Full error object:', err);
         setStatus('error');
         setMessage('A connection error occurred. Please contact support if you were debited.');
       }
@@ -56,6 +92,20 @@ function VerifyPaymentContent() {
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-8">
         
+        {/* DEBUG PANEL - Remove this in production */}
+        <details className="text-left bg-zinc-100 p-4 rounded-lg text-xs">
+          <summary className="cursor-pointer font-bold text-zinc-700 mb-2">
+            🐛 Debug Logs (Click to expand)
+          </summary>
+          <div className="space-y-1 max-h-64 overflow-y-auto font-mono text-[10px] text-zinc-600">
+            {debugInfo.map((log, idx) => (
+              <div key={idx} className="border-b border-zinc-200 pb-1">
+                {log}
+              </div>
+            ))}
+          </div>
+        </details>
+
         {/* LOADING STATE */}
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-700">
