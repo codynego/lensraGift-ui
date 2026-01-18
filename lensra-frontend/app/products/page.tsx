@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -38,7 +38,7 @@ export default function ProductsPage() {
   const [totalProductsCount, setTotalProductsCount] = useState(0);
   const itemsPerPage = 6; 
 
-  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  const categoryOptions = ["All Products", "Apparel", "Drinkware", "Home Decor", "Accessories", "Stationery"];
   
   const occasionOptions = [
     { label: "Any Occasion", value: "any" },
@@ -56,25 +56,6 @@ export default function ProductsPage() {
     { label: "Over ₦5,000", value: "over-5k", min: 5001, max: 1000000 },
   ];
 
-  // Fetch categories dynamically
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${BaseUrl}api/products/`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        const allProducts = data.results || (Array.isArray(data) ? data : []);
-        const uniqueCategories = [...new Set(allProducts.map((p: Product) => p.category_name).filter(Boolean))].sort();
-        setCategoryOptions(['All Products', ...uniqueCategories]);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        // Fallback to hardcoded if fetch fails
-        setCategoryOptions(['All Products', 'Apparel', 'Drinkware', 'Home Decor', 'Accessories', 'Stationery']);
-      }
-    };
-    fetchCategories();
-  }, []);
-
   // Set initial states from URL params on mount
   useEffect(() => {
     const q = searchParamsHook.get('q') || '';
@@ -88,7 +69,7 @@ export default function ProductsPage() {
     setSelectedOccasion(occasion);
     setSelectedPriceRange(price);
     setCurrentPage(page);
-  }, [searchParamsHook]);
+  }, []);
 
   // Fetch products when filters or page change
   useEffect(() => {
