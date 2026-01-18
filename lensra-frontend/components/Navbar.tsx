@@ -23,7 +23,6 @@ export default function Navbar() {
       
       const res = await fetch(`${BaseUrl}api/orders/cart/summary/`, { // Adjust to your actual cart summary endpoint
         headers: {
-          'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           'X-Session-ID': sessionId || '', // Passing session for guest identification
         }

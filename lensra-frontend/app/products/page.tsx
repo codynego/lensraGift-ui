@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Search, ChevronRight, ArrowUpRight, Filter, Loader2, 
   ChevronLeft, X 
@@ -21,19 +22,32 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  const router = useRouter();
+  const searchParamsHook = useSearchParams(); // Renamed to avoid conflict
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
+  const [selectedOccasion, setSelectedOccasion] = useState('any');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProductsCount, setTotalProductsCount] = useState(0);
   const itemsPerPage = 6; 
 
-  const sidebarCategories = ["All Products", "Apparel", "Drinkware", "Home Decor", "Accessories", "Stationery"];
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  
+  const occasionOptions = [
+    { label: "Any Occasion", value: "any" },
+    { label: "For Love", value: "For Love" },
+    { label: "Birthday", value: "Birthday" },
+    { label: "Wedding", value: "Wedding" },
+    { label: "Anniversary", value: "Anniversary" },
+    { label: "Graduation", value: "Graduation" },
+  ];
   
   const priceRanges = [
     { label: "Any Price", value: "all" },
@@ -42,6 +56,41 @@ export default function ProductsPage() {
     { label: "Over ₦5,000", value: "over-5k", min: 5001, max: 1000000 },
   ];
 
+  // Fetch categories dynamically
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${BaseUrl}api/products/`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        const allProducts = data.results || (Array.isArray(data) ? data : []);
+        const uniqueCategories = [...new Set(allProducts.map((p: Product) => p.category_name).filter(Boolean))].sort();
+        setCategoryOptions(['All Products', ...uniqueCategories]);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Fallback to hardcoded if fetch fails
+        setCategoryOptions(['All Products', 'Apparel', 'Drinkware', 'Home Decor', 'Accessories', 'Stationery']);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Set initial states from URL params on mount
+  useEffect(() => {
+    const q = searchParamsHook.get('q') || '';
+    const category = searchParamsHook.get('category') || 'All Products';
+    const occasion = searchParamsHook.get('occasion') || 'any';
+    const price = searchParamsHook.get('price') || 'all';
+    const page = Number(searchParamsHook.get('page')) || 1;
+
+    setSearchQuery(q);
+    setSelectedCategory(category);
+    setSelectedOccasion(occasion);
+    setSelectedPriceRange(price);
+    setCurrentPage(page);
+  }, [searchParamsHook]);
+
+  // Fetch products when filters or page change
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -52,6 +101,16 @@ export default function ProductsPage() {
         if (selectedCategory !== 'All Products') {
           params.append('category__name', selectedCategory);
         }
+        if (selectedOccasion !== 'any') {
+          params.append('occasion', selectedOccasion);
+        }
+
+        const range = priceRanges.find(r => r.value === selectedPriceRange);
+        if (range && range.min !== undefined) {
+          params.append('min_price', range.min.toString());
+          params.append('max_price', range.max.toString());
+        }
+
         params.append('page', currentPage.toString());
 
         const response = await fetch(`${BaseUrl}api/products/?${params.toString()}`);
@@ -69,21 +128,26 @@ export default function ProductsPage() {
 
     const timer = setTimeout(() => fetchProducts(), 300);
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategory, currentPage]);
+  }, [searchQuery, selectedCategory, selectedOccasion, selectedPriceRange, currentPage]);
 
-  const finalDisplayItems = useMemo(() => {
-    if (selectedPriceRange === 'all') return products;
-    
-    const range = priceRanges.find(r => r.value === selectedPriceRange);
-    return products.filter((p: Product) => {
-      const price = parseFloat(p.base_price);
-      return range ? (price >= (range.min ?? 0) && price <= (range.max ?? Infinity)) : true;
-    });
-  }, [products, selectedPriceRange]);
+  // Update URL when filters or page change
+  const updateURL = useCallback(() => {
+    const params = new URLSearchParams();
+
+    if (searchQuery) params.set('q', searchQuery);
+    if (selectedCategory !== 'All Products') params.set('category', selectedCategory);
+    if (selectedOccasion !== 'any') params.set('occasion', selectedOccasion);
+    if (selectedPriceRange !== 'all') params.set('price', selectedPriceRange);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+
+    router.push(`/products?${params.toString()}`, { scroll: false });
+  }, [searchQuery, selectedCategory, selectedOccasion, selectedPriceRange, currentPage, router]);
+
+  useEffect(() => {
+    updateURL();
+  }, [updateURL]);
 
   const totalPages = Math.ceil(totalProductsCount / itemsPerPage);
-
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedPriceRange]);
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
@@ -103,7 +167,7 @@ export default function ProductsPage() {
           </div>
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
             <button onClick={() => setShowMobileFilters(true)} className="p-3 bg-zinc-900 text-white rounded-xl flex-shrink-0"><Filter className="w-4 h-4" /></button>
-            {sidebarCategories.map((cat) => (
+            {categoryOptions.map((cat) => (
               <button 
                 key={cat} 
                 onClick={() => setSelectedCategory(cat)} 
@@ -133,7 +197,7 @@ export default function ProductsPage() {
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Categories</h4>
               <div className="space-y-2">
-                {sidebarCategories.map((cat) => (
+                {categoryOptions.map((cat) => (
                   <button 
                     key={cat} 
                     onClick={() => {
@@ -144,6 +208,27 @@ export default function ProductsPage() {
                   >
                     {cat} <ChevronRight className="w-3 h-3" />
                   </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-zinc-100">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Occasions</h4>
+              <div className="space-y-4">
+                {occasionOptions.map((occ) => (
+                  <label key={occ.value} className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio" 
+                      name="occasion-mobile" 
+                      checked={selectedOccasion === occ.value} 
+                      onChange={() => {
+                        setSelectedOccasion(occ.value);
+                        setShowMobileFilters(false);
+                      }} 
+                      className="w-4 h-4 accent-red-600" 
+                    />
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{occ.label}</span>
+                  </label>
                 ))}
               </div>
             </div>
@@ -180,7 +265,7 @@ export default function ProductsPage() {
             <div>
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Categories</h3>
               <div className="space-y-1">
-                {sidebarCategories.map((cat) => (
+                {categoryOptions.map((cat) => (
                   <button 
                     key={cat} 
                     onClick={() => setSelectedCategory(cat)} 
@@ -188,6 +273,24 @@ export default function ProductsPage() {
                   >
                     {cat} <ChevronRight className="w-3 h-3" />
                   </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-10 border-t border-zinc-100">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Occasions</h3>
+              <div className="space-y-4">
+                {occasionOptions.map((occ) => (
+                  <label key={occ.value} className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio" 
+                      name="occasion" 
+                      checked={selectedOccasion === occ.value} 
+                      onChange={() => setSelectedOccasion(occ.value)} 
+                      className="w-4 h-4 accent-red-600" 
+                    />
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{occ.label}</span>
+                  </label>
                 ))}
               </div>
             </div>
@@ -235,7 +338,7 @@ export default function ProductsPage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 lg:gap-x-6 lg:gap-y-12">
-                  {finalDisplayItems.map((product: Product) => (
+                  {products.map((product: Product) => (
                     <div key={product.id} className="group flex flex-col">
                       <Link href={`/products/${product.slug}`} className="relative aspect-square bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100 group-hover:shadow-xl transition-shadow duration-300">
                         {product.image_url ? (
