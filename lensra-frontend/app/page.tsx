@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Zap, TrendingUp, Award, ArrowRight, 
   ShieldCheck, Loader2, Edit3, Palette, ChevronRight,
-  Shirt, Coffee, Home, Briefcase, Gift, Sparkles, Clock, Baby, MapPin, Eye, Search, User, Heart, Menu, X, Cake, Image, ThumbsUp, HandHeart, Upload, Package, Truck, Star, Instagram, MessageCircle, Users
+  Shirt, Coffee, Home, Briefcase, Gift, Sparkles, Clock, MapPin, Eye, Search, User, Heart, Menu, X, Cake, Image, ThumbsUp, HandHeart, Upload, Package, Truck, Star, Instagram, MessageCircle, Users
 } from 'lucide-react';
 
 const BaseUrl = "https://api.lensra.com/";
@@ -24,7 +24,7 @@ interface Product {
 interface Design {
   id: number;
   name: string;
-  preview_image?: string | null;
+  preview_image_url: string | null;
 }
 
 const getImageUrl = (imagePath: string | null | undefined): string | null => {
@@ -43,46 +43,39 @@ export default function LensraHomepage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
-const occasions = [
-  {
-    name: "Valentine",
-    icon: <Heart className="w-5 h-5" />,
-    color: "from-red-500 to-red-600",
-    tagline: "Celebrate love, one memory at a time",
-    badge: "Most Popular"
-  },
-  {
-    name: "Birthday",
-    icon: <Cake className="w-5 h-5" />,
-    color: "from-pink-500 to-pink-600",
-    tagline: "Make every birthday unforgettable with a custom gift"
-  },
-  {
-    name: "Anniversary",
-    icon: <Image className="w-5 h-5" />,
-    color: "from-rose-500 to-rose-600",
-    tagline: "Capture milestones and special moments beautifully"
-  },
-  {
-    name: "Baby",
-    icon: <Baby className="w-5 h-5" />,
-    color: "from-orange-500 to-orange-600",
-    tagline: "Perfect gifts for babies, kids, and family keepsakes"
-  },
-  {
-    name: "Friendship",
-    icon: <Users className="w-5 h-5" />,
-    color: "from-emerald-500 to-emerald-600",
-    tagline: "Celebrate friendship and togetherness with personalized gifts"
-  },
-  {
-    name: "Mystery",
-    icon: <Sparkles className="w-5 h-5" />,
-    color: "from-purple-500 to-purple-600",
-    tagline: "Can’t decide? Surprise them with a limited mystery box"
-  },
-];
-
+  const occasions = [
+    {
+      name: "For Love",
+      icon: <Heart className="w-5 h-5" />,
+      color: "from-red-500 to-red-600",
+      tagline: "Show your love with a personalized gift they'll never forget",
+      badge: "Most Popular"
+    },
+    {
+      name: "For Birthdays",
+      icon: <Cake className="w-5 h-5" />,
+      color: "from-pink-500 to-pink-600",
+      tagline: "Make every birthday unforgettable with a custom gift"
+    },
+    {
+      name: "For Memories",
+      icon: <Image className="w-5 h-5" />,
+      color: "from-rose-500 to-rose-600",
+      tagline: "Preserve your precious moments in beautiful, lasting gifts"
+    },
+    {
+      name: "For Thanks",
+      icon: <ThumbsUp className="w-5 h-5" />,
+      color: "from-orange-500 to-orange-600",
+      tagline: "Express gratitude with a thoughtful, personalized touch"
+    },
+    {
+      name: "Mystery",
+      icon: <Sparkles className="w-5 h-5" />,
+      color: "from-purple-500 to-purple-600",
+      tagline: "Can’t decide? Surprise them with a limited mystery box"
+    },
+  ];
 
   const heroSlides = [
     {
