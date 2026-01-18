@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -10,7 +10,6 @@ import {
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
-// Define the shape of your product for TypeScript
 interface Product {
   id: number;
   name: string;
@@ -21,25 +20,38 @@ interface Product {
   is_active: boolean;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface PriceRange {
+  label: string;
+  value: string;
+  min?: number;
+  max?: number;
+}
+
 export default function ProductsPage() {
   const router = useRouter();
-  const searchParamsHook = useSearchParams(); // Renamed to avoid conflict
+  const searchParams = useSearchParams();
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All Products');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedOccasion, setSelectedOccasion] = useState('any');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProductsCount, setTotalProductsCount] = useState(0);
-  const itemsPerPage = 6; 
 
-  const categoryOptions = ["All Products", "Apparel", "Drinkware", "Home Decor", "Accessories", "Stationery"];
-  
+  const itemsPerPage = 6;
+
   const occasionOptions = [
     { label: "Any Occasion", value: "any" },
     { label: "For Love", value: "For Love" },
@@ -49,29 +61,47 @@ export default function ProductsPage() {
     { label: "Graduation", value: "Graduation" },
   ];
   
-  const priceRanges = [
+  const priceRanges: PriceRange[] = [
     { label: "Any Price", value: "all" },
     { label: "Under ₦3,000", value: "under-3k", min: 0, max: 2999 },
     { label: "₦3,000 - ₦5,000", value: "3k-5k", min: 3000, max: 5000 },
     { label: "Over ₦5,000", value: "over-5k", min: 5001, max: 1000000 },
   ];
 
-  // Set initial states from URL params on mount
+  // Fetch categories on mount
   useEffect(() => {
-    const q = searchParamsHook.get('q') || '';
-    const category = searchParamsHook.get('category') || 'All Products';
-    const occasion = searchParamsHook.get('occasion') || 'any';
-    const price = searchParamsHook.get('price') || 'all';
-    const page = Number(searchParamsHook.get('page')) || 1;
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const response = await fetch(`${BaseUrl}api/products/categories/`);
+        const data = await response.json();
+        setCategories(data);
+      } catch (err) {
+        console.error("Categories Fetch Error:", err);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Initialize state from URL params
+  useEffect(() => {
+    const q = searchParams.get('q') || '';
+    const category = searchParams.get('category') || 'all';
+    const occasion = searchParams.get('occasion') || 'any';
+    const price = searchParams.get('price') || 'all';
+    const page = Number(searchParams.get('page')) || 1;
 
     setSearchQuery(q);
     setSelectedCategory(category);
     setSelectedOccasion(occasion);
     setSelectedPriceRange(price);
     setCurrentPage(page);
-  }, []);
+  }, [searchParams]);
 
-  // Fetch products when filters or page change
+  // Fetch products when filters change
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -79,8 +109,8 @@ export default function ProductsPage() {
         const params = new URLSearchParams();
         
         if (searchQuery) params.append('search', searchQuery);
-        if (selectedCategory !== 'All Products') {
-          params.append('category__name', selectedCategory);
+        if (selectedCategory !== 'all') {
+          params.append('category__slug', selectedCategory);
         }
         if (selectedOccasion !== 'any') {
           params.append('occasion', selectedOccasion);
@@ -97,7 +127,6 @@ export default function ProductsPage() {
         const response = await fetch(`${BaseUrl}api/products/?${params.toString()}`);
         const data = await response.json();
         
-        // Handle paginated vs non-paginated data safely
         setProducts(data.results || (Array.isArray(data) ? data : []));
         setTotalProductsCount(data.count || 0);
       } catch (err) { 
@@ -111,17 +140,18 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery, selectedCategory, selectedOccasion, selectedPriceRange, currentPage]);
 
-  // Update URL when filters or page change
+  // Update URL when filters change
   const updateURL = useCallback(() => {
     const params = new URLSearchParams();
 
     if (searchQuery) params.set('q', searchQuery);
-    if (selectedCategory !== 'All Products') params.set('category', selectedCategory);
+    if (selectedCategory !== 'all') params.set('category', selectedCategory);
     if (selectedOccasion !== 'any') params.set('occasion', selectedOccasion);
     if (selectedPriceRange !== 'all') params.set('price', selectedPriceRange);
     if (currentPage > 1) params.set('page', currentPage.toString());
 
-    router.push(`/products?${params.toString()}`, { scroll: false });
+    const newUrl = params.toString() ? `/products?${params.toString()}` : '/products';
+    router.push(newUrl, { scroll: false });
   }, [searchQuery, selectedCategory, selectedOccasion, selectedPriceRange, currentPage, router]);
 
   useEffect(() => {
@@ -129,6 +159,21 @@ export default function ProductsPage() {
   }, [updateURL]);
 
   const totalPages = Math.ceil(totalProductsCount / itemsPerPage);
+
+  const handleCategoryChange = (slug: string) => {
+    setSelectedCategory(slug);
+    setCurrentPage(1);
+  };
+
+  const handleOccasionChange = (value: string) => {
+    setSelectedOccasion(value);
+    setCurrentPage(1);
+  };
+
+  const handlePriceChange = (value: string) => {
+    setSelectedPriceRange(value);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
@@ -147,14 +192,29 @@ export default function ProductsPage() {
             />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <button onClick={() => setShowMobileFilters(true)} className="p-3 bg-zinc-900 text-white rounded-xl flex-shrink-0"><Filter className="w-4 h-4" /></button>
-            {categoryOptions.map((cat) => (
+            <button 
+              onClick={() => setShowMobileFilters(true)} 
+              className="p-3 bg-zinc-900 text-white rounded-xl flex-shrink-0"
+            >
+              <Filter className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => handleCategoryChange('all')} 
+              className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+                selectedCategory === 'all' ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'
+              }`}
+            >
+              All Products
+            </button>
+            {categories.map((cat) => (
               <button 
-                key={cat} 
-                onClick={() => setSelectedCategory(cat)} 
-                className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'}`}
+                key={cat.id} 
+                onClick={() => handleCategoryChange(cat.slug)} 
+                className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+                  selectedCategory === cat.slug ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'
+                }`}
               >
-                {cat}
+                {cat.name}
               </button>
             ))}
           </div>
@@ -175,24 +235,39 @@ export default function ProductsPage() {
               </button>
             </div>
 
+            {/* Categories */}
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Categories</h4>
               <div className="space-y-2">
-                {categoryOptions.map((cat) => (
+                <button 
+                  onClick={() => {
+                    handleCategoryChange('all');
+                    setShowMobileFilters(false);
+                  }} 
+                  className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                    selectedCategory === 'all' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
+                  }`}
+                >
+                  All Products <ChevronRight className="w-3 h-3" />
+                </button>
+                {categories.map((cat) => (
                   <button 
-                    key={cat} 
+                    key={cat.id} 
                     onClick={() => {
-                      setSelectedCategory(cat);
+                      handleCategoryChange(cat.slug);
                       setShowMobileFilters(false);
                     }} 
-                    className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${selectedCategory === cat ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'}`}
+                    className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                      selectedCategory === cat.slug ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
+                    }`}
                   >
-                    {cat} <ChevronRight className="w-3 h-3" />
+                    {cat.name} <ChevronRight className="w-3 h-3" />
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Occasions */}
             <div className="pt-6 border-t border-zinc-100">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Occasions</h4>
               <div className="space-y-4">
@@ -203,17 +278,22 @@ export default function ProductsPage() {
                       name="occasion-mobile" 
                       checked={selectedOccasion === occ.value} 
                       onChange={() => {
-                        setSelectedOccasion(occ.value);
+                        handleOccasionChange(occ.value);
                         setShowMobileFilters(false);
                       }} 
                       className="w-4 h-4 accent-red-600" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{occ.label}</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'
+                    }`}>
+                      {occ.label}
+                    </span>
                   </label>
                 ))}
               </div>
             </div>
 
+            {/* Price Range */}
             <div className="pt-6 border-t border-zinc-100">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Price Range</h4>
               <div className="space-y-4">
@@ -224,12 +304,16 @@ export default function ProductsPage() {
                       name="price-mobile" 
                       checked={selectedPriceRange === range.value} 
                       onChange={() => {
-                        setSelectedPriceRange(range.value);
+                        handlePriceChange(range.value);
                         setShowMobileFilters(false);
                       }} 
                       className="w-4 h-4 accent-red-600" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{range.label}</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'
+                    }`}>
+                      {range.label}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -243,21 +327,39 @@ export default function ProductsPage() {
           
           {/* DESKTOP SIDEBAR */}
           <aside className="hidden lg:block lg:w-64 flex-shrink-0 sticky top-28 h-fit space-y-12">
+            {/* Categories */}
             <div>
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Categories</h3>
-              <div className="space-y-1">
-                {categoryOptions.map((cat) => (
+              {categoriesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                </div>
+              ) : (
+                <div className="space-y-1">
                   <button 
-                    key={cat} 
-                    onClick={() => setSelectedCategory(cat)} 
-                    className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${selectedCategory === cat ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'}`}
+                    onClick={() => handleCategoryChange('all')} 
+                    className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                      selectedCategory === 'all' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
+                    }`}
                   >
-                    {cat} <ChevronRight className="w-3 h-3" />
+                    All Products <ChevronRight className="w-3 h-3" />
                   </button>
-                ))}
-              </div>
+                  {categories.map((cat) => (
+                    <button 
+                      key={cat.id} 
+                      onClick={() => handleCategoryChange(cat.slug)} 
+                      className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                        selectedCategory === cat.slug ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
+                      }`}
+                    >
+                      {cat.name} <ChevronRight className="w-3 h-3" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
+            {/* Occasions */}
             <div className="pt-10 border-t border-zinc-100">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Occasions</h3>
               <div className="space-y-4">
@@ -267,15 +369,20 @@ export default function ProductsPage() {
                       type="radio" 
                       name="occasion" 
                       checked={selectedOccasion === occ.value} 
-                      onChange={() => setSelectedOccasion(occ.value)} 
+                      onChange={() => handleOccasionChange(occ.value)} 
                       className="w-4 h-4 accent-red-600" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{occ.label}</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      selectedOccasion === occ.value ? 'text-zinc-900' : 'text-zinc-400'
+                    }`}>
+                      {occ.label}
+                    </span>
                   </label>
                 ))}
               </div>
             </div>
 
+            {/* Price Range */}
             <div className="pt-10 border-t border-zinc-100">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Price Range</h3>
               <div className="space-y-4">
@@ -285,10 +392,14 @@ export default function ProductsPage() {
                       type="radio" 
                       name="price" 
                       checked={selectedPriceRange === range.value} 
-                      onChange={() => setSelectedPriceRange(range.value)} 
+                      onChange={() => handlePriceChange(range.value)} 
                       className="w-4 h-4 accent-red-600" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'}`}>{range.label}</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'
+                    }`}>
+                      {range.label}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -297,6 +408,7 @@ export default function ProductsPage() {
 
           {/* MAIN CONTENT */}
           <div className="flex-1">
+            {/* Desktop Search & Count */}
             <div className="hidden lg:flex items-center justify-between mb-12 border-b border-zinc-100 pb-10">
               <div className="relative w-full max-w-md">
                 <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -308,35 +420,67 @@ export default function ProductsPage() {
                   className="w-full bg-transparent border-none pl-8 text-[11px] font-black uppercase tracking-widest focus:ring-0"
                 />
               </div>
-              <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{totalProductsCount} Products Total</p>
+              <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                {totalProductsCount} Products Total
+              </p>
             </div>
 
+            {/* Products Grid */}
             {loading ? (
               <div className="h-96 flex flex-col items-center justify-center gap-4">
                 <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300">Syncing Collection</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300">
+                  Loading Products
+                </span>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="h-96 flex flex-col items-center justify-center gap-4">
+                <div className="text-5xl">🔍</div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                  No Products Found
+                </span>
+                <p className="text-[9px] text-zinc-400 max-w-xs text-center">
+                  Try adjusting your filters or search query
+                </p>
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 lg:gap-x-6 lg:gap-y-12">
-                  {products.map((product: Product) => (
+                  {products.map((product) => (
                     <div key={product.id} className="group flex flex-col">
-                      <Link href={`/products/${product.slug}`} className="relative aspect-square bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100 group-hover:shadow-xl transition-shadow duration-300">
+                      <Link 
+                        href={`/products/${product.slug}`} 
+                        className="relative aspect-square bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100 group-hover:shadow-xl transition-shadow duration-300"
+                      >
                         {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+                          <img 
+                            src={product.image_url} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover transition duration-700 group-hover:scale-105" 
+                          />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center uppercase font-black text-[8px] text-zinc-300 italic">No Preview</div>
+                          <div className="w-full h-full flex items-center justify-center uppercase font-black text-[8px] text-zinc-300 italic">
+                            No Preview
+                          </div>
                         )}
                         <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="bg-white text-zinc-900 px-6 py-3 rounded-2xl text-[8px] font-black uppercase tracking-widest flex items-center gap-2">View Details <ArrowUpRight className="w-3 h-3" /></div>
+                          <div className="bg-white text-zinc-900 px-6 py-3 rounded-2xl text-[8px] font-black uppercase tracking-widest flex items-center gap-2">
+                            View Details <ArrowUpRight className="w-3 h-3" />
+                          </div>
                         </div>
                       </Link>
                       <div className="mt-4 space-y-1">
                         <div className="flex justify-between items-start gap-2">
-                          <h3 className="text-base lg:text-xl font-black uppercase tracking-tight italic text-zinc-900 leading-tight">{product.name}</h3>
-                          <p className="text-base lg:text-xl font-black text-red-600 italic">₦{parseFloat(product.base_price).toLocaleString()}</p>
+                          <h3 className="text-base lg:text-xl font-black uppercase tracking-tight italic text-zinc-900 leading-tight">
+                            {product.name}
+                          </h3>
+                          <p className="text-base lg:text-xl font-black text-red-600 italic">
+                            ₦{parseFloat(product.base_price).toLocaleString()}
+                          </p>
                         </div>
-                        <span className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-zinc-400 bg-zinc-50 px-2 py-1 rounded inline-block">{product.category_name}</span>
+                        <span className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-zinc-400 bg-zinc-50 px-2 py-1 rounded inline-block">
+                          {product.category_name}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -348,27 +492,47 @@ export default function ProductsPage() {
                     <button 
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(p => p - 1)}
-                      className="p-3 rounded-xl border border-zinc-100 disabled:opacity-30 hover:bg-zinc-50 transition-colors"
+                      className="p-3 rounded-xl border border-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     
                     <div className="flex gap-2">
-                      {[...Array(totalPages)].map((_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setCurrentPage(i + 1)}
-                          className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-red-600 text-white' : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100'}`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
+                      {[...Array(totalPages)].map((_, i) => {
+                        const pageNum = i + 1;
+                        const showPage = 
+                          pageNum === 1 || 
+                          pageNum === totalPages || 
+                          (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
+                        
+                        if (!showPage && pageNum === currentPage - 2) {
+                          return <span key={i} className="px-2 text-zinc-400">...</span>;
+                        }
+                        if (!showPage && pageNum === currentPage + 2) {
+                          return <span key={i} className="px-2 text-zinc-400">...</span>;
+                        }
+                        if (!showPage) return null;
+
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${
+                              currentPage === pageNum 
+                                ? 'bg-red-600 text-white' 
+                                : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     <button 
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage(p => p + 1)}
-                      className="p-3 rounded-xl border border-zinc-100 disabled:opacity-30 hover:bg-zinc-50 transition-colors"
+                      className="p-3 rounded-xl border border-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
