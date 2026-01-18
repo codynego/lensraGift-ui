@@ -415,7 +415,7 @@ export default function LensraHomepage() {
           </div>
 
           {/* Home Category */}
-          {products.filter(p => p.category?.toLowerCase().includes('home')).length > 0 && (
+          {products.filter(p => p.category?.toLowerCase().includes('home')).slice(0, 6).length > 0 && ({products.filter(p => p.category?.toLowerCase().includes('home')).length > 0 && (
             <div className="mb-16">
               <h3 className="text-2xl font-black uppercase italic text-zinc-900 mb-6 flex items-center gap-3">
                 <Home className="w-6 h-6 text-red-600" />
