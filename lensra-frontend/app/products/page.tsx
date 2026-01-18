@@ -106,11 +106,11 @@ function ProductsContent() {
         
         if (searchQuery) params.append('search', searchQuery);
         
-        // Try different possible parameter names for category filtering
+        // Filter by category slug using the exact lookup your backend expects
         if (selectedCategory !== 'all') {
           console.log('Selected category slug:', selectedCategory);
-          // Add the category slug - try the most common Django filter patterns
-          params.append('category__slug', selectedCategory);
+          // Use category__slug__exact to match your Django filterset
+          params.append('category__slug__exact', selectedCategory);
         }
 
         const range = priceRanges.find(r => r.value === selectedPriceRange);
