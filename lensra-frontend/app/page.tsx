@@ -97,22 +97,22 @@ export default function LensraHomepage() {
 
   const testimonials = [
     {
-      name: "Chioma A.",
-      location: "Lagos",
-      text: "Best Valentine's gift ever! My boyfriend loved the personalized mug. Quality is amazing!",
+      name: "Osas.",
+      location: "Benin",
+      text: "Best Birthday's gift ever! My boyfriend loved the personalized mug. Quality is amazing!",
       rating: 5,
       image: null
     },
     {
       name: "Tunde O.",
-      location: "Abuja",
+      location: "Lagos",
       text: "Ordered a custom t-shirt for my mum's birthday. She cried happy tears. Thank you Lensra!",
       rating: 5,
       image: null
     },
     {
       name: "Sarah M.",
-      location: "Port Harcourt",
+      location: "Benin",
       text: "Fast delivery and beautiful printing. I'm definitely ordering again for Christmas!",
       rating: 5,
       image: null
