@@ -45,23 +45,31 @@ function VerifyPaymentContent() {
     const verifyPayment = async () => {
       try {
         const url = `${BaseUrl}api/payments/verify/`;
-        const payload = { reference };
         
         addDebug(`Making POST request to: ${url}`);
-        addDebug(`Payload: ${JSON.stringify(payload)}`);
+        addDebug(`Reference: ${reference}`);
+
+        // Use FormData instead of JSON to avoid CORS preflight
+        const formData = new FormData();
+        formData.append('reference', reference);
+
+        addDebug('Sending FormData request...');
 
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: formData
+          // No headers - browser sets Content-Type automatically for FormData
         });
 
         addDebug(`Response status: ${res.status} ${res.statusText}`);
 
         let data;
         try {
-          data = await res.json();
-          addDebug(`Response data: ${JSON.stringify(data)}`);
+          const responseText = await res.text();
+          addDebug(`Raw response: ${responseText}`);
+          
+          data = JSON.parse(responseText);
+          addDebug(`Parsed data: ${JSON.stringify(data)}`);
         } catch (jsonErr) {
           addDebug(`ERROR: Failed to parse JSON response - ${jsonErr}`);
           throw new Error('Invalid response from server');
