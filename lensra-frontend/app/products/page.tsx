@@ -65,7 +65,12 @@ function ProductsContent() {
         setCategoriesLoading(true);
         const response = await fetch(`${BaseUrl}api/products/categories/`);
         const data = await response.json();
-        setCategories(Array.isArray(data) ? data : []);
+        console.log('Categories fetched:', data);
+        
+        // Ensure we set an array
+        const categoriesArray = Array.isArray(data) ? data : (data.results ? data.results : []);
+        console.log('Categories array:', categoriesArray);
+        setCategories(categoriesArray);
       } catch (err) {
         console.error("Categories Fetch Error:", err);
         setCategories([]);
