@@ -366,29 +366,29 @@ export default function LensraHomepage() {
               <a 
                 key={occasion.name} 
                 href={`/products?occasion=${occasion.name}`} 
-                className="group relative bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 p-8"
+                className="group relative bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 p-6 md:p-8"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${occasion.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
                 
                 {occasion.badge && (
-                  <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg">
+                  <div className="absolute top-3 right-3 bg-red-600 text-white px-2 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-wider shadow-lg">
                     {occasion.badge}
                   </div>
                 )}
 
                 <div className="relative">
-                  <div className={`w-16 h-16 mb-6 rounded-full bg-gradient-to-br ${occasion.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
+                  <div className={`w-12 h-12 md:w-16 md:h-16 mb-4 md:mb-6 rounded-full bg-gradient-to-br ${occasion.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
                     <span className="text-white">{occasion.icon}</span>
                   </div>
                   
-                  <p className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-3">{occasion.name}</p>
+                  <p className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900 mb-2 md:mb-3">{occasion.name}</p>
                   
-                  <p className="text-xs text-zinc-600 font-bold uppercase tracking-wide mb-4 leading-relaxed">
+                  <p className="text-[10px] md:text-xs text-zinc-600 font-bold uppercase tracking-wide mb-3 md:mb-4 leading-relaxed line-clamp-2">
                     {occasion.tagline}
                   </p>
 
                   <div className="opacity-0 group-hover:opacity-100 transition-all">
-                    <button className="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all">
+                    <button className="w-full py-2 md:py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-[10px] md:text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all">
                       Shop Bundle
                     </button>
                   </div>
@@ -503,7 +503,7 @@ export default function LensraHomepage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
             {[
               { name: "Love Edition", stock: 5, items: "1 premium gift + 1 surprise item" },
               { name: "Birthday Special", stock: 3, items: "2 personalized gifts + 1 surprise" }
@@ -738,51 +738,6 @@ export default function LensraHomepage() {
           </div>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="bg-zinc-900 text-white py-12 border-t border-zinc-800">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-widest mb-4">Shop</h4>
-              <ul className="space-y-2 text-xs font-bold uppercase tracking-wide text-zinc-400">
-                <li><a href="/products" className="hover:text-red-500 transition-colors">All Products</a></li>
-                <li><a href="/products?filter=trending" className="hover:text-red-500 transition-colors">Trending</a></li>
-                <li><a href="/products?filter=new" className="hover:text-red-500 transition-colors">New Arrivals</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-widest mb-4">Create</h4>
-              <ul className="space-y-2 text-xs font-bold uppercase tracking-wide text-zinc-400">
-                <li><a href="/design-ideas" className="hover:text-red-500 transition-colors">Design Ideas</a></li>
-                <li><a href="/custom-design" className="hover:text-red-500 transition-colors">Custom Design</a></li>
-                <li><a href="/editor" className="hover:text-red-500 transition-colors">Design Editor</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-widest mb-4">Support</h4>
-              <ul className="space-y-2 text-xs font-bold uppercase tracking-wide text-zinc-400">
-                <li><a href="/contact" className="hover:text-red-500 transition-colors">Contact Us</a></li>
-                <li><a href="/faq" className="hover:text-red-500 transition-colors">FAQ</a></li>
-                <li><a href="/shipping" className="hover:text-red-500 transition-colors">Shipping</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-widest mb-4">Company</h4>
-              <ul className="space-y-2 text-xs font-bold uppercase tracking-wide text-zinc-400">
-                <li><a href="/about" className="hover:text-red-500 transition-colors">About Us</a></li>
-                <li><a href="/terms" className="hover:text-red-500 transition-colors">Terms</a></li>
-                <li><a href="/privacy" className="hover:text-red-500 transition-colors">Privacy</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t border-zinc-800 text-center">
-            <p className="text-xs font-black uppercase tracking-widest text-zinc-500">
-              © 2025 Lensra Print Studio. All Rights Reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
