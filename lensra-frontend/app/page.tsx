@@ -464,7 +464,7 @@ export default function LensraHomepage() {
            products.filter(p => p.category?.toLowerCase().includes('daily') || p.category?.toLowerCase().includes('mug')).length === 0 &&
            products.filter(p => p.category?.toLowerCase().includes('wear') || p.category?.toLowerCase().includes('shirt')).length === 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {products.slice(0, 12).map((product) => (
+              {products.slice(0, 6).map((product) => (
                 <EnhancedProductCard key={product.id} product={product} />
               ))}
             </div>
