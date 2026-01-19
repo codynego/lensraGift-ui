@@ -33,7 +33,7 @@ export default function OrderTracking() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Order not found.");
+        throw new Error(data.error || "We couldn't find your order.");
       }
 
       setOrderData(data);
@@ -62,10 +62,10 @@ export default function OrderTracking() {
         <div className="mb-16 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600">Secure Protocol v2.0</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600">Secure Tracking</span>
           </div>
           <h1 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-[0.8]">
-            Track <br/> <span className="text-zinc-700">Order.</span>
+            Track <br/> <span className="text-zinc-700">Your Order.</span>
           </h1>
         </div>
 
@@ -74,7 +74,7 @@ export default function OrderTracking() {
           <div className="grid md:grid-cols-2 gap-4">
             <input 
               type="text" 
-              placeholder="ORDER NUMBER (E.G. LEN-1234)"
+              placeholder="ENTER ORDER NUMBER (E.G., LEN-1234)"
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value.toUpperCase())}
               className="bg-zinc-900/50 border-2 border-zinc-800 rounded-2xl px-6 py-5 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600 transition-all"
@@ -82,7 +82,7 @@ export default function OrderTracking() {
             />
             <input 
               type="email" 
-              placeholder="ASSOCIATED EMAIL"
+              placeholder="ENTER YOUR EMAIL"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="bg-zinc-900/50 border-2 border-zinc-800 rounded-2xl px-6 py-5 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600 transition-all"
@@ -95,7 +95,7 @@ export default function OrderTracking() {
             className="w-full bg-white text-black py-6 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-3"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-            {loading ? "Decrypting Data..." : "Locate Shipment"}
+            {loading ? "Loading..." : "Track Now"}
           </button>
         </form>
 
@@ -129,11 +129,11 @@ export default function OrderTracking() {
                 <div className="grid md:grid-cols-2 gap-12">
                   <div className="space-y-6">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Order Reference</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Order Number</p>
                       <h2 className="text-3xl font-black italic uppercase">{orderData.order_number}</h2>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Status</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Current Status</p>
                       <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusInfo(orderData.status).color} border-current`}>
                         {orderData.status}
                       </span>
@@ -142,13 +142,13 @@ export default function OrderTracking() {
 
                   <div className="space-y-6">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Destination</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Shipping To</p>
                       <p className="text-sm font-bold uppercase tracking-tight leading-relaxed">
                         {orderData.shipping_city}, {orderData.shipping_country}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Amount Paid</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Total Paid</p>
                       <p className="text-xl font-black italic">₦{parseFloat(orderData.total_amount).toLocaleString()}</p>
                     </div>
                   </div>
@@ -157,7 +157,7 @@ export default function OrderTracking() {
 
               {/* Items List */}
               <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 px-4">Manifest (Items)</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 px-4">Your Items</h3>
                 {orderData.items?.map((item: any, idx: number) => (
                   <div key={idx} className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-3xl flex items-center justify-between group hover:border-zinc-600 transition-colors">
                     <div className="flex items-center gap-6">
@@ -165,7 +165,7 @@ export default function OrderTracking() {
                         {idx + 1}
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase italic tracking-wider">Product ID: {item.product_name}</p>
+                        <p className="text-xs font-black uppercase italic tracking-wider">{item.product_name}</p>
                         <p className="text-[9px] font-bold text-zinc-500 uppercase mt-1">Quantity: {item.quantity}</p>
                       </div>
                     </div>
