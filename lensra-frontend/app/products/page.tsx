@@ -65,11 +65,9 @@ function ProductsContent() {
         setCategoriesLoading(true);
         const response = await fetch(`${BaseUrl}api/products/categories/`);
         const data = await response.json();
-        console.log('Categories fetched:', data);
         
         // Ensure we set an array
         const categoriesArray = Array.isArray(data) ? data : (data.results ? data.results : []);
-        console.log('Categories array:', categoriesArray);
         setCategories(categoriesArray);
       } catch (err) {
         console.error("Categories Fetch Error:", err);
@@ -89,8 +87,6 @@ function ProductsContent() {
     const price = searchParams.get('price') || 'all';
     const page = Number(searchParams.get('page')) || 1;
 
-    console.log('URL Params:', { q, category, price, page });
-
     setSearchQuery(q);
     setSelectedCategory(category);
     setSelectedPriceRange(price);
@@ -108,7 +104,6 @@ function ProductsContent() {
         
         // Filter by category slug - assuming backend filter is named 'category' and expects the slug
         if (selectedCategory !== 'all') {
-          console.log('Selected category slug:', selectedCategory);
           params.append('category__slug', selectedCategory);
         }
 
@@ -121,13 +116,9 @@ function ProductsContent() {
         params.append('page', currentPage.toString());
 
         const url = `${BaseUrl}api/products/?${params.toString()}`;
-        console.log('Fetching products from:', url);
         
         const response = await fetch(url);
         const data = await response.json();
-        
-        console.log('Products response:', data);
-        console.log('Number of products:', data.results?.length || 0);
         
         setProducts(data.results || (Array.isArray(data) ? data : []));
         setTotalProductsCount(data.count || 0);
@@ -176,7 +167,7 @@ function ProductsContent() {
       
       {/* MOBILE HEADER */}
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-zinc-100 lg:hidden">
-        <div className="p-4 flex flex-col gap-3">
+        <div className="p-4 flex flex-col gap-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input 
@@ -292,8 +283,8 @@ function ProductsContent() {
         </div>
       )}
 
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-10">
-        <div className="flex flex-col lg:flex-row gap-16">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-12 lg:py-20">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
           
           {/* DESKTOP SIDEBAR */}
           <aside className="hidden lg:block lg:w-64 flex-shrink-0 sticky top-28 h-fit space-y-12">
@@ -392,7 +383,7 @@ function ProductsContent() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 lg:gap-x-6 lg:gap-y-12">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 lg:gap-x-8 lg:gap-y-14">
                   {products.map((product) => (
                     <div key={product.id} className="group flex flex-col">
                       <Link 
@@ -418,10 +409,10 @@ function ProductsContent() {
                       </Link>
                       <div className="mt-4 space-y-1">
                         <div className="flex justify-between items-start gap-2">
-                          <h3 className="text-base lg:text-xl font-black uppercase tracking-tight italic text-zinc-900 leading-tight">
+                          <h3 className="text-base lg:text-xl font-black uppercase tracking-tight italic text-zinc-900 leading-tight line-clamp-2">
                             {product.name}
                           </h3>
-                          <p className="text-base lg:text-xl font-black text-red-600 italic">
+                          <p className="text-base lg:text-xl font-black text-red-600 italic flex-shrink-0">
                             ₦{parseFloat(product.base_price).toLocaleString()}
                           </p>
                         </div>
