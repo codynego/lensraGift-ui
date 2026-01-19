@@ -165,12 +165,12 @@ export default function OrderTracking() {
                         {idx + 1}
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase italic tracking-wider">Product ID: {item.product}</p>
+                        <p className="text-xs font-black uppercase italic tracking-wider">Product ID: {item.product_name}</p>
                         <p className="text-[9px] font-bold text-zinc-500 uppercase mt-1">Quantity: {item.quantity}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                        <p className="text-xs font-black uppercase italic tracking-widest">₦{parseFloat(item.price).toLocaleString()}</p>
+                        <p className="text-xs font-black uppercase italic tracking-widest">₦{parseFloat(item.unit_price).toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
