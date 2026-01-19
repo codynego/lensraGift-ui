@@ -20,10 +20,14 @@ export default function OrderTracking() {
     setOrderData(null);
 
     try {
+      const params = new URLSearchParams();
+      params.append('order_number', orderNumber);
+      params.append('email', email);
+
       const res = await fetch(`${BaseUrl}api/orders/track-order/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_number: orderNumber, email: email }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params,
       });
 
       const data = await res.json();
