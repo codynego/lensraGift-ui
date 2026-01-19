@@ -109,7 +109,7 @@ function ProductsContent() {
         // Filter by category slug - assuming backend filter is named 'category' and expects the slug
         if (selectedCategory !== 'all') {
           console.log('Selected category slug:', selectedCategory);
-          params.append('category', selectedCategory);
+          params.append('category__slug', selectedCategory);
         }
 
         const range = priceRanges.find(r => r.value === selectedPriceRange);
