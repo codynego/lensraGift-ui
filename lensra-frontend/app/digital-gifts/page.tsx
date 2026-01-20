@@ -15,7 +15,7 @@ export default function LensraHome() {
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-red-600">
      
-      {/* 1. HERO SECTION - Enhanced with smoother animations and more compelling copy */}
+      {/* 1. HERO SECTION - Made layout cleaner, added subtle parallax bg */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="h-full w-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -29,25 +29,25 @@ export default function LensraHome() {
         >
           <div className="inline-flex items-center gap-3 px-4 py-2 border border-red-600/30 rounded-full bg-red-600/5 mb-4">
             <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-red-600">New Gifting Revolution</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-red-600">New Way to Gift</span>
           </div>
 
           <h1 className="text-7xl md:text-9xl font-black italic uppercase tracking-tighter leading-[0.8]">
-            Your Heartfelt Words. <br/> <span className="text-zinc-800 text-6xl md:text-8xl">Their Magical Reveal.</span>
+            Your Words. <br/> <span className="text-zinc-800 text-6xl md:text-8xl">Their Joy.</span>
           </h1>
           
           <p className="max-w-xl mx-auto text-zinc-500 font-bold uppercase text-[10px] tracking-[0.3em] leading-relaxed">
-            Ditch ordinary texts—craft a digital masterpiece with voice, video, and emotion, unveiled via link or premium QR card. Create moments that linger forever.
+            No more plain texts. Send a special message with voice or video. Open it with a link or QR card.
           </p>
 
-          {/* Interactive Demo Card - Improved with better hover effects and accessibility */}
+          {/* Interactive Demo Card - Added accessibility and smooth transitions */}
           <div className="pt-12 relative max-w-sm mx-auto group">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setRevealed(!revealed)}
               className="aspect-[4/3] bg-zinc-900 border-2 border-zinc-800 rounded-[32px] overflow-hidden cursor-pointer relative shadow-2xl transition-all group-hover:border-red-600/50 group-hover:shadow-red-600/20"
-              aria-label="Click to reveal demo message"
+              aria-label="Tap to see demo"
             >
               <AnimatePresence mode="wait">
                 {!revealed ? (
@@ -65,7 +65,7 @@ export default function LensraHome() {
                     >
                       <Sparkles className="text-white" />
                     </motion.div>
-                    <p className="text-xs font-black uppercase tracking-widest">Tap to Unveil</p>
+                    <p className="text-xs font-black uppercase tracking-widest">Tap to Open</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -75,8 +75,8 @@ export default function LensraHome() {
                     transition={{ type: 'spring', stiffness: 200 }}
                     className="absolute inset-0 bg-white flex flex-col items-center justify-center p-8 text-black"
                   >
-                    <p className="text-2xl font-black italic uppercase tracking-tighter">"You're My World!"</p>
-                    <p className="mt-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Secret Unlocked</p>
+                    <p className="text-2xl font-black italic uppercase tracking-tighter">"I Love You!"</p>
+                    <p className="mt-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Message Shown</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -86,54 +86,54 @@ export default function LensraHome() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
             <button className="px-10 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-red-600 hover:text-white transition-all shadow-xl shadow-white/5">
-              Craft Your Masterpiece
+              Make Your Gift
             </button>
             <button className="px-10 py-6 border-2 border-zinc-800 rounded-full font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-zinc-900 transition-all">
-              <Play className="w-3 h-3 fill-current" /> Watch the Magic
+              <Play className="w-3 h-3 fill-current" /> See How
             </button>
           </div>
         </motion.div>
       </section>
 
-      {/* 2. THE EMOTIONAL STORY - Refined layout for better readability, more immersive copy */}
+      {/* 2. THE EMOTIONAL STORY - Simplified layout, clearer emotional pull */}
       <section className="py-32 px-6 bg-zinc-900/30">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div className="space-y-8">
             <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter">
-              Gifts That <br/> <span className="text-red-600">Whisper Emotions.</span>
+              Gifts That <br/> <span className="text-red-600">Touch Hearts.</span>
             </h2>
             <div className="space-y-6 text-zinc-400 font-bold uppercase text-xs tracking-widest leading-loose">
-              <p>Forget fleeting texts—forge connections with gifts that capture your voice, your story, your heart.</p>
-              <p>Blend words, sounds, and visuals into a reveal that's as unique as your bond, delivered digitally or tangibly.</p>
+              <p>Not just words. Add voice and video for real feelings.</p>
+              <p>We make it easy to share your love in a fun way.</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="aspect-[3/4] bg-zinc-800 rounded-[40px] border border-white/5 overflow-hidden rotate-[-2deg] shadow-2xl">
                <div className="p-6 flex flex-col h-full justify-between">
                  <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center"><Mic className="w-4 h-4"/></div>
-                 <p className="text-[10px] font-black uppercase tracking-widest">"Heartfelt Joy!"</p>
+                 <p className="text-[10px] font-black uppercase tracking-widest">"Happy Tears!"</p>
                </div>
             </div>
             <div className="aspect-[3/4] bg-zinc-800 rounded-[40px] border border-white/5 overflow-hidden translate-y-12 rotate-[2deg] shadow-2xl">
                <div className="p-6 flex flex-col h-full justify-between bg-gradient-to-b from-red-600/20 to-transparent">
                  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black"><Video className="w-4 h-4"/></div>
-                 <p className="text-[10px] font-black uppercase tracking-widest">"Unforgettable Surprise!"</p>
+                 <p className="text-[10px] font-black uppercase tracking-widest">"Best Ever!"</p>
                </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. QUICK FLOW - Added subtle animations for steps */}
+      {/* 3. QUICK FLOW - Made steps shorter and direct */}
       <section className="py-32 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-20 space-y-4">
-          <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">3 Steps to Eternal Smiles</h2>
+          <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">3 Easy Steps</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            { step: "01", title: "Choose the Moment", icon: Sparkles, desc: "Select for love, birthdays, or pure surprise" },
-            { step: "02", title: "Infuse Your Soul", icon: MessageSquare, desc: "Weave in text, voice, or video essence" },
-            { step: "03", title: "Deliver the Wonder", icon: Smartphone, desc: "Via instant link or luxurious QR card" }
+            { step: "01", title: "Pick Event", icon: Sparkles, desc: "Love, birthday, or fun surprise" },
+            { step: "02", title: "Add Your Touch", icon: MessageSquare, desc: "Text, voice, or video" },
+            { step: "03", title: "Send It", icon: Smartphone, desc: "Link or QR card" }
           ].map((item, idx) => (
             <motion.div 
               key={idx} 
@@ -147,23 +147,23 @@ export default function LensraHome() {
               <h3 className="text-xl font-black italic uppercase">{item.title}</h3>
               <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{item.desc}</p>
               <button className="pt-4 text-xs font-black uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
-                Begin Journey <ArrowRight className="w-4 h-4" />
+                Start <ArrowRight className="w-4 h-4" />
               </button>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* 4. FEATURE SHOWCASE - Grid optimized for mobile, punchier copy */}
+      {/* 4. FEATURE SHOWCASE - Simplified descriptions */}
       <section className="py-32 px-6 bg-white text-black rounded-[60px]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-20">Elevate Your Gesture.</h2>
+          <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-20">Make It Special.</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
             {[
-              { title: "Enchanting Animations", icon: Sparkles, desc: "Ignite the reveal with captivating motion" },
-              { title: "Precision Scheduling", icon: Calendar, desc: "Time your heartfelt surprise perfectly" },
-              { title: "Elegant QR Cards", icon: CreditCard, desc: "A luxurious, holdable key to memories" },
-              { title: "Rich Media Fusion", icon: Video, desc: "Blend video, voice & text seamlessly" }
+              { title: "Fun Animations", icon: Sparkles, desc: "Make the open exciting" },
+              { title: "Set a Time", icon: Calendar, desc: "Send at the right moment" },
+              { title: "Nice QR Cards", icon: CreditCard, desc: "A real card to hold" },
+              { title: "Mix Media", icon: Video, desc: "Add video, voice, text" }
             ].map((f, i) => (
               <motion.div 
                 key={i} 
@@ -182,25 +182,25 @@ export default function LensraHome() {
         </div>
       </section>
 
-      {/* 6. LIMITED OFFER - Added urgency with countdown feel */}
+      {/* 6. LIMITED OFFER - Clear call to action */}
       <section className="py-32 px-6 text-center">
         <div className="max-w-3xl mx-auto bg-zinc-900 border border-red-600/20 p-16 rounded-[50px] space-y-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10"><Sparkles className="w-32 h-32 text-red-600"/></div>
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">Unlock a Free Gift Today</h2>
-          <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Exclusive for the first 100 visionaries this month—don't miss the magic</p>
+          <h2 className="text-4xl font-black italic uppercase tracking-tighter">Get a Free Gift</h2>
+          <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">First 100 this month only</p>
           <button className="bg-red-600 text-white px-12 py-6 rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-black transition-all">
-            Claim Your Free Creation
+            Get Free Gift
           </button>
         </div>
       </section>
 
-      {/* 8. FAQ SECTION - Improved accordion transitions */}
+      {/* 8. FAQ SECTION - Easy to read */}
       <section className="py-32 px-6 max-w-3xl mx-auto space-y-12">
-        <h3 className="text-3xl font-black italic uppercase text-center mb-16 underline decoration-red-600">Your Questions, Answered</h3>
+        <h3 className="text-3xl font-black italic uppercase text-center mb-16 underline decoration-red-600">Quick Answers</h3>
         {[
-          { q: "How does delivery work?", a: "Seamlessly via a private link or a beautifully crafted physical QR card shipped directly." },
-          { q: "Can I time the reveal?", a: "Absolutely—schedule the perfect moment for your message to unfold." },
-          { q: "How secure is my message?", a: "Fully encrypted, accessible only by your intended recipient for ultimate privacy." }
+          { q: "How do I send it?", a: "By link or a nice card sent to their home." },
+          { q: "Can I pick the time?", a: "Yes, choose when it opens." },
+          { q: "Is it safe?", a: "Yes, only they can see it." }
         ].map((faq, i) => (
           <div key={i} className="border-b border-zinc-800 pb-6">
             <button
@@ -229,10 +229,10 @@ export default function LensraHome() {
         ))}
       </section>
 
-      {/* 9. STICKY BOTTOM CTA - Added subtle shadow for depth */}
+      {/* 9. STICKY BOTTOM CTA */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[100] sm:hidden">
         <button className="w-full bg-red-600 text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl flex items-center justify-center gap-3">
-          Create Gift Now <ArrowRight className="w-4 h-4"/>
+          Make Gift <ArrowRight className="w-4 h-4"/>
         </button>
       </div>
 
