@@ -44,6 +44,7 @@ export default function GiftWizard() {
     tier: '',
     addons: [] as string[],
     message: '',
+    recipientName: '',
     recipientContact: '',
     deliveryDate: '',
     physicalAddress: '',
@@ -90,6 +91,16 @@ export default function GiftWizard() {
    
     fetchData();
   }, []);
+
+  // Pre-select recommended tier
+  useEffect(() => {
+    if (tiers.length > 0 && !formData.tier) {
+      const recommendedTier = tiers.find(t => t.recommended);
+      const defaultTier = recommendedTier || tiers[0];
+      setFormData(prev => ({ ...prev, tier: defaultTier.id.toString() }));
+    }
+  }, [tiers]);
+
   // Calculate Total
   const totalPrice = useMemo(() => {
     if (!tiers.length || !addons.length) return 0;
@@ -124,6 +135,7 @@ export default function GiftWizard() {
       // Add text fields
       if (formData.senderName) formDataToSend.append('sender_name', formData.senderName);
       if (formData.senderEmail) formDataToSend.append('sender_email', formData.senderEmail);
+      formDataToSend.append('recipient_name', formData.recipientName);
       formDataToSend.append('occasion', occasions.find(o => o.slug === formData.occasion)?.id.toString() || '');
       formDataToSend.append('tier', formData.tier);
       formDataToSend.append('text_message', formData.message);
@@ -432,6 +444,13 @@ export default function GiftWizard() {
               <div className="space-y-6">
                 <input
                   type="text"
+                  placeholder="Recipient's name"
+                  value={formData.recipientName}
+                  onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
+                  className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-full px-8 py-6 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600"
+                />
+                <input
+                  type="text"
                   placeholder="Recipient's email or phone number"
                   value={formData.recipientContact}
                   onChange={(e) => setFormData({...formData, recipientContact: e.target.value})}
@@ -528,6 +547,7 @@ export default function GiftWizard() {
                     tier: '',
                     addons: [],
                     message: '',
+                    recipientName: '',
                     recipientContact: '',
                     deliveryDate: '',
                     physicalAddress: '',
