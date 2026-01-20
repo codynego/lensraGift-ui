@@ -72,9 +72,9 @@ export default function GiftWizard() {
           addonRes.json()
         ]);
         
-        setOccasions(occData);
-        setTiers(tierData);
-        setAddons(addonData);
+        setOccasions(Array.isArray(occData) ? occData : []);
+        setTiers(Array.isArray(tierData) ? tierData : []);
+        setAddons(Array.isArray(addonData) ? addonData : []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -297,17 +297,14 @@ export default function GiftWizard() {
                   className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-full px-8 py-6 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600"
                 />
                 
-                {(() => {
-                  const physicalCardId = addons.find((a: AddOn) => a.name.toLowerCase() === 'physical qr card')?.id;
-                  return physicalCardId && formData.addons.includes(physicalCardId.toString()) ? (
-                    <textarea 
-                      placeholder="Enter shipping address for the physical card"
-                      value={formData.physicalAddress}
-                      onChange={(e) => setFormData({...formData, physicalAddress: e.target.value})}
-                      className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-[32px] p-8 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600 min-h-[100px]"
-                    />
-                  ) : null;
-                })()}
+                {addons.find((a: AddOn) => a.name.toLowerCase() === 'physical qr card') && formData.addons.includes(addons.find((a: AddOn) => a.name.toLowerCase() === 'physical qr card')?.id.toString() || '') && (
+                  <textarea 
+                    placeholder="Enter shipping address for the physical card"
+                    value={formData.physicalAddress}
+                    onChange={(e) => setFormData({...formData, physicalAddress: e.target.value})}
+                    className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-[32px] p-8 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600 min-h-[100px]"
+                  />
+                )}
               </div>
             </motion.div>
           )}
