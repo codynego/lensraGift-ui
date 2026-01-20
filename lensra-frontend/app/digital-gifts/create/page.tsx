@@ -179,6 +179,7 @@ export default function GiftWizard() {
         body: formDataToSend,
         // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
       });
+      console.log("payload", formDataToSend)
      
       if (!res.ok) throw new Error('Failed to create gift');
      
