@@ -128,7 +128,7 @@ export default function Navbar() {
             <ul className="flex items-center justify-center gap-12 py-5">
               <NavItem href="/products" label="All Gifts" hasDropdown />
               <NavItem href="/design-ideas" label="Trending Designs" />
-              <NavItem href="/sale" label="Discount Sale" isHighlight />
+              <NavItem href="/digital-gifts" label="Digital Gifts" />
               <NavItem href="/business" label="Business" />
               <NavItem href="/about" label="Our Studio" />
               <NavItem href="/contact" label="Contact Us" />
@@ -179,11 +179,11 @@ export default function Navbar() {
                 </li>
                 <li>
                   <Link 
-                    href="/sale" 
+                    href="/digital-gifts" 
                     onClick={() => setMobileMenuOpen(false)} 
                     className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 hover:text-red-700"
                   >
-                    Discount Sale
+                    Digital Gifts
                   </Link>
                 </li>
                 <li>
