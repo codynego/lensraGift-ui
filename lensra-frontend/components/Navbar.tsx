@@ -26,11 +26,13 @@ export default function Navbar() {
         url.searchParams.append('session_id', sessionId);
       }
       
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const res = await fetch(url.toString(), {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        }
+        headers
       });
 
       if (res.ok) {
@@ -170,15 +172,6 @@ export default function Navbar() {
                     className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black flex items-center gap-2"
                   >
                     All Gifts <ChevronDown className="w-3 h-3 text-red-600" />
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    href="/design-ideas" 
-                    onClick={() => setMobileMenuOpen(false)} 
-                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
-                  >
-                    Trending Designs
                   </Link>
                 </li>
                 <li>
