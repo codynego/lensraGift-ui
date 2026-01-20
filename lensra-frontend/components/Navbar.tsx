@@ -18,13 +18,18 @@ export default function Navbar() {
   // FETCH COUNTS FROM BACKEND
   const syncCounts = useCallback(async () => {
     try {
-      // We send the guest_session_id in headers if not authenticated
       const sessionId = localStorage.getItem('guest_session_id');
       
-      const res = await fetch(`${BaseUrl}api/orders/cart/summary/`, { // Adjust to your actual cart summary endpoint
+      // Build URL with session_id as query parameter instead of custom header
+      const url = new URL(`${BaseUrl}api/orders/cart/summary/`);
+      if (sessionId && !token) {
+        url.searchParams.append('session_id', sessionId);
+      }
+      
+      const res = await fetch(url.toString(), {
         headers: {
+          'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          'X-Session-ID': sessionId || '', // Passing session for guest identification
         }
       });
 
@@ -36,7 +41,7 @@ export default function Navbar() {
     } catch (err) {
       console.error("Failed to sync navbar counts:", err);
     }
-  }, [token, isAuthenticated]);
+  }, [token]);
 
   useEffect(() => {
     syncCounts();
@@ -127,7 +132,6 @@ export default function Navbar() {
           <nav className="hidden lg:block border-t border-zinc-50">
             <ul className="flex items-center justify-center gap-12 py-5">
               <NavItem href="/products" label="All Gifts" hasDropdown />
-              <NavItem href="/design-ideas" label="Trending Designs" />
               <NavItem href="/digital-gifts" label="Digital Gifts" />
               <NavItem href="/business" label="Business" />
               <NavItem href="/about" label="Our Studio" />
