@@ -69,6 +69,12 @@ export default function GiftWizard() {
         setOccasions(Array.isArray(occData) ? occData : []);
         setTiers(Array.isArray(tierData) ? tierData : []);
         setAddons(Array.isArray(addonData) ? addonData : []);
+        console.log({ occData, tierData, addonData });
+        console.log('Fetched digital gift data successfully');
+        console.log('Occasions:', occData);
+        console.log('Tiers:', tierData);
+        console.log('Add-ons:', addonData);
+        
       } catch (err) {
         console.error(err);
       } finally {
