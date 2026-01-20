@@ -305,13 +305,13 @@ export default function LensraHomepage() {
             </div>
 
             {/* Right: Visual */}
-            {/* <div className="relative">
+            <div className="relative">
               <img 
-                src="https://placehold.co/600x400/png?text=Digital+Gift+Reveal&font=roboto" 
+                src="/dg-img.jpg" 
                 alt="Digital Gift Reveal on Phone" 
                 className="w-full h-auto rounded-3xl shadow-2xl"
               />
-            </div> */}
+            </div>
           </div>
         </div>
       </section>

@@ -85,9 +85,11 @@ export default function LensraHome() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
+            <a href="/digital-gifts/create">
             <button className="px-10 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-red-600 hover:text-white transition-all shadow-xl shadow-white/5">
               Make Your Gift
             </button>
+            </a>
             <button className="px-10 py-6 border-2 border-zinc-800 rounded-full font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-zinc-900 transition-all">
               <Play className="w-3 h-3 fill-current" /> See How
             </button>
@@ -231,9 +233,11 @@ export default function LensraHome() {
 
       {/* 9. STICKY BOTTOM CTA */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[100] sm:hidden">
+      <a href="/digital-gifts/create">
         <button className="w-full bg-red-600 text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl flex items-center justify-center gap-3">
           Make Gift <ArrowRight className="w-4 h-4"/>
         </button>
+      </a>
       </div>
 
     </div>
