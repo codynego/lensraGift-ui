@@ -61,9 +61,9 @@ export default function GiftWizard() {
         setLoadingData(true);
         
         const [occRes, tierRes, addonRes] = await Promise.all([
-          fetch(`${BaseUrl}api/digitalgifts/occasions/`),
-          fetch(`${BaseUrl}api/digitalgifts/tiers/`),
-          fetch(`${BaseUrl}api/digitalgifts/addons/`)
+          fetch(`${BaseUrl}api/digital-gifts/occasions/`),
+          fetch(`${BaseUrl}api/digital-gifts/tiers/`),
+          fetch(`${BaseUrl}api/digital-gifts/addons/`)
         ]);
         
         const [occData, tierData, addonData] = await Promise.all([
