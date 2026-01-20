@@ -153,9 +153,9 @@ export default function GiftWizard() {
       }
      
       // Add addons
-      formData.addons.forEach(addonId => {
-        formDataToSend.append('addons', addonId);
-      });
+    formData.addons.forEach(addonId => {
+    formDataToSend.append('addon_ids', addonId);
+    });
      
       // Add voice file or AI flag
       if (formData.voiceFile) {
