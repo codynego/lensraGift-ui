@@ -134,7 +134,7 @@ export default function GiftWizard() {
      
       // Add text fields
       if (formData.senderName) formDataToSend.append('sender_name', formData.senderName);
-      if (formData.senderEmail) formDataToSend.append('sender_email', formData.senderEmail);
+      formDataToSend.append('sender_email', formData.senderEmail);
       formDataToSend.append('recipient_name', formData.recipientName);
       formDataToSend.append('occasion', occasions.find(o => o.slug === formData.occasion)?.id.toString() || '');
       formDataToSend.append('tier', formData.tier);
@@ -153,9 +153,9 @@ export default function GiftWizard() {
       }
      
       // Add addons
-    formData.addons.forEach(addonId => {
-    formDataToSend.append('addon_ids', addonId);
-    });
+      formData.addons.forEach(addonId => {
+        formDataToSend.append('addon_ids', addonId);
+      });
      
       // Add voice file or AI flag
       if (formData.voiceFile) {
@@ -179,16 +179,15 @@ export default function GiftWizard() {
         body: formDataToSend,
         // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
       });
-      console.log("payload", formDataToSend)
      
       if (!res.ok) throw new Error('Failed to create gift');
      
       const data = await res.json();
 
       // Initialize payment after gift creation
-      const paymentEmail = formData.senderEmail || (formData.recipientContact.includes('@') ? formData.recipientContact : '');
+      const paymentEmail = formData.senderEmail;
       if (!paymentEmail) {
-        throw new Error('An email is required for payment initialization.');
+        throw new Error('Sender email is required for payment initialization.');
       }
 
       const paymentRes = await fetch(`${BaseUrl}api/payments/initialize/`, {
@@ -326,9 +325,9 @@ export default function GiftWizard() {
                 <p className="text-zinc-500 text-sm font-bold">Add your personal touch with a heartfelt message.</p>
               </header>
               <div className="space-y-8">
-                {/* Sender Info (Optional) */}
+                {/* Sender Info (Required) */}
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Your Details (Optional)</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Your Details</label>
                   <input
                     type="text"
                     placeholder="Your Name"
@@ -338,9 +337,10 @@ export default function GiftWizard() {
                   />
                   <input
                     type="email"
-                    placeholder="Your Email"
+                    placeholder="Your Email (Required)"
                     value={formData.senderEmail}
                     onChange={(e) => setFormData({...formData, senderEmail: e.target.value})}
+                    required
                     className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-full px-8 py-6 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600"
                   />
                 </div>
@@ -577,7 +577,7 @@ export default function GiftWizard() {
             ) : <div />}
             <button
               onClick={step === 6 ? handleCreateGift : nextStep}
-              disabled={isSubmitting}
+              disabled={isSubmitting || (step === 4 && !formData.senderEmail)}
               className="px-12 py-6 bg-red-600 rounded-full text-white text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 hover:bg-red-700 transition-all disabled:opacity-50"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : step === 6 ? 'Confirm & Pay' : 'Next'}
