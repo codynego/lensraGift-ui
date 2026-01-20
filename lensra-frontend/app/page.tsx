@@ -332,7 +332,7 @@ export default function LensraHomepage() {
             {occasions.map((occasion) => (
               <a 
                 key={occasion.name} 
-                href={`/products?occasion=${occasion.name}`} 
+                href="/products?category=occasion"
                 className="group relative bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 p-6 md:p-8"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${occasion.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
@@ -492,7 +492,7 @@ export default function LensraHomepage() {
                 </div>
 
                 <a 
-                  href="/mystery-box" 
+                  href={`/products?category=mystery-boxes`}
                   className="block w-full py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all"
                 >
                   Grab Yours Now
@@ -503,7 +503,7 @@ export default function LensraHomepage() {
 
           <div className="text-center mt-12">
             <a 
-              href="/mystery-boxes" 
+              href={`/products?category=mystery-boxes`}
               className="inline-flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white hover:text-red-500 transition-colors"
             >
               See All Mystery Boxes
