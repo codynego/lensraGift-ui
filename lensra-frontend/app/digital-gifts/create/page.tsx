@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sparkles, Heart, Cake, Gift, Smile, 
-  Type, Mic, Video, Calendar, CreditCard, 
-  ArrowRight, ArrowLeft, Check, Loader2, Upload, 
-  X, Smartphone, ShoppingBag 
+  Gift, Check, Loader2, ArrowRight, ArrowLeft, 
+  Mic, Video, Sparkles, Heart, Star
 } from 'lucide-react';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+const BaseUrl = "https://api.lensra.com/";
 
 interface Occasion {
   id: number;
@@ -37,24 +34,21 @@ export default function GiftWizard() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetched Data
   const [occasions, setOccasions] = useState<Occasion[]>([]);
   const [tiers, setTiers] = useState<ExperienceTier[]>([]);
   const [addons, setAddons] = useState<AddOn[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   
-  // Gift State
   const [formData, setFormData] = useState({
-    occasion: '',
-    tier: '',
-    addons: [] as string[],
+    occasionSlug: '',
+    tierId: '',
+    addonIds: [] as string[],
     message: '',
     recipientContact: '',
     deliveryDate: '',
     physicalAddress: '',
   });
 
-  // Fetch API data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -85,62 +79,65 @@ export default function GiftWizard() {
     fetchData();
   }, []);
 
-  // Calculate Total
+  const selectedOccasion = occasions.find(o => o.slug === formData.occasionSlug);
+  const selectedTier = tiers.find(t => t.id.toString() === formData.tierId);
+  const selectedAddons = addons.filter(a => formData.addonIds.includes(a.id.toString()));
+
   const totalPrice = useMemo(() => {
-    if (!tiers.length || !addons.length) return 0;
-    
-    const selectedTier = tiers.find(t => t.id === parseInt(formData.tier));
     let total = selectedTier ? parseFloat(selectedTier.price) : 0;
-    
-    formData.addons.forEach(addonId => {
-      const addon = addons.find(a => a.id === parseInt(addonId));
-      if (addon) total += parseFloat(addon.price);
+    selectedAddons.forEach(addon => {
+      total += parseFloat(addon.price);
     });
-    
     return total;
-  }, [formData.tier, formData.addons, tiers, addons]);
+  }, [selectedTier, selectedAddons]);
 
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
 
   const toggleAddon = (id: number) => {
-    const addonStr = id.toString();
+    const idStr = id.toString();
     setFormData(prev => ({
       ...prev,
-      addons: prev.addons.includes(addonStr) 
-        ? prev.addons.filter(a => a !== addonStr) 
-        : [...prev.addons, addonStr]
+      addonIds: prev.addonIds.includes(idStr) 
+        ? prev.addonIds.filter(a => a !== idStr) 
+        : [...prev.addonIds, idStr]
     }));
   };
 
   const handleCreateGift = async () => {
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${BaseUrl}api/digitalgifts/gifts/`, {
+      const res = await fetch(`${BaseUrl}api/digital-gifts/gifts/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          occasion: occasions.find(o => o.slug === formData.occasion)?.id,
-          tier: parseInt(formData.tier),
-          addons: formData.addons.map(id => parseInt(id)),
+          occasion: selectedOccasion?.id,
+          tier: parseInt(formData.tierId),
+          addons: formData.addonIds.map(id => parseInt(id)),
+          message: formData.message,
           recipient_email: formData.recipientContact.includes('@') ? formData.recipientContact : null,
           recipient_phone: !formData.recipientContact.includes('@') ? formData.recipientContact : null,
           scheduled_delivery: formData.deliveryDate || null,
-          // Add sender details if needed, assuming from auth
+          physical_address: formData.physicalAddress || null,
         })
       });
       
       if (!res.ok) throw new Error('Failed to create gift');
       
-      const data = await res.json();
-      // Proceed to payment or success
       nextStep();
     } catch (err) {
       console.error(err);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const canProceed = () => {
+    if (step === 1) return formData.occasionSlug !== '';
+    if (step === 2) return formData.tierId !== '';
+    if (step === 4) return formData.message.trim() !== '';
+    if (step === 5) return formData.recipientContact.trim() !== '';
+    return true;
   };
 
   if (loadingData) {
@@ -152,227 +149,381 @@ export default function GiftWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-red-600/30 pb-32">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-red-600/30 pb-40">
       {/* Progress Bar */}
       <div className="fixed top-0 left-0 w-full h-1 bg-zinc-900 z-50">
-        <motion.div 
-          className="h-full bg-red-600" 
-          initial={{ width: "0%" }}
-          animate={{ width: `${(step / 6) * 100}%` }}
+        <div 
+          className="h-full bg-red-600 transition-all duration-500 ease-out" 
+          style={{ width: `${(step / 7) * 100}%` }}
         />
       </div>
 
-      <main className="max-w-3xl mx-auto px-6 pt-24">
+      <main className="max-w-4xl mx-auto px-6 pt-32">
         
-        <AnimatePresence mode="wait">
-          {/* STEP 1: OCCASION */}
-          {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
-              <header className="space-y-4">
-                <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 1/6</span>
-                <h2 className="text-5xl font-black italic uppercase tracking-tighter">What's the special moment?</h2>
-                <p className="text-zinc-500 text-sm font-bold">Choose an occasion that captures the heart of your gift.</p>
-              </header>
-              <div className="grid grid-cols-2 gap-4">
-                {occasions.map((occ: Occasion) => (
-                  <button 
-                    key={occ.id}
-                    onClick={() => { setFormData({...formData, occasion: occ.slug}); nextStep(); }}
-                    className={`p-10 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 ${formData.occasion === occ.slug ? 'border-red-600 bg-red-600/5' : 'border-zinc-800 hover:border-zinc-600'}`}
-                  >
-                    <Gift className="w-8 h-8" /> {/* Use dynamic icon if available */}
-                    <span className="text-[10px] font-black uppercase tracking-widest">{occ.name}</span>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
+        {/* STEP 1: OCCASION */}
+        {step === 1 && (
+          <div className="space-y-16">
+            <header className="space-y-6 text-center max-w-2xl mx-auto">
+              <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 1 of 6</span>
+              <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                What's the special moment?
+              </h2>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-wide">
+                Choose an occasion that captures the heart of your gift
+              </p>
+            </header>
 
-          {/* STEP 2: TIER SELECTION */}
-          {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
-              <header className="space-y-4">
-                <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 2/6</span>
-                <h2 className="text-5xl font-black italic uppercase tracking-tighter">Select your experience level</h2>
-                <p className="text-zinc-500 text-sm font-bold">Pick the perfect tier to make your gift unforgettable.</p>
-              </header>
-              <div className="space-y-4">
-                {tiers.map((tier: ExperienceTier) => (
-                  <button 
-                    key={tier.id}
-                    onClick={() => setFormData({...formData, tier: tier.id.toString()})}
-                    className={`w-full p-8 rounded-[32px] border-2 flex justify-between items-center transition-all ${formData.tier === tier.id.toString() ? 'border-red-600 bg-red-600/5' : 'border-zinc-800 hover:border-zinc-700'}`}
-                  >
-                    <div className="text-left">
-                      <p className="font-black italic uppercase text-xl">{tier.name}</p>
-                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{tier.description}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+              {occasions.map((occ) => (
+                <button 
+                  key={occ.id}
+                  onClick={() => {
+                    setFormData(prev => ({...prev, occasionSlug: occ.slug}));
+                  }}
+                  className={`group relative p-12 rounded-[40px] border-2 transition-all duration-300 flex flex-col items-center gap-6 ${
+                    formData.occasionSlug === occ.slug 
+                      ? 'border-red-600 bg-red-600/10 shadow-2xl shadow-red-600/20' 
+                      : 'border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/50'
+                  }`}
+                >
+                  {formData.occasionSlug === occ.slug && (
+                    <div className="absolute top-6 right-6 w-8 h-8 rounded-full bg-red-600 flex items-center justify-center">
+                      <Check className="w-5 h-5 text-white" strokeWidth={3} />
                     </div>
-                    <p className="font-black text-red-600">₦{parseFloat(tier.price).toLocaleString()}</p>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
+                  )}
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
+                    formData.occasionSlug === occ.slug ? 'bg-red-600' : 'bg-zinc-800 group-hover:bg-zinc-700'
+                  }`}>
+                    <Gift className="w-8 h-8" />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <span className="text-base font-black uppercase tracking-wider block">{occ.name}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block">
+                      {occ.description}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-          {/* STEP 3: ADD-ONS */}
-          {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
-              <header className="space-y-4">
-                <h2 className="text-5xl font-black italic uppercase tracking-tighter leading-none">Add a little extra magic</h2>
-                <p className="text-zinc-500 text-sm font-bold">Choose add-ons to make your gift even more special.</p>
-              </header>
-              <div className="space-y-4">
-                {addons.map((addon: AddOn) => (
+        {/* STEP 2: TIER SELECTION */}
+        {step === 2 && (
+          <div className="space-y-16">
+            <header className="space-y-6 text-center max-w-2xl mx-auto">
+              <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 2 of 6</span>
+              <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                Select your experience level
+              </h2>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-wide">
+                Pick the perfect tier to make your gift unforgettable
+              </p>
+            </header>
+
+            <div className="space-y-5 max-w-2xl mx-auto">
+              {tiers.map((tier) => (
+                <button 
+                  key={tier.id}
+                  onClick={() => setFormData(prev => ({...prev, tierId: tier.id.toString()}))}
+                  className={`group relative w-full p-10 rounded-[40px] border-2 flex justify-between items-center transition-all duration-300 ${
+                    formData.tierId === tier.id.toString() 
+                      ? 'border-red-600 bg-red-600/10 shadow-2xl shadow-red-600/20' 
+                      : 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-6">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      formData.tierId === tier.id.toString() 
+                        ? 'bg-red-600 border-red-600' 
+                        : 'border-zinc-700 group-hover:border-zinc-600'
+                    }`}>
+                      {formData.tierId === tier.id.toString() && (
+                        <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-center gap-3">
+                        <p className="font-black italic uppercase text-xl tracking-tight">{tier.name}</p>
+                        {tier.recommended && (
+                          <span className="px-3 py-1 bg-red-600 text-white text-[8px] font-black uppercase tracking-widest rounded-full">
+                            Recommended
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mt-2">
+                        {tier.description}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="font-black text-red-600 text-2xl">₦{parseFloat(tier.price).toLocaleString()}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: ADD-ONS */}
+        {step === 3 && (
+          <div className="space-y-16">
+            <header className="space-y-6 text-center max-w-2xl mx-auto">
+              <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 3 of 6</span>
+              <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                Add a little extra magic
+              </h2>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-wide">
+                Choose add-ons to make your gift even more special
+              </p>
+            </header>
+
+            <div className="space-y-5 max-w-2xl mx-auto">
+              {addons.map((addon) => {
+                const isSelected = formData.addonIds.includes(addon.id.toString());
+                return (
                   <div 
                     key={addon.id}
                     onClick={() => toggleAddon(addon.id)}
-                    className={`w-full p-8 rounded-[32px] border-2 cursor-pointer flex justify-between items-center transition-all ${formData.addons.includes(addon.id.toString()) ? 'border-red-600 bg-red-600/5' : 'border-zinc-800'}`}
+                    className={`group w-full p-10 rounded-[40px] border-2 cursor-pointer flex justify-between items-center transition-all duration-300 ${
+                      isSelected 
+                        ? 'border-red-600 bg-red-600/10 shadow-2xl shadow-red-600/20' 
+                        : 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50'
+                    }`}
                   >
                     <div className="flex items-center gap-6">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${formData.addons.includes(addon.id.toString()) ? 'bg-red-600 border-red-600' : 'border-zinc-700'}`}>
-                        {formData.addons.includes(addon.id.toString()) && <Check className="w-3 h-3 text-white" />}
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        isSelected ? 'bg-red-600 border-red-600' : 'border-zinc-700 group-hover:border-zinc-600'
+                      }`}>
+                        {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                       </div>
-                      <p className="font-black italic uppercase tracking-tight">{addon.name}</p>
+                      <div className="text-left">
+                        <p className="font-black italic uppercase tracking-tight text-lg">{addon.name}</p>
+                        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-wide mt-1">
+                          {addon.description}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[10px] font-black text-zinc-500">+₦{parseFloat(addon.price).toLocaleString()}</p>
+                    <p className="text-sm font-black text-zinc-400">
+                      +₦{parseFloat(addon.price).toLocaleString()}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-          {/* STEP 4: PERSONALIZE */}
-          {step === 4 && (
-            <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
-              <header className="space-y-4">
-                <h2 className="text-5xl font-black italic uppercase tracking-tighter">Make it yours</h2>
-                <p className="text-zinc-500 text-sm font-bold">Add your personal touch with a heartfelt message.</p>
-              </header>
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Your Message</label>
-                  <textarea 
-                    value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    placeholder="Share your thoughts from the heart..."
-                    className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-[32px] p-8 text-sm font-bold uppercase outline-none focus:border-red-600 min-h-[150px] resize-none"
-                  />
-                </div>
-                
-                {/* Conditional Media Uploads based on Tier */}
-                {parseInt(formData.tier) !== tiers[0]?.id && ( // Assuming first tier is basic
-                  <div className="space-y-4">
-                    <p className="text-zinc-500 text-sm font-bold">Add voice or video to bring your message to life.</p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <button className="p-8 bg-zinc-900 rounded-[32px] border-2 border-dashed border-zinc-800 flex flex-col items-center gap-3 hover:border-red-600 transition-all">
-                        <Mic className="w-6 h-6 text-zinc-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Record Voice</span>
+        {/* STEP 4: PERSONALIZE */}
+        {step === 4 && (
+          <div className="space-y-16">
+            <header className="space-y-6 text-center max-w-2xl mx-auto">
+              <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 4 of 6</span>
+              <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                Make it yours
+              </h2>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-wide">
+                Add your personal touch with a heartfelt message
+              </p>
+            </header>
+
+            <div className="space-y-10 max-w-2xl mx-auto">
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 block">
+                  Your Message
+                </label>
+                <textarea 
+                  value={formData.message}
+                  onChange={(e) => setFormData(prev => ({...prev, message: e.target.value}))}
+                  placeholder="Share your thoughts from the heart..."
+                  className="w-full bg-zinc-900/50 border-2 border-zinc-800 rounded-[40px] p-10 text-sm font-bold uppercase outline-none focus:border-red-600 focus:bg-zinc-900 min-h-[200px] resize-none transition-all"
+                />
+              </div>
+              
+              {selectedTier && selectedTier.id !== tiers[0]?.id && (
+                <div className="space-y-6">
+                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-wide text-center">
+                    Enhance with voice or video
+                  </p>
+                  <div className="grid grid-cols-2 gap-5">
+                    <button className="group p-10 bg-zinc-900/50 rounded-[40px] border-2 border-dashed border-zinc-800 flex flex-col items-center gap-4 hover:border-red-600 hover:bg-zinc-900 transition-all">
+                      <Mic className="w-8 h-8 text-zinc-500 group-hover:text-red-600 transition-all" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Record Voice</span>
+                    </button>
+                    {selectedTier.id === tiers[tiers.length - 1]?.id && (
+                      <button className="group p-10 bg-zinc-900/50 rounded-[40px] border-2 border-dashed border-zinc-800 flex flex-col items-center gap-4 hover:border-red-600 hover:bg-zinc-900 transition-all">
+                        <Video className="w-8 h-8 text-zinc-500 group-hover:text-red-600 transition-all" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Upload Video</span>
                       </button>
-                      {parseInt(formData.tier) === tiers[tiers.length - 1]?.id && ( // Assuming last is premium
-                        <button className="p-8 bg-zinc-900 rounded-[32px] border-2 border-dashed border-zinc-800 flex flex-col items-center gap-3 hover:border-red-600 transition-all">
-                          <Video className="w-6 h-6 text-zinc-500" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">Upload Video</span>
-                        </button>
-                      )}
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </motion.div>
-          )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-          {/* STEP 5: RECIPIENT */}
-          {step === 5 && (
-            <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
-              <header className="space-y-4">
-                <h2 className="text-5xl font-black italic uppercase tracking-tighter">Who receives the joy?</h2>
-                <p className="text-zinc-500 text-sm font-bold">Enter their contact details for seamless delivery.</p>
-              </header>
-              <div className="space-y-6">
+        {/* STEP 5: RECIPIENT */}
+        {step === 5 && (
+          <div className="space-y-16">
+            <header className="space-y-6 text-center max-w-2xl mx-auto">
+              <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 5 of 6</span>
+              <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                Who receives the joy?
+              </h2>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-wide">
+                Enter their contact details for seamless delivery
+              </p>
+            </header>
+
+            <div className="space-y-8 max-w-2xl mx-auto">
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 block">
+                  Contact Information
+                </label>
                 <input 
                   type="text"
-                  placeholder="Recipient's email or phone number"
+                  placeholder="Email or phone number"
                   value={formData.recipientContact}
-                  onChange={(e) => setFormData({...formData, recipientContact: e.target.value})}
-                  className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-full px-8 py-6 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600"
+                  onChange={(e) => setFormData(prev => ({...prev, recipientContact: e.target.value}))}
+                  className="w-full bg-zinc-900/50 border-2 border-zinc-800 rounded-full px-10 py-7 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600 focus:bg-zinc-900 transition-all"
                 />
-                
-                {addons.find((a: AddOn) => a.name.toLowerCase() === 'physical qr card') && formData.addons.includes(addons.find((a: AddOn) => a.name.toLowerCase() === 'physical qr card')?.id.toString() || '') && (
-                  <textarea 
-                    placeholder="Enter shipping address for the physical card"
-                    value={formData.physicalAddress}
-                    onChange={(e) => setFormData({...formData, physicalAddress: e.target.value})}
-                    className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-[32px] p-8 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600 min-h-[100px]"
-                  />
-                )}
               </div>
-            </motion.div>
-          )}
-
-          {/* STEP 6: PREVIEW & CONFIRM */}
-          {step === 6 && (
-            <motion.div key="step6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="space-y-12">
-              <header className="text-center space-y-4">
-                <h2 className="text-5xl font-black italic uppercase tracking-tighter">Almost there</h2>
-                <p className="text-red-600 text-[10px] font-black uppercase tracking-widest">Review your gift before sending.</p>
-              </header>
               
-              <div className="bg-zinc-900 rounded-[40px] p-10 space-y-8 border border-zinc-800">
-                <div className="flex justify-between border-b border-zinc-800 pb-6">
+              {selectedAddons.some(a => a.name.toLowerCase().includes('physical')) && (
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 block">
+                    Shipping Address
+                  </label>
+                  <textarea 
+                    placeholder="Enter full shipping address for physical delivery"
+                    value={formData.physicalAddress}
+                    onChange={(e) => setFormData(prev => ({...prev, physicalAddress: e.target.value}))}
+                    className="w-full bg-zinc-900/50 border-2 border-zinc-800 rounded-[40px] p-10 text-xs font-black uppercase tracking-widest outline-none focus:border-red-600 focus:bg-zinc-900 min-h-[140px] resize-none transition-all"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 6: PREVIEW & CONFIRM */}
+        {step === 6 && (
+          <div className="space-y-16">
+            <header className="text-center space-y-6">
+              <span className="text-red-600 text-[10px] font-black uppercase tracking-[0.4em]">Step 6 of 6</span>
+              <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                Almost there
+              </h2>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-wide">
+                Review your gift before sending
+              </p>
+            </header>
+            
+            <div className="max-w-2xl mx-auto space-y-8">
+              <div className="bg-zinc-900/50 rounded-[48px] p-12 space-y-10 border-2 border-zinc-800 shadow-2xl">
+                <div className="flex justify-between items-center pb-8 border-b border-zinc-800">
                   <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Occasion</span>
-                  <span className="font-black italic uppercase">{occasions.find((o: Occasion) => o.slug === formData.occasion)?.name}</span>
+                  <span className="font-black italic uppercase text-lg">{selectedOccasion?.name}</span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-800 pb-6">
-                  <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Tier</span>
-                  <span className="font-black italic uppercase">{tiers.find((t: ExperienceTier) => t.id === parseInt(formData.tier))?.name}</span>
+                
+                <div className="flex justify-between items-center pb-8 border-b border-zinc-800">
+                  <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Experience Tier</span>
+                  <span className="font-black italic uppercase text-lg">{selectedTier?.name}</span>
                 </div>
-                <div className="space-y-2">
-                   <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Your Message</span>
-                   <p className="text-sm font-bold uppercase text-zinc-300 italic">"{formData.message}"</p>
+                
+                {selectedAddons.length > 0 && (
+                  <div className="pb-8 border-b border-zinc-800 space-y-4">
+                    <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest block">Add-ons</span>
+                    <div className="space-y-2">
+                      {selectedAddons.map(addon => (
+                        <div key={addon.id} className="flex justify-between items-center">
+                          <span className="text-sm font-bold uppercase text-zinc-400">{addon.name}</span>
+                          <span className="text-xs font-black text-zinc-600">+₦{parseFloat(addon.price).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="space-y-4">
+                  <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest block">Your Message</span>
+                  <p className="text-sm font-bold uppercase text-zinc-300 italic leading-relaxed">
+                    "{formData.message}"
+                  </p>
+                </div>
+
+                <div className="flex justify-between items-center pt-8 border-t border-zinc-800">
+                  <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Recipient</span>
+                  <span className="text-sm font-bold uppercase text-zinc-400">{formData.recipientContact}</span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center p-8 bg-white text-black rounded-[32px]">
-                <p className="text-[10px] font-black uppercase tracking-widest">Total</p>
-                <p className="text-3xl font-black italic uppercase tracking-tighter">₦{totalPrice.toLocaleString()}</p>
+              <div className="flex justify-between items-center p-10 bg-gradient-to-br from-white to-zinc-100 text-black rounded-[40px] shadow-2xl">
+                <p className="text-xs font-black uppercase tracking-[0.3em]">Total Amount</p>
+                <p className="text-4xl font-black italic uppercase tracking-tighter">₦{totalPrice.toLocaleString()}</p>
               </div>
-            </motion.div>
-          )}
+            </div>
+          </div>
+        )}
 
-          {/* STEP 7: SUCCESS */}
-          {step === 7 && (
-            <motion.div key="step7" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center space-y-12 py-12">
-              <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-red-600/40">
-                <Check className="w-12 h-12 text-white" strokeWidth={3} />
+        {/* STEP 7: SUCCESS */}
+        {step === 7 && (
+          <div className="text-center space-y-16 py-20">
+            <div className="relative">
+              <div className="absolute inset-0 blur-3xl bg-red-600/30 rounded-full"></div>
+              <div className="relative w-32 h-32 bg-red-600 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-red-600/50">
+                <Check className="w-16 h-16 text-white" strokeWidth={3} />
               </div>
-              <h2 className="text-6xl font-black italic uppercase tracking-tighter leading-none">Your gift is on its way</h2>
-              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest max-w-xs mx-auto">We've got it all set. They'll cherish this thoughtful surprise.</p>
-              <button 
-                onClick={() => setStep(1)}
-                className="px-12 py-6 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all"
-              >
-                Send Another Gift
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+            
+            <div className="space-y-8">
+              <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9] max-w-2xl mx-auto">
+                Your gift is on its way
+              </h2>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest max-w-md mx-auto leading-relaxed">
+                We've got it all set. They'll cherish this thoughtful surprise.
+              </p>
+            </div>
+            
+            <button 
+              onClick={() => {
+                setStep(1);
+                setFormData({
+                  occasionSlug: '',
+                  tierId: '',
+                  addonIds: [],
+                  message: '',
+                  recipientContact: '',
+                  deliveryDate: '',
+                  physicalAddress: '',
+                });
+              }}
+              className="px-16 py-7 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all shadow-2xl"
+            >
+              Send Another Gift
+            </button>
+          </div>
+        )}
 
         {/* Navigation Controls */}
         {step < 7 && (
-          <div className="fixed bottom-12 left-1/2 -translate-x-1/2 w-full max-w-3xl px-6 flex justify-between items-center z-40">
+          <div className="fixed bottom-12 left-1/2 -translate-x-1/2 w-full max-w-4xl px-6 flex justify-between items-center z-40">
             {step > 1 ? (
-              <button onClick={prevStep} className="w-16 h-16 rounded-full border-2 border-zinc-800 bg-black flex items-center justify-center hover:border-white transition-all">
+              <button 
+                onClick={prevStep} 
+                className="w-16 h-16 rounded-full border-2 border-zinc-800 bg-black/80 backdrop-blur-sm flex items-center justify-center hover:border-white hover:bg-zinc-900 transition-all shadow-2xl"
+              >
                 <ArrowLeft className="w-6 h-6" />
               </button>
             ) : <div />}
 
             <button 
               onClick={step === 6 ? handleCreateGift : nextStep} 
-              disabled={isSubmitting}
-              className="px-12 py-6 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all shadow-2xl flex items-center gap-4"
+              disabled={isSubmitting || !canProceed()}
+              className="px-14 py-7 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all shadow-2xl flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-black"
             >
-              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {step === 6 ? "Confirm and Pay" : "Next"} <ArrowRight className="w-4 h-4" />
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {step === 6 ? "Confirm and Pay" : "Next Step"} 
+              <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         )}
