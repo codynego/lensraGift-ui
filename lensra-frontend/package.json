@@ -11,8 +11,10 @@
   "dependencies": {
     "@react-three/drei": "^9.121.3",
     "@react-three/fiber": "^8.17.14",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/three": "^0.182.0",
     "axios": "^1.13.2",
+    "canvas-confetti": "^1.9.4",
     "fabric": "^7.1.0",
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",
