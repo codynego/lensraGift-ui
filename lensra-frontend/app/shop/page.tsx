@@ -142,7 +142,7 @@ function ProductsContent() {
     if (selectedPriceRange !== 'all') params.set('price', selectedPriceRange);
     if (currentPage > 1) params.set('page', currentPage.toString());
 
-    const newUrl = params.toString() ? `/products?${params.toString()}` : '/products';
+    const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
     router.push(newUrl, { scroll: false });
   }, [searchQuery, selectedCategory, selectedPriceRange, currentPage, router]);
 
@@ -387,7 +387,7 @@ function ProductsContent() {
                   {products.map((product) => (
                     <div key={product.id} className="group flex flex-col">
                       <Link 
-                        href={`/products/${product.slug}`} 
+                        href={`/shop/${product.slug}`} 
                         className="relative aspect-square bg-zinc-50 overflow-hidden rounded-[32px] border border-zinc-100 group-hover:shadow-xl transition-shadow duration-300"
                       >
                         {product.image_url ? (
