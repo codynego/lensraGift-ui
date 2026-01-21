@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: "Lensra",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/logo.jpg",
         width: 1200,
         height: 630,
         alt: "Lensra Gift Experience",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Lensra | Premium Digital Gift Shop",
     description: "Send personalized gifts with instant digital reveals. Experience the magic of giving.",
-    images: ["/og-image.jpg"],
+    images: ["/logo.jpg"],
   },
   robots: {
     index: true,
@@ -69,9 +69,9 @@ export const metadata: Metadata = {
     google: "your-google-verification-code", // Replace with actual code
   },
   icons: { // Added: Favicons for better branding in search results
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: "/favicon.jpg",
+    shortcut: "/favicon.jpg",
+    apple: "/favicon.jpg",
   },
 };
 

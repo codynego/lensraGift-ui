@@ -19,8 +19,8 @@ export default function Footer() {
             </p>
             
             <div className="space-y-4">
-              <ContactLink icon={<Phone />} text="+234 801 234 5678" href="tel:+2348012345678" />
-              <ContactLink icon={<Mail />} text="support@lensra.com" href="mailto:support@lensra.com" />
+              <ContactLink icon={<Phone />} text="+2348051385049" href="tel:+2348051385049" />
+              <ContactLink icon={<Mail />} text="lensrahq@gmail.com" href="mailto:lensrahq@gmail.com" />
               <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-600">
                 <div className="w-10 h-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-400">
                   <MapPin className="w-4 h-4" />
