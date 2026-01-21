@@ -40,7 +40,7 @@ export default function ContactPage() {
             icon={<MessageCircle className="w-8 h-8" />}
             title="WhatsApp"
             actionText="Chat Now"
-            link="https://wa.me/234XXXXXXXXXX"
+            link="https://wa.me/2348051385049"
             desc="Fastest for quick questions."
             color="hover:border-green-500"
           />
@@ -48,7 +48,7 @@ export default function ContactPage() {
             icon={<Mail className="w-8 h-8" />}
             title="Email"
             actionText="Send Email"
-            link="mailto:emonenaabednego@gmail.com"
+            link="mailto:lensrahq@gmail.com"
             desc="Best for bulk orders & business."
             color="hover:border-red-600"
           />
