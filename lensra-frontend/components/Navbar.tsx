@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, ShoppingCart, User, Heart, Menu, X, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion'; // Added for smoother animations
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/";
 
@@ -57,17 +58,17 @@ export default function Navbar() {
   return (
     <>
       {/* 1. TOP ANNOUNCEMENT BAR */}
-      <div className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] py-2.5 text-center">
-        🎁 Free Delivery over ₦10,000 <span className="text-red-600 mx-2">|</span> Use Code: <span className="text-red-600">LENSRA2026</span>
+      <div className="bg-[#050505] text-zinc-300 text-[10px] font-black uppercase tracking-[0.2em] py-2.5 text-center border-b border-zinc-800">
+        🎁 Free Delivery over ₦10,000 <span className="text-red-500 mx-2">|</span> Use Code: <span className="text-red-500">LENSRA2026</span>
       </div>
 
       {/* 2. MAIN NAVIGATION */}
-      <header className="bg-white sticky top-0 z-50 border-b border-zinc-100">
+      <header className="bg-[#050505] sticky top-0 z-50 border-b border-zinc-800 shadow-lg">
         <div className="max-w-[1600px] mx-auto px-6">
           <div className="py-5 flex items-center justify-between gap-10">
             
-            <Link href="/" className="text-3xl font-black tracking-tighter uppercase italic flex-shrink-0">
-              Lensra<span className="text-red-600">.</span>
+            <Link href="/" className="text-3xl font-black tracking-tighter uppercase italic flex-shrink-0 text-white hover:text-red-500 transition-colors">
+              Lensra<span className="text-red-500">.</span>
             </Link>
 
             <div className="hidden lg:flex flex-1 max-w-xl">
@@ -77,11 +78,11 @@ export default function Navbar() {
                   placeholder="SEARCH FOR A GIFT OR DESIGN..."
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
-                  className={`w-full px-6 py-3 bg-zinc-50 text-[10px] font-black tracking-widest uppercase rounded-2xl transition-all border-2 ${
-                    searchFocused ? 'bg-white border-black' : 'border-transparent'
-                  } outline-none`}
+                  className={`w-full px-6 py-3 bg-zinc-800 text-[10px] font-black tracking-widest uppercase rounded-2xl transition-all border-2 placeholder-zinc-500 text-zinc-300 ${
+                    searchFocused ? 'bg-zinc-900 border-red-500' : 'border-transparent'
+                  } outline-none focus:shadow-md`}
                 />
-                <Search className={`absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 ${searchFocused ? 'text-red-600' : 'text-zinc-400'}`} />
+                <Search className={`absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 ${searchFocused ? 'text-red-500' : 'text-zinc-500'}`} />
               </div>
             </div>
 
@@ -90,68 +91,76 @@ export default function Navbar() {
                 {isAuthenticated ? (
                   <div className="flex items-center gap-4">
                     <Link href="/dashboard" className="flex items-center gap-2 group">
-                      <div className="w-10 h-10 bg-black text-white rounded-2xl flex items-center justify-center font-black text-xs group-hover:bg-red-600 transition-colors">
+                      <div className="w-10 h-10 bg-zinc-800 text-zinc-300 rounded-2xl flex items-center justify-center font-black text-xs group-hover:bg-red-500 group-hover:text-white transition-colors shadow-sm">
                         {user?.first_name?.charAt(0) || 'U'}
                       </div>
                     </Link>
-                    <button onClick={logout} className="p-2 text-zinc-400 hover:text-red-600 transition">
+                    <button onClick={logout} className="p-2 text-zinc-500 hover:text-red-500 transition">
                       <LogOut className="w-5 h-5" />
                     </button>
                   </div>
                 ) : (
-                  <Link href="/login" className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all">
+                  <Link href="/login" className="flex items-center gap-2 px-6 py-3 bg-zinc-800 text-zinc-300 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-sm">
                     <User className="w-4 h-4" /> Sign In
                   </Link>
                 )}
               </div>
 
-              <div className="flex items-center border-l border-zinc-100 pl-4 md:pl-6">
-                <Link href="/wishlist" className="p-3 hover:text-red-600 transition relative group">
+              <div className="flex items-center border-l border-zinc-800 pl-4 md:pl-6">
+                <Link href="/wishlist" className="p-3 hover:text-red-500 transition relative group text-zinc-500">
                   <Heart className="w-6 h-6 stroke-[2.5px]" />
                   {wishlistCount > 0 && (
-                    <span className="absolute top-2 right-2 bg-black text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-white animate-in zoom-in duration-300">
+                    <span className="absolute top-2 right-2 bg-red-500 text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-[#050505] animate-in zoom-in duration-300 shadow-sm">
                       {wishlistCount}
                     </span>
                   )}
                 </Link>
 
-                <Link href="/cart" className="p-3 hover:text-red-600 transition relative">
+                <Link href="/cart" className="p-3 hover:text-red-500 transition relative text-zinc-500">
                   <ShoppingCart className="w-6 h-6 stroke-[2.5px]" />
                   {cartCount > 0 && (
-                    <span className="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-white animate-in zoom-in duration-300">
+                    <span className="absolute top-2 right-2 bg-red-500 text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-[#050505] animate-in zoom-in duration-300 shadow-sm">
                       {cartCount}
                     </span>
                   )}
                 </Link>
               </div>
 
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-3 bg-zinc-100 rounded-2xl">
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-3 bg-zinc-800 rounded-2xl text-zinc-300 hover:bg-red-500 hover:text-white transition-shadow shadow-sm">
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
 
-          <nav className="hidden lg:block border-t border-zinc-50">
+          <nav className="hidden lg:block border-t border-zinc-800">
             <ul className="flex items-center justify-center gap-12 py-5">
               <NavItem href="/shop" label="All Gifts" hasDropdown />
-              <NavItem href="/digital-gifts" label="Digital Gifts" />
+              <NavItem href="/digital-gifts" label="Digital Gifts" isHighlight />
               <NavItem href="/business" label="Business" />
               <NavItem href="/about" label="Our Studio" />
               <NavItem href="/contact" label="Contact Us" />
             </ul>
           </nav>
         </div>
+      </header>
 
-        {/* MOBILE MENU */}
+      {/* MOBILE MENU */}
+      <AnimatePresence>
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-[60] bg-white p-8 animate-in slide-in-from-right duration-300">
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+            className="lg:hidden fixed inset-0 z-[60] bg-[#050505] p-8 overflow-y-auto shadow-2xl border-l border-zinc-800"
+          >
             <div className="flex flex-col h-full">
               <div className="flex justify-between items-center mb-12">
-                <Link href="/" className="text-3xl font-black tracking-tighter uppercase italic">
-                  Lensra<span className="text-red-600">.</span>
+                <Link href="/" className="text-3xl font-black tracking-tighter uppercase italic text-white hover:text-red-500 transition-colors">
+                  Lensra<span className="text-red-500">.</span>
                 </Link>
                 <button onClick={() => setMobileMenuOpen(false)}>
-                  <X className="w-8 h-8 text-zinc-800" />
+                  <X className="w-8 h-8 text-zinc-400 hover:text-red-500 transition" />
                 </button>
               </div>
 
@@ -159,9 +168,9 @@ export default function Navbar() {
                 <input
                   type="text"
                   placeholder="SEARCH FOR A GIFT OR DESIGN..."
-                  className="w-full px-6 py-3 bg-zinc-50 text-[10px] font-black tracking-widest uppercase rounded-2xl border-2 border-transparent outline-none focus:border-black transition"
+                  className="w-full px-6 py-3 bg-zinc-800 text-[10px] font-black tracking-widest uppercase rounded-2xl border-2 border-transparent outline-none focus:border-red-500 transition text-zinc-300 placeholder-zinc-500 shadow-sm"
                 />
-                <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               </div>
 
               <ul className="flex flex-col gap-6 mb-12">
@@ -169,16 +178,16 @@ export default function Navbar() {
                   <Link 
                     href="/shop" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black flex items-center gap-2"
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 flex items-center gap-2 transition-colors"
                   >
-                    All Gifts <ChevronDown className="w-3 h-3 text-red-600" />
+                    All Gifts <ChevronDown className="w-3 h-3 text-red-500" />
                   </Link>
                 </li>
                 <li>
                   <Link 
                     href="/digital-gifts" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 hover:text-red-700"
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:text-red-400 transition-colors"
                   >
                     Digital Gifts
                   </Link>
@@ -187,7 +196,7 @@ export default function Navbar() {
                   <Link 
                     href="/business" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors"
                   >
                     Business
                   </Link>
@@ -196,7 +205,7 @@ export default function Navbar() {
                   <Link 
                     href="/about" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors"
                   >
                     Our Studio
                   </Link>
@@ -205,26 +214,26 @@ export default function Navbar() {
                   <Link 
                     href="/contact" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black"
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors"
                   >
                     Contact Us
                   </Link>
                 </li>
               </ul>
 
-              <div className="mt-auto border-t border-zinc-100 pt-6">
+              <div className="mt-auto border-t border-zinc-800 pt-6">
                 {isAuthenticated ? (
                   <div className="space-y-4">
                     <Link 
                       href="/dashboard" 
                       onClick={() => setMobileMenuOpen(false)} 
-                      className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest"
+                      className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-red-500 transition-colors"
                     >
                       <User className="w-5 h-5" /> Dashboard
                     </Link>
                     <button 
                       onClick={() => { logout(); setMobileMenuOpen(false); }} 
-                      className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-red-600"
+                      className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-400 transition-colors"
                     >
                       <LogOut className="w-5 h-5" /> Logout
                     </button>
@@ -233,7 +242,7 @@ export default function Navbar() {
                   <Link 
                     href="/login" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest"
+                    className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-red-500 transition-colors"
                   >
                     <User className="w-5 h-5" /> Sign In
                   </Link>
@@ -243,11 +252,11 @@ export default function Navbar() {
                   <Link 
                     href="/wishlist" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest relative"
+                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-red-500 relative transition-colors"
                   >
                     <Heart className="w-5 h-5" /> Wishlist
                     {wishlistCount > 0 && (
-                      <span className="absolute top-0 right-0 bg-black text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-white">
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-[#050505] shadow-sm">
                         {wishlistCount}
                       </span>
                     )}
@@ -255,11 +264,11 @@ export default function Navbar() {
                   <Link 
                     href="/cart" 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest relative"
+                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-red-500 relative transition-colors"
                   >
                     <ShoppingCart className="w-5 h-5" /> Cart
                     {cartCount > 0 && (
-                      <span className="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-white">
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-[8px] font-black rounded-full min-w-4 h-4 flex items-center justify-center border-2 border-[#050505] shadow-sm">
                         {cartCount}
                       </span>
                     )}
@@ -267,9 +276,9 @@ export default function Navbar() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
-      </header>
+      </AnimatePresence>
     </>
   );
 }
@@ -278,9 +287,9 @@ export default function Navbar() {
 function NavItem({ href, label, hasDropdown = false, isHighlight = false }: { href: string, label: string, hasDropdown?: boolean, isHighlight?: boolean }) {
   return (
     <li>
-      <Link href={href} className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${isHighlight ? 'text-red-600 hover:text-red-700' : 'text-zinc-500 hover:text-black'}`}>
+      <Link href={href} className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${isHighlight ? 'text-red-500 hover:text-red-400' : 'text-zinc-400 hover:text-white'}`}>
         {label}
-        {hasDropdown && <ChevronDown className="w-3 h-3 text-red-600" />}
+        {hasDropdown && <ChevronDown className="w-3 h-3 text-red-500" />}
       </Link>
     </li>
   );
