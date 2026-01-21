@@ -18,7 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           '/digital-gifts',
           '/editor',
           '/gift-ideas',
-          '/products',
+          '/shop',
           '/reseller-program',
           '/support',
         ],

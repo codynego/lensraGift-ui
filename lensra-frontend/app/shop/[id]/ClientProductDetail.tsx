@@ -1,31 +1,17 @@
+// app/shop/[id]/ClientProductDetail.tsx
+// This is the client component for interactivity
+
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image'; // Added for optimized images
 import { 
   Heart, Palette, Loader2, ShoppingBag, Plus, Minus, 
   Sparkles, Check, ChevronDown, ChevronUp, Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
-
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
-
-// --- CONFIG ---
-const EMOTIONS = [
-  { id: 'loved', label: 'Loved', emoji: '❤️' },
-  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
-  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
-  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
-  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
-];
-
-// --- INTERFACES ---
-interface ProductImage {
-  id: number;
-  image_url: string;
-  alt_text: string;
-}
 
 interface AttributeValue {
   id: number;
@@ -38,6 +24,12 @@ interface ProductVariant {
   attributes: AttributeValue[];
   price_override: string | null;
   stock_quantity: number;
+}
+
+interface ProductImage {
+  id: number;
+  image_url: string;
+  alt_text: string;
 }
 
 interface ProductDetail {
@@ -53,71 +45,59 @@ interface ProductDetail {
   is_customizable: boolean;
 }
 
-export default function ProductDetailPage() {
-  const params = useParams();
+const EMOTIONS = [
+  { id: 'loved', label: 'Loved', emoji: '❤️' },
+  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
+  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
+  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
+  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
+];
+
+export default function ClientProductDetail({ 
+  initialProduct, 
+  initialRelatedProducts, 
+  baseUrl 
+}: { 
+  initialProduct: ProductDetail; 
+  initialRelatedProducts: ProductDetail[]; 
+  baseUrl: string;
+}) {
   const router = useRouter();
   const { token } = useAuth();
   
-  const [product, setProduct] = useState<ProductDetail | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [product] = useState<ProductDetail>(initialProduct);
+  const [relatedProducts] = useState<ProductDetail[]>(initialRelatedProducts);
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('details');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
-  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState<'details' | 'shipping'>('details');
+  const [selectedImage, setSelectedImage] = useState<string | null>(initialProduct.image_url);
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(() => {
+    if (initialProduct.variants?.length > 0) {
+      const initialAttrs: Record<string, string> = {};
+      initialProduct.variants[0].attributes.forEach((attr) => {
+        initialAttrs[attr.attribute_name] = attr.value;
+      });
+      return initialAttrs;
+    }
+    return {};
+  });
+  const [quantity, setQuantity] = useState(initialProduct.min_order_quantity || 1);
 
   // --- SURPRISE REVEAL STATE ---
   const [showSurprise, setShowSurprise] = useState(false);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [secretMessage, setSecretMessage] = useState("");
 
-  useEffect(() => {
-    const fetchProductData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${BaseUrl}api/products/${params.id}/`);
-        if (!response.ok) throw new Error('Product not found');
-        const data = await response.json();
-        
-        setProduct(data);
-        setSelectedImage(data.image_url);
-        setQuantity(data.min_order_quantity || 1);
-        
-        const relatedRes = await fetch(`${BaseUrl}api/products/?category__name=${data.category_name}`);
-        if (relatedRes.ok) {
-          const relatedData = await relatedRes.json();
-          const productsArray = Array.isArray(relatedData) ? relatedData : (relatedData.results || []);
-          setRelatedProducts(productsArray.filter((p: any) => p.id !== data.id).slice(0, 4));
-        }
-
-        if (data.variants?.length > 0) {
-          const initialAttrs: Record<string, string> = {};
-          data.variants[0].attributes.forEach((attr: AttributeValue) => {
-            initialAttrs[attr.attribute_name] = attr.value;
-          });
-          setSelectedAttributes(initialAttrs);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (params.id) fetchProductData();
-  }, [params.id]);
-
   const activeVariant = useMemo(() => {
     if (!product?.variants || product.variants.length === 0) return null;
-    return product.variants.find(v => 
-      v.attributes.every(attr => selectedAttributes[attr.attribute_name] === attr.value)
-    );
+    return product.variants.find((v) => 
+      v.attributes.every((attr) => selectedAttributes[attr.attribute_name] === attr.value)
+    ) || null;
   }, [selectedAttributes, product]);
 
   const currentPrice = activeVariant?.price_override || product?.base_price || "0";
-  const attributeTypes = Array.from(new Set(product?.variants?.flatMap(v => v.attributes.map(a => a.attribute_name)) || []));
-  const allImages = product ? [product.image_url, ...product.gallery.map(g => g.image_url)].filter(Boolean) as string[] : [];
+  const attributeTypes = Array.from(new Set(product?.variants?.flatMap((v) => v.attributes.map((a) => a.attribute_name)) || []));
+  const allImages = [product.image_url, ...product.gallery.map((g) => g.image_url)].filter(Boolean) as string[];
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -129,7 +109,7 @@ export default function ProductDetailPage() {
     }
 
     try {
-      const res = await fetch(`${BaseUrl}api/orders/cart/`, {
+      const res = await fetch(`${baseUrl}api/orders/cart/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
         body: JSON.stringify({ 
@@ -148,15 +128,6 @@ export default function ProductDetailPage() {
     } catch (err) { console.error(err); } finally { setIsAdding(false); }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <Loader2 className="w-12 h-12 animate-spin text-red-600 mb-4" />
-      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Loading details...</span>
-    </div>
-  );
-
-  if (!product) return <div className="min-h-screen flex items-center justify-center font-black uppercase text-4xl italic">Item not found.</div>;
-
   return (
     <div className="min-h-screen bg-white text-zinc-900 font-sans">
       <main className="max-w-[1600px] mx-auto px-6 lg:px-12 py-12 lg:py-20">
@@ -165,11 +136,15 @@ export default function ProductDetailPage() {
           {/* IMAGE GALLERY - Made sticky on desktop */}
           <div className="space-y-6 lg:sticky lg:top-24 self-start">
             <div className="relative bg-zinc-50 rounded-[40px] overflow-hidden aspect-square border border-zinc-100 group">
-              <img 
-                src={selectedImage || ''} 
-                alt={product.name} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-              />
+              {selectedImage && (
+                <Image 
+                  src={selectedImage} 
+                  alt={product.name} 
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                  priority // For main image
+                />
+              )}
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
               {allImages.map((img, idx) => (
@@ -178,7 +153,7 @@ export default function ProductDetailPage() {
                   onClick={() => setSelectedImage(img)} 
                   className={`relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-zinc-900 scale-95 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <img src={img} alt={`Angle ${idx}`} className="w-full h-full object-cover" />
+                  <Image src={img} alt={`Angle ${idx + 1} of ${product.name}`} fill className="object-cover" />
                 </button>
               ))}
             </div>
@@ -269,7 +244,7 @@ export default function ProductDetailPage() {
                   <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 block mb-4">{type}</label>
                   <div className="flex flex-wrap gap-3">
                     {Array.from(new Set(
-                      product.variants.flatMap(v => v.attributes).filter(a => a.attribute_name === type).map(a => a.value)
+                      product.variants.flatMap((v) => v.attributes).filter((a) => a.attribute_name === type).map((a) => a.value)
                     )).map(val => (
                       <button
                         key={val}
@@ -325,7 +300,7 @@ export default function ProductDetailPage() {
             <div className="border-t border-zinc-100 pt-10">
               <div className="flex gap-10 mb-8">
                 {['details', 'shipping'].map((tab) => (
-                  <button key={tab} onClick={() => setActiveTab(tab)} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all relative pb-2 ${activeTab === tab ? 'text-zinc-900' : 'text-zinc-300'}`}>
+                  <button key={tab} onClick={() => setActiveTab(tab as 'details' | 'shipping')} className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all relative pb-2 ${activeTab === tab ? 'text-zinc-900' : 'text-zinc-300'}`}>
                     {tab} {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-1 bg-red-600" />}
                   </button>
                 ))}
@@ -358,8 +333,10 @@ export default function ProductDetailPage() {
                   }}
                   className="group cursor-pointer"
                 >
-                  <div className="aspect-[3/4] rounded-[30px] overflow-hidden bg-zinc-50 mb-4 lg:mb-6 border border-zinc-100">
-                    <img src={item.image_url || ''} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="aspect-[3/4] rounded-[30px] overflow-hidden bg-zinc-50 mb-4 lg:mb-6 border border-zinc-100 relative">
+                    {item.image_url && (
+                      <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                    )}
                   </div>
                   <h3 className="text-[11px] font-black uppercase tracking-widest mb-1 group-hover:text-red-600 transition-colors">{item.name}</h3>
                   <p className="text-[11px] font-bold text-zinc-400 italic">₦{parseFloat(item.base_price).toLocaleString()}</p>

@@ -133,7 +133,7 @@ export default function Navbar() {
 
           <nav className="hidden lg:block border-t border-zinc-50">
             <ul className="flex items-center justify-center gap-12 py-5">
-              <NavItem href="/products" label="All Gifts" hasDropdown />
+              <NavItem href="/shop" label="All Gifts" hasDropdown />
               <NavItem href="/digital-gifts" label="Digital Gifts" />
               <NavItem href="/business" label="Business" />
               <NavItem href="/about" label="Our Studio" />
@@ -167,7 +167,7 @@ export default function Navbar() {
               <ul className="flex flex-col gap-6 mb-12">
                 <li>
                   <Link 
-                    href="/products" 
+                    href="/shop" 
                     onClick={() => setMobileMenuOpen(false)} 
                     className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-black flex items-center gap-2"
                   >

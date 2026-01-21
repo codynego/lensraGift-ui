@@ -149,7 +149,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.4,
     },
     {
-      url: `${baseUrl}/products`,
+      url: `${baseUrl}/shop`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,

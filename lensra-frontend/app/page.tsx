@@ -258,7 +258,7 @@ export default function LensraHomepage() {
                     <ArrowRight className="w-5 h-5" />
                   </a>
                   <a 
-                    href="/products" 
+                    href="/shop" 
                     className="inline-flex items-center justify-center gap-4 px-10 py-5 bg-white/10 border border-white/20 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-white/20 transition-all"
                   >
                     <span>Browse Products</span>
@@ -332,7 +332,7 @@ export default function LensraHomepage() {
             {occasions.map((occasion) => (
               <a 
                 key={occasion.name} 
-                href="/products?category=occasion"
+                href="/shop?category=occasion"
                 className="group relative bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 p-6 md:p-8"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${occasion.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
@@ -437,7 +437,7 @@ export default function LensraHomepage() {
           {/* See All Products Button */}
           <div className="text-center mt-12">
             <a 
-              href="/products" 
+              href="/shop" 
               className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full text-xs font-black uppercase tracking-widest hover:shadow-2xl hover:shadow-red-600/30 transition-all"
             >
               See All Products
@@ -492,7 +492,7 @@ export default function LensraHomepage() {
                 </div>
 
                 <a 
-                  href={`/products?category=mystery-boxes`}
+                  href={`/shop?category=mystery-boxes`}
                   className="block w-full py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all"
                 >
                   Grab Yours Now
@@ -503,7 +503,7 @@ export default function LensraHomepage() {
 
           <div className="text-center mt-12">
             <a 
-              href={`/products?category=mystery-boxes`}
+              href={`/shop?category=mystery-boxes`}
               className="inline-flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white hover:text-red-500 transition-colors"
             >
               See All Mystery Boxes
@@ -679,7 +679,7 @@ function EnhancedProductCard({ product }: { product: Product }) {
   const imageUrl = getImageUrl(product.image_url);
   
   return (
-    <a href={`/products/${product.slug}`} className="group block">
+    <a href={`/shop/${product.slug}`} className="group block">
       <div className="relative aspect-square bg-white rounded-2xl overflow-hidden mb-3 border border-zinc-200 group-hover:border-red-300 group-hover:shadow-2xl transition-all">
         {imageUrl ? (
           <img 

@@ -1,7 +1,99 @@
-"use client";
-
+import { Metadata } from 'next';
 import { Target, Heart, Award, Users, Zap, Shield, CheckCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+
+// Remove "use client" if no client-side interactivity is needed (this page looks static).
+// This allows server-side rendering for better SEO (faster initial HTML delivery to crawlers).
+
+export const metadata: Metadata = {
+  title: 'About Lensra | Our Story, Mission, and Premium Gift Services in Nigeria',
+  description: 'Discover Lensra Gifts: Nigeria\'s leading print-on-demand gift shop specializing in personalized experiences, custom prints, and instant digital reveals. Learn about our commitment to quality, speed, and innovation.',
+  keywords: [
+    'about Lensra',
+    'Lensra story',
+    'personalized gifts Nigeria',
+    'print on demand Nigeria',
+    'custom gift shop Lagos',
+    'digital gift experiences',
+  ],
+  openGraph: {
+    title: 'About Lensra | Premium Personalized Gifts in Nigeria',
+    description: 'From our beginnings to our vision: Explore how Lensra is revolutionizing gifting with high-quality prints and magical digital moments.',
+    url: 'https://www.lensra.com/about',
+    images: [
+      {
+        url: '/about-og-image.jpg', // Add a relevant 1200x630 image in /public
+        width: 1200,
+        height: 630,
+        alt: 'Lensra Team and Gift Creations',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About Lensra | Custom Gifts & Digital Experiences',
+    description: 'Learn about Lensra\'s journey to becoming Nigeria\'s top gift innovation hub.',
+    images: ['/about-og-image.jpg'],
+  },
+  alternates: {
+    canonical: '/about',
+  },
+};
+
+// Add Structured Data for WebPage and Organization schema
+function AboutSchema() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Lensra Gifts",
+    "description": "Lensra is Nigeria's premium gift shop offering unique print-on-demand products and instant digital gift experiences.",
+    "url": "https://www.lensra.com/about",
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.lensra.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "About",
+          "item": "https://www.lensra.com/about"
+        }
+      ]
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Lensra",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.lensra.com/logo.png" // Add your logo URL
+      },
+      "foundingDate": "2023", // Update with actual year if different
+      "founder": {
+        "@type": "Person",
+        "name": "Abednego" // Personalized based on user info; adjust if needed
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Lagos",
+        "addressRegion": "Lagos",
+        "addressCountry": "NG"
+      }
+    }
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
 
 export default function AboutPage() {
   const values = [
@@ -29,6 +121,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans">
+      <AboutSchema /> {/* Added: Structured data for SEO */}
       
       {/* 1. HERO: BOLD & LOUD */}
       <section className="bg-zinc-950 text-white py-32 px-6 border-b-[12px] border-red-600 overflow-hidden relative">

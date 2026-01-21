@@ -34,9 +34,9 @@ export default function Footer() {
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 mb-8">Buy Now</h4>
             <ul className="space-y-4 text-[11px] font-black uppercase tracking-widest text-zinc-400">
-              <li><Link href="/products" className="hover:text-white transition">All Products</Link></li>
-              <li><Link href="/products?category=apparel" className="hover:text-white transition">T-Shirts & Wear</Link></li>
-              <li><Link href="/products?category=drinkware" className="hover:text-white transition">Cups & Mugs</Link></li>
+              <li><Link href="/shop" className="hover:text-white transition">All Products</Link></li>
+              <li><Link href="/shop?category=apparel" className="hover:text-white transition">T-Shirts & Wear</Link></li>
+              <li><Link href="/shop?category=drinkware" className="hover:text-white transition">Cups & Mugs</Link></li>
               <li><Link href="/digital-gifts" className="text-white hover:text-red-600 transition italic">★ Digital Gifts</Link></li>
             </ul>
           </div>
