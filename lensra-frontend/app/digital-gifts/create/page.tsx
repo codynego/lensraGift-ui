@@ -41,6 +41,7 @@ export default function GiftWizard() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdGiftData, setCreatedGiftData] = useState<{id: number, amount: number} | null>(null);
+  const [isFreeGift, setIsFreeGift] = useState(false);
 
   const [occasions, setOccasions] = useState<Occasion[]>([]);
   const [tiers, setTiers] = useState<ExperienceTier[]>([]);
@@ -92,7 +93,7 @@ export default function GiftWizard() {
 
   const handleCreateGift = async () => {
     if (!formData.sender_email || !formData.sender_name) {
-      alert("Please provide your name and email to proceed to payment.");
+      alert("Please provide your name and email to proceed.");
       return;
     }
 
@@ -129,8 +130,14 @@ export default function GiftWizard() {
       }
       
       const data = await res.json();
-      setCreatedGiftData({ id: data.id, amount: totalPrice });
-      setStep(6);
+      if (totalPrice > 0) {
+        setCreatedGiftData({ id: data.id, amount: totalPrice });
+        setIsFreeGift(false);
+        setStep(6);
+      } else {
+        setIsFreeGift(true);
+        setStep(7);
+      }
     } catch (err) {
       alert('Connection error. Please try again or check your network.');
     } finally {
@@ -512,9 +519,13 @@ export default function GiftWizard() {
               </motion.div>
               
               <div className="space-y-3">
-                <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white">Gift Created!</h2>
+                <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white">
+                  {isFreeGift ? 'Thanks for Your Gift!' : 'Gift Created!'}
+                </h2>
                 <p className="text-sm text-zinc-400 font-medium max-w-md mx-auto">
-                  Your gift has been successfully created and sent. The recipient will receive it shortly.
+                  {isFreeGift 
+                    ? 'Your free gift has been successfully created and sent. The recipient will receive it shortly.' 
+                    : 'Your gift has been successfully created and sent. The recipient will receive it shortly.'}
                 </p>
               </div>
               
@@ -577,7 +588,7 @@ export default function GiftWizard() {
                   </>
                 ) : (
                   <>
-                    <span>{step === 5 ? 'Create & Pay' : 'Next Step'}</span>
+                    <span>{step === 5 ? (totalPrice > 0 ? 'Create & Pay' : 'Create Gift') : 'Next Step'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
