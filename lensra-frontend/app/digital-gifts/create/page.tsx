@@ -54,6 +54,7 @@ export default function GiftWizard() {
     addon_ids: [] as number[],
     text_message: '',
     sender_name: '',
+    sender_phone: '',
     sender_email: '', 
     recipient_name: '',
     recipient_contact: '', 
@@ -92,8 +93,8 @@ export default function GiftWizard() {
   }, [formData.tier, formData.addon_ids, tiers, addons]);
 
   const handleCreateGift = async () => {
-    if (!formData.sender_email || !formData.sender_name) {
-      alert("Please provide your name and email to proceed.");
+    if (!formData.sender_email || !formData.sender_name || !formData.sender_phone) {
+      alert("Please provide your name, phone, and email to proceed.");
       return;
     }
 
@@ -102,6 +103,7 @@ export default function GiftWizard() {
       const params = new URLSearchParams();
       params.append('sender_name', formData.sender_name);
       params.append('sender_email', formData.sender_email);
+      params.append('sender_phone', formData.sender_phone);
       params.append('recipient_name', formData.recipient_name);
       params.append('occasion', String(formData.occasion));
       params.append('tier', String(formData.tier));
@@ -152,7 +154,7 @@ export default function GiftWizard() {
   const canProceed = () => {
     if (step === 1) return formData.occasion !== null;
     if (step === 2) return formData.tier !== null;
-    if (step === 4) return formData.sender_name && formData.sender_email;
+    if (step === 4) return formData.sender_name && formData.sender_phone && formData.sender_email;
     if (step === 5) return formData.recipient_name && formData.recipient_contact;
     return true;
   };
@@ -390,6 +392,14 @@ export default function GiftWizard() {
                     className="w-full bg-zinc-900/80 border-2 border-zinc-800 rounded-full pl-14 pr-6 py-5 text-xs font-black uppercase outline-none focus:border-red-600 focus:bg-zinc-900 transition-all" 
                   />
                 </div>
+                <div className="relative group">
+                  <input 
+                    placeholder="Your Whatsapp Number +234" 
+                    value={formData.sender_phone} 
+                    onChange={e => setFormData({...formData, sender_phone: e.target.value})} 
+                    className="w-full bg-zinc-900/80 border-2 border-zinc-800 rounded-full pl-14 pr-6 py-5 text-xs font-black uppercase outline-none focus:border-red-600 focus:bg-zinc-900 transition-all" 
+                  />
+                </div>
                 
                 <div className="relative group">
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 group-focus-within:text-red-600 transition-colors" />
@@ -405,7 +415,7 @@ export default function GiftWizard() {
                 <div className="relative group">
                   <MessageCircle className="absolute left-5 top-6 w-5 h-5 text-zinc-500 group-focus-within:text-red-600 transition-colors" />
                   <textarea 
-                    placeholder="Write your personal message here... (Optional)" 
+                    placeholder="Write your personal message here... (Required)" 
                     value={formData.text_message} 
                     onChange={e => setFormData({...formData, text_message: e.target.value})} 
                     className="w-full bg-zinc-900/80 border-2 border-zinc-800 rounded-3xl pl-14 pr-6 py-5 text-sm font-medium outline-none focus:border-red-600 focus:bg-zinc-900 transition-all min-h-[140px] resize-none" 
