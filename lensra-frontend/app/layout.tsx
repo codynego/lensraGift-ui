@@ -1,6 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { GoogleAnalytics } from '@next/third-parties/google'; // Added: For easy GA integration
+// import Script from 'next/script'; // Added: If using manual method (uncomment if needed)
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
@@ -88,6 +90,25 @@ export default function RootLayout({
           <main className="flex-grow">{children}</main>
           <Footer />
         </AuthProvider>
+
+        {/* Added: Google Analytics - Recommended Method */}
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+
+        {/* Alternative: Manual GA Script (uncomment if not using @next/third-parties) */}
+        {/* 
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+          `}
+        </Script>
+        */}
       </body>
     </html>
   );

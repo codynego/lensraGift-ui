@@ -618,7 +618,7 @@ export default function RevealPage() {
               </div>
               
               <motion.a 
-                href="/create"
+                href="/digital-gifts/create"
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 className="w-full py-3 flex items-center justify-center gap-1.5 rounded-2xl text-[9px] font-bold uppercase tracking-wider shadow-md transition-all"
