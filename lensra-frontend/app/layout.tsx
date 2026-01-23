@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   keywords: [
     "digital gift shop",
     "personalized gifts Nigeria",
+    "customized gift benin city",
+    "digital gift experiences",
+    "personalized digital gifts",
+    "custom gift shop",
+    "gift delivery Nigeria",
     "instant gift delivery",
     "print on demand gifts",
     "unique gift experiences",
