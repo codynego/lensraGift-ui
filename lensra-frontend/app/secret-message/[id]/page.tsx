@@ -7,6 +7,13 @@ import { Heart, Volume2, Share2, Gift, Loader2, Sparkles, Crown, Star, Zap, Part
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
+// Helper to ensure full media URLs
+const getMediaUrl = (path?: string) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${BaseUrl}${path.startsWith('/') ? path.slice(1) : path}`;
+};
+
 // Occasion-based Experience Configuration - Enhanced with more distinct feels
 const OCCASION_CONFIG: any = {
   'love-confession': {
@@ -120,7 +127,9 @@ export default function RevealPage() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [displayedMessage, setDisplayedMessage] = useState('');
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const [showBurstParticles, setShowBurstParticles] = useState(false);
 
   useEffect(() => {
@@ -142,12 +151,22 @@ export default function RevealPage() {
   useEffect(() => {
     if (audioElement) {
       if (audioPlaying) {
-        audioElement.play();
+        audioElement.play().catch(e => console.log('Audio play prevented', e));
       } else {
         audioElement.pause();
       }
     }
   }, [audioPlaying, audioElement]);
+
+  useEffect(() => {
+    if (videoElement) {
+      if (videoPlaying) {
+        videoElement.play().catch(e => console.log('Video play prevented', e));
+      } else {
+        videoElement.pause();
+      }
+    }
+  }, [videoPlaying, videoElement]);
 
   useEffect(() => {
     if (isRevealed && gift?.text_message) {
@@ -165,7 +184,7 @@ export default function RevealPage() {
     }
   }, [isRevealed, gift]);
 
-  const occasionSlug = gift?.occasion_slug?.toLowerCase() || 'celebration';
+  const occasionSlug = gift?.occasion_slug?.toLowerCase() || gift?.occasion_name?.toLowerCase().replace(/ /g, '-') || 'celebration';
   const config = OCCASION_CONFIG[occasionSlug] || OCCASION_CONFIG.celebration;
   const tierKey = gift?.tier_name?.toLowerCase() || 'standard';
   const tierConfig = TIER_CONFIG[tierKey] || TIER_CONFIG.standard;
@@ -174,8 +193,14 @@ export default function RevealPage() {
     setIsRevealed(true);
     setShowBurstParticles(true);
     setTimeout(() => setShowBurstParticles(false), 2000); // Burst lasts 2s
-    if (tierConfig.showExtraEffects && gift.voice_message) {
-      setAudioPlaying(true); // Auto-play voice for premium/standard
+    
+    // Auto-play media on reveal (user interaction allows autoplay)
+    if (tierConfig.showExtraEffects) {
+      if (gift?.video_message) {
+        setVideoPlaying(true);
+      } else if (gift?.voice_message) {
+        setAudioPlaying(true);
+      }
     }
   };
 
@@ -532,8 +557,26 @@ export default function RevealPage() {
                     </motion.p>
                   </motion.div>
 
-                  {/* Voice Message Player - Compact */}
-                  {gift.voice_message && (
+                  {/* Video Message Player - Premium tier */}
+                  {gift.video_message && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }} 
+                      animate={{ opacity: 1, scale: 1 }} 
+                      transition={{ delay: 0.8 }}
+                      className={`mt-4 p-3 bg-white/3 backdrop-blur-md border ${config.border} rounded-xl`}
+                    >
+                      <video 
+                        ref={setVideoElement}
+                        src={getMediaUrl(gift.video_message)}
+                        controls
+                        playsInline
+                        className="w-full rounded-lg"
+                      />
+                    </motion.div>
+                  )}
+
+                  {/* Voice Message Player - Standard/Premium (if no video) */}
+                  {!gift.video_message && gift.voice_message && (
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }} 
                       animate={{ opacity: 1, scale: 1 }} 
@@ -559,7 +602,7 @@ export default function RevealPage() {
                       </div>
                       <audio 
                         ref={setAudioElement}
-                        src={gift.voice_message}
+                        src={getMediaUrl(gift.voice_message)}
                         className="hidden"
                       />
                     </motion.div>
