@@ -137,12 +137,11 @@ export default function ClientProductDetail({
           <div className="space-y-6 lg:sticky lg:top-24 self-start">
             <div className="relative bg-zinc-50 rounded-[40px] overflow-hidden aspect-square border border-zinc-100 group">
               {selectedImage && (
-                <Image 
+                <img
                   src={selectedImage} 
                   alt={product.name} 
-                  fill
+                  loading='lazy'
                   className="object-cover transition-transform duration-700 group-hover:scale-105" 
-                  priority // For main image
                 />
               )}
             </div>
