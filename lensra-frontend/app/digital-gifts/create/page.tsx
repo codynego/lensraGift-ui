@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Gift, ArrowRight, ArrowLeft, Loader2, Check, Mail, User, MapPin, Sparkles, Heart, Star, Calendar, Package, MessageCircle,
-  Mic, Video, Upload, Play, StopCircle
+  Mic, Video, Upload, StopCircle
 } from 'lucide-react';
 import CheckoutView from '@/components/CheckoutView';
 
@@ -103,17 +103,41 @@ export default function GiftWizard() {
     };
   }, [mediaUrl]);
 
+  const selectedTier = tiers.find(t => t.id === formData.tier);
+
+  const getTierLevel = (tierName: string | undefined) => {
+    if (!tierName) return 'basic';
+    const lower = tierName.toLowerCase();
+    if (lower.includes('premium')) return 'premium';
+    if (lower.includes('standard')) return 'standard';
+    return 'basic';
+  };
+
+  const tierLevel = getTierLevel(selectedTier?.name);
+  const allowsAudio = tierLevel === 'standard' || tierLevel === 'premium';
+  const allowsVideo = tierLevel === 'premium';
+
+  useEffect(() => {
+    if ((mediaType === 'audio' && !allowsAudio) || (mediaType === 'video' && !allowsVideo)) {
+      resetMedia();
+    }
+  }, [tierLevel]);
+
   const totalPrice = useMemo(() => {
-    const selectedTier = tiers.find(t => t.id === formData.tier);
     const tierPrice = selectedTier ? parseFloat(selectedTier.price) : 0;
     const addonsPrice = formData.addon_ids.reduce((sum, id) => {
       const addon = addons.find(a => a.id === id);
       return sum + parseFloat(addon?.price || "0");
     }, 0);
     return tierPrice + addonsPrice;
-  }, [formData.tier, formData.addon_ids, tiers, addons]);
+  }, [formData.tier, formData.addon_ids, tiers, addons, selectedTier]);
 
   const startRecording = async (type: 'audio' | 'video') => {
+    if ((type === 'audio' && !allowsAudio) || (type === 'video' && !allowsVideo)) {
+      alert(`${type.charAt(0).toUpperCase() + type.slice(1)} recording is not available in this tier.`);
+      return;
+    }
+
     try {
       const constraints = type === 'video' 
         ? { video: true, audio: true } 
@@ -161,14 +185,16 @@ export default function GiftWizard() {
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
-        setUploadedFile(file);
-        setMediaUrl(URL.createObjectURL(file));
-        setMediaType(file.type.startsWith('video/') ? 'video' : 'audio');
-        setMediaBlob(null); // Clear recorded blob if uploading
-      } else {
-        alert('Please upload an audio or video file.');
+      const isVideo = file.type.startsWith('video/');
+      const isAudio = file.type.startsWith('audio/');
+      if ((isVideo && !allowsVideo) || (isAudio && !allowsAudio) || (!isVideo && !isAudio)) {
+        alert('This file type is not allowed in your selected tier.');
+        return;
       }
+      setUploadedFile(file);
+      setMediaUrl(URL.createObjectURL(file));
+      setMediaType(isVideo ? 'video' : 'audio');
+      setMediaBlob(null); // Clear recorded blob if uploading
     }
   };
 
@@ -241,7 +267,6 @@ export default function GiftWizard() {
   };
 
   const selectedOccasion = occasions.find(o => o.id === formData.occasion);
-  const selectedTier = tiers.find(t => t.id === formData.tier);
   const selectedAddons = addons.filter(a => formData.addon_ids.includes(a.id));
 
   const canProceed = () => {
@@ -514,59 +539,73 @@ export default function GiftWizard() {
                     />
                   </div>
 
-                  {/* Media Controls */}
-                  <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
-                    <motion.button
-                      onClick={() => startRecording('audio')}
-                      disabled={isRecording || mediaUrl !== null}
-                      whileHover={{ scale: 1.05 }}
-                      className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50"
-                    >
-                      <Mic className="w-4 h-4" /> Record Audio
-                    </motion.button>
-                    <motion.button
-                      onClick={() => startRecording('video')}
-                      disabled={isRecording || mediaUrl !== null}
-                      whileHover={{ scale: 1.05 }}
-                      className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50"
-                    >
-                      <Video className="w-4 h-4" /> Record Video
-                    </motion.button>
-                    <label className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 cursor-pointer">
-                      <Upload className="w-4 h-4" /> Upload Media
-                      <input type="file" accept="audio/*,video/*" onChange={handleUpload} className="hidden" disabled={isRecording || mediaUrl !== null} />
-                    </label>
-                    {isRecording && (
-                      <motion.button
-                        onClick={stopRecording}
-                        whileHover={{ scale: 1.05 }}
-                        className="px-4 py-2 bg-red-600 rounded-full text-xs font-bold flex items-center gap-2"
-                      >
-                        <StopCircle className="w-4 h-4" /> Stop Recording
-                      </motion.button>
-                    )}
-                  </div>
+                  {/* Media Section */}
+                  {(allowsAudio || allowsVideo) && (
+                    <>
+                      <p className="text-sm text-zinc-400 font-medium">Add personal touch (optional)</p>
+                      <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+                        {allowsAudio && (
+                          <motion.button
+                            onClick={() => startRecording('audio')}
+                            disabled={isRecording || mediaUrl !== null}
+                            whileHover={{ scale: 1.05 }}
+                            className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50"
+                          >
+                            <Mic className="w-4 h-4" /> Record Voice
+                          </motion.button>
+                        )}
+                        {allowsVideo && (
+                          <motion.button
+                            onClick={() => startRecording('video')}
+                            disabled={isRecording || mediaUrl !== null}
+                            whileHover={{ scale: 1.05 }}
+                            className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50"
+                          >
+                            <Video className="w-4 h-4" /> Record Video
+                          </motion.button>
+                        )}
+                        <label className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 cursor-pointer">
+                          <Upload className="w-4 h-4" /> Upload
+                          <input 
+                            type="file" 
+                            accept={allowsVideo ? "audio/*,video/*" : allowsAudio ? "audio/*" : ""} 
+                            onChange={handleUpload} 
+                            className="hidden" 
+                            disabled={isRecording || mediaUrl !== null || (!allowsAudio && !allowsVideo)} 
+                          />
+                        </label>
+                        {isRecording && (
+                          <motion.button
+                            onClick={stopRecording}
+                            whileHover={{ scale: 1.05 }}
+                            className="px-4 py-2 bg-red-600 rounded-full text-xs font-bold flex items-center gap-2"
+                          >
+                            <StopCircle className="w-4 h-4" /> Stop
+                          </motion.button>
+                        )}
+                      </div>
 
-                  {/* Preview */}
-                  {mediaType === 'video' && isRecording && (
-                    <video ref={videoRef} className="w-full max-w-md mx-auto rounded-2xl border-2 border-red-600" muted playsInline />
-                  )}
-                  {mediaUrl && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-zinc-400">Preview:</p>
-                      {mediaType === 'audio' ? (
-                        <audio src={mediaUrl} controls className="w-full" />
-                      ) : (
-                        <video src={mediaUrl} controls className="w-full max-w-md mx-auto rounded-2xl" />
+                      {mediaType === 'video' && isRecording && (
+                        <video ref={videoRef} className="w-full max-w-md mx-auto rounded-2xl border-2 border-red-600" muted playsInline />
                       )}
-                      <motion.button
-                        onClick={resetMedia}
-                        whileHover={{ scale: 1.05 }}
-                        className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 mx-auto"
-                      >
-                        <ArrowLeft className="w-4 h-4" /> Reset Media
-                      </motion.button>
-                    </div>
+                      {mediaUrl && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-zinc-400">Preview:</p>
+                          {mediaType === 'audio' ? (
+                            <audio src={mediaUrl} controls className="w-full" />
+                          ) : (
+                            <video src={mediaUrl} controls className="w-full max-w-md mx-auto rounded-2xl" />
+                          )}
+                          <motion.button
+                            onClick={resetMedia}
+                            whileHover={{ scale: 1.05 }}
+                            className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 mx-auto"
+                          >
+                            <ArrowLeft className="w-4 h-4" /> Reset
+                          </motion.button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
