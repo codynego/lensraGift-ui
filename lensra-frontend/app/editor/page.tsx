@@ -25,8 +25,9 @@ interface Product {
 
 interface Variant {
   id: number;
-  attribute_values: { attribute_name: string; value: string }[];
-  price: string;
+  attributes: { id: number; attribute_name: string; value: string }[];
+  price_override: string | null;
+  stock_quantity: number;
 }
 
 interface Design {
@@ -156,7 +157,7 @@ function EditorContent() {
               setSelectedVariant(firstVariant);
               
               const initialAttrs: { [key: string]: string } = {};
-              (firstVariant.attribute_values || []).forEach((av: { attribute_name: string; value: string }) => {
+              (firstVariant.attributes || []).forEach((av: { attribute_name: string; value: string }) => {
                 initialAttrs[av.attribute_name] = av.value;
               });
               setSelectedAttributes(initialAttrs);
@@ -178,12 +179,12 @@ function EditorContent() {
     if (variants.length === 0) return;
     
     const match = variants.find((v: Variant) => 
-      (v.attribute_values || []).every((av: { attribute_name: string; value: string }) => 
+      (v.attributes || []).every((av: { attribute_name: string; value: string }) => 
         selectedAttributes[av.attribute_name] === av.value
       )
     );
     
-    if (match) setSelectedVariant(match);
+    setSelectedVariant(match || null);
   }, [selectedAttributes, selectedProduct]);
 
   // --- GROUPED ATTRIBUTES ---
@@ -192,7 +193,7 @@ function EditorContent() {
     const groups: { [key: string]: Set<string> } = {};
     
     variants.forEach((v: Variant) => {
-      (v.attribute_values || []).forEach((av: { attribute_name: string; value: string }) => {
+      (v.attributes || []).forEach((av: { attribute_name: string; value: string }) => {
         if (!groups[av.attribute_name]) groups[av.attribute_name] = new Set();
         groups[av.attribute_name].add(av.value);
       });
@@ -237,7 +238,7 @@ function EditorContent() {
 
   // --- FINISH DESIGN ---
   const handleFinishDesign = async () => {
-    if (!selectedProduct) return;
+    if (!selectedProduct || !selectedVariant || selectedVariant.stock_quantity <= 0) return;
     setIsSaving(true);
     
     const token = localStorage.getItem('access_token');
@@ -309,7 +310,7 @@ function EditorContent() {
 
   // --- ORDER NOW ---
   const handleOrderNow = async () => {
-    if (!placementId || !selectedProduct) return;
+    if (!placementId || !selectedProduct || !selectedVariant) return;
     
     const token = localStorage.getItem('access_token');
     const sessionId = getGuestSessionId();
@@ -344,8 +345,8 @@ function EditorContent() {
         product_id: selectedProduct.id,
         variant_id: selectedVariant?.id,
         product_name: selectedProduct.name,
-        variant_label: (selectedVariant?.attribute_values || []).map((av: { value: string }) => av.value).join(' / '),
-        price: selectedVariant?.price || selectedProduct.base_price,
+        variant_label: (selectedVariant?.attributes || []).map((av: { value: string }) => av.value).join(' / '),
+        price: selectedVariant?.price_override || selectedProduct.base_price,
         image: selectedProduct.image_url,
         quantity: 1,
         added_at: new Date().toISOString()
@@ -470,6 +471,7 @@ function EditorContent() {
               templateDesign={templateDesign}
               images={images}
               customText={customText}
+              selectedVariant={selectedVariant}
               handleFinishDesign={handleFinishDesign}
               handleOrderNow={handleOrderNow}
               setPlacementId={setPlacementId}
@@ -717,15 +719,21 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
               <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">
                 Estimated Price
               </p>
-              <p className="text-4xl font-black italic bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-                ₦{parseFloat(selectedVariant?.price || selectedProduct?.base_price || "0").toLocaleString()}
-              </p>
+              {!selectedVariant ? (
+                <p className="text-4xl font-black italic text-zinc-400">Select options</p>
+              ) : selectedVariant.stock_quantity <= 0 ? (
+                <p className="text-4xl font-black italic text-red-600">Out of stock</p>
+              ) : (
+                <p className="text-4xl font-black italic bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+                  ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
+                </p>
+              )}
             </div>
             {selectedVariant && (
               <div className="text-right">
                 <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Variant</p>
                 <p className="text-xs font-bold text-zinc-600">
-                  {(selectedVariant.attribute_values || []).map((av: { value: string }) => av.value).join(' · ')}
+                  {(selectedVariant.attributes || []).map((av: { value: string }) => av.value).join(' · ')}
                 </p>
               </div>
             )}
@@ -737,6 +745,8 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
 }
 
 function VariantSelector({ attrName, values, selectedAttributes, setSelectedAttributes, getAttributeIcon }: { attrName: string; values: string[]; selectedAttributes: { [key: string]: string }; setSelectedAttributes: Dispatch<SetStateAction<{ [key: string]: string }>>; getAttributeIcon: (attrName: string) => JSX.Element }) {
+  const isColor = attrName.toLowerCase().includes('color') || attrName.toLowerCase().includes('colour');
+
   return (
     <div className="space-y-5">
       <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
@@ -747,38 +757,45 @@ function VariantSelector({ attrName, values, selectedAttributes, setSelectedAttr
       <div className="flex flex-wrap gap-3">
         {values.map((val: string) => {
           const isSelected = selectedAttributes[attrName] === val;
-          const isColor = attrName.toLowerCase().includes('color') || attrName.toLowerCase().includes('colour');
           
-          return (
-            <button
-              key={val}
-              onClick={() => setSelectedAttributes((prev: { [key: string]: string }) => ({ ...prev, [attrName]: val }))}
-              className={`group relative px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 overflow-hidden ${
-                isSelected 
-                  ? 'border-black bg-black text-white shadow-lg shadow-black/20 scale-105' 
-                  : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:shadow-md'
-              }`}
-            >
-              {isColor && (
-                <div 
-                  className={`absolute top-2 right-2 w-3 h-3 rounded-full border-2 ${
-                    isSelected ? 'border-white' : 'border-zinc-300'
-                  }`}
-                  style={{ 
-                    backgroundColor: val.toLowerCase() === 'white' ? '#fff' : 
-                                   val.toLowerCase() === 'black' ? '#000' : 
-                                   val.toLowerCase() 
-                  }}
-                />
-              )}
-              
-              {isSelected && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              )}
-              
-              <span className="relative z-10">{val}</span>
-            </button>
-          );
+          if (isColor) {
+            const color = val.toLowerCase();
+            const bgColor = color === 'white' ? '#ffffff' : color === 'black' ? '#000000' : color;
+            const borderColor = color === 'white' ? 'border-zinc-300' : '';
+
+            return (
+              <button
+                key={val}
+                onClick={() => setSelectedAttributes((prev: { [key: string]: string }) => ({ ...prev, [attrName]: val }))}
+                className={`relative w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all shadow-md hover:shadow-xl hover:scale-105
+                  ${borderColor}
+                  ${isSelected ? 'border-black ring-4 ring-black/10 scale-105' : 'border-zinc-200'}
+                `}
+                style={{ backgroundColor: bgColor }}
+                title={val}
+              >
+                {isSelected && <Check className="w-6 h-6 text-white mix-blend-difference" />}
+              </button>
+            );
+          } else {
+            return (
+              <button
+                key={val}
+                onClick={() => setSelectedAttributes((prev: { [key: string]: string }) => ({ ...prev, [attrName]: val }))}
+                className={`group relative px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 overflow-hidden ${
+                  isSelected 
+                    ? 'border-black bg-black text-white shadow-lg shadow-black/20 scale-105' 
+                    : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:shadow-md'
+                }`}
+              >
+                {isSelected && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                )}
+                
+                <span className="relative z-10">{val}</span>
+              </button>
+            );
+          }
         })}
       </div>
     </div>
@@ -951,13 +968,13 @@ function SurpriseFeature({ showSurprise, setShowSurprise, selectedEmotion, setSe
   );
 }
 
-function FinalActions({ placementId, isSaving, templateDesign, images, customText, handleFinishDesign, handleOrderNow, setPlacementId }: { placementId: number | null; isSaving: boolean; templateDesign: Design | null; images: UploadedImage[]; customText: string; handleFinishDesign: () => Promise<void>; handleOrderNow: () => Promise<void>; setPlacementId: Dispatch<SetStateAction<number | null>> }) {
+function FinalActions({ placementId, isSaving, templateDesign, images, customText, selectedVariant, handleFinishDesign, handleOrderNow, setPlacementId }: { placementId: number | null; isSaving: boolean; templateDesign: Design | null; images: UploadedImage[]; customText: string; selectedVariant: Variant | null; handleFinishDesign: () => Promise<void>; handleOrderNow: () => Promise<void>; setPlacementId: Dispatch<SetStateAction<number | null>> }) {
   return (
     <div className="pt-12">
       {!placementId ? (
         <button 
           onClick={handleFinishDesign}
-          disabled={isSaving || (!templateDesign && images.length === 0 && !customText)}
+          disabled={isSaving || (!templateDesign && images.length === 0 && !customText) || !selectedVariant || selectedVariant.stock_quantity <= 0}
           className="w-full py-6 bg-black text-white rounded-full text-xs font-black uppercase tracking-[0.4em] hover:bg-red-600 hover:scale-[1.02] transition-all disabled:opacity-30 disabled:grayscale disabled:hover:scale-100 shadow-2xl shadow-black/20"
         >
           {isSaving ? "Locking Design Assets..." : "Confirm Customizations"}
@@ -993,7 +1010,7 @@ function MobileStickyFooter({ placementId, isSaving, selectedProduct, selectedVa
       {!placementId ? (
         <button 
           onClick={handleFinishDesign}
-          disabled={isSaving}
+          disabled={isSaving || !selectedVariant || selectedVariant.stock_quantity <= 0}
           className="w-full py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
         >
           {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
@@ -1005,7 +1022,7 @@ function MobileStickyFooter({ placementId, isSaving, selectedProduct, selectedVa
           className="w-full py-5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
         >
           <ShoppingBag className="w-4 h-4" />
-          Checkout - ₦{parseFloat(selectedVariant?.price || selectedProduct?.base_price || "0").toLocaleString()}
+          Checkout - ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
         </button>
       )}
     </div>
