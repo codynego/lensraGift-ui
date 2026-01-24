@@ -10,7 +10,7 @@ export default function ClientDigitalGifts() {
   const [revealed, setRevealed] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-white selection:bg-rose-500">
+    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-950 to-black text-white selection:bg-red-600">
    
       {/* HERO SECTION */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-20 overflow-hidden">
@@ -18,7 +18,7 @@ export default function ClientDigitalGifts() {
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:64px_64px]" />
           <motion.div
-            className="absolute top-20 left-20 w-72 h-72 bg-rose-600/20 rounded-full blur-[120px]"
+            className="absolute top-20 left-20 w-72 h-72 bg-red-600/20 rounded-full blur-[120px]"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.3, 0.5, 0.3]
@@ -26,7 +26,7 @@ export default function ClientDigitalGifts() {
             transition={{ duration: 8, repeat: Infinity }}
           />
           <motion.div
-            className="absolute bottom-20 right-20 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px]"
+            className="absolute bottom-20 right-20 w-96 h-96 bg-red-700/20 rounded-full blur-[120px]"
             animate={{
               scale: [1.2, 1, 1.2],
               opacity: [0.2, 0.4, 0.2]
@@ -42,17 +42,17 @@ export default function ClientDigitalGifts() {
         >
           {/* Badge */}
           <motion.div
-            className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 border border-rose-500/30 rounded-full bg-gradient-to-r from-rose-500/10 to-purple-500/10 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 border border-red-600/30 rounded-full bg-gradient-to-r from-red-600/10 to-red-600/10 backdrop-blur-sm"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring" }}
           >
             <motion.div
-              className="w-2 h-2 rounded-full bg-rose-500"
+              className="w-2 h-2 rounded-full bg-red-600"
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
-            <span className="text-[10px] sm:text-xs font-bold tracking-wider text-rose-400">
+            <span className="text-[10px] sm:text-xs font-bold tracking-wider text-red-400">
               THE FUTURE OF GIFTING
             </span>
           </motion.div>
@@ -60,12 +60,12 @@ export default function ClientDigitalGifts() {
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.9] tracking-tight">
             Messages That
             <br />
-            <span className="bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-600 bg-clip-text text-transparent">
               Feel Like Magic
             </span>
           </h1>
          
-          <p className="max-w-2xl mx-auto text-neutral-400 text-sm sm:text-base md:text-lg leading-relaxed px-4">
+          <p className="max-w-2xl mx-auto text-zinc-400 text-sm sm:text-base md:text-lg leading-relaxed px-4">
             Transform your words into unforgettable moments. Add your voice, face, and heart to every message.
             They'll remember this forever.
           </p>
@@ -75,7 +75,7 @@ export default function ClientDigitalGifts() {
               whileHover={{ scale: 1.03, rotateY: 5 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setRevealed(!revealed)}
-              className="aspect-[5/3] bg-gradient-to-br from-neutral-900 to-neutral-950 border-2 border-neutral-800 rounded-3xl sm:rounded-[40px] overflow-hidden cursor-pointer relative shadow-2xl shadow-rose-500/10 transition-all hover:border-rose-500/50 hover:shadow-rose-500/30"
+              className="aspect-[5/3] bg-gradient-to-br from-zinc-900 to-zinc-950 border-2 border-slate-800 rounded-3xl sm:rounded-[40px] overflow-hidden cursor-pointer relative shadow-2xl shadow-red-600/10 transition-all hover:border-red-600/50 hover:shadow-red-600/30"
               style={{ transformStyle: 'preserve-3d' }}
             >
               <AnimatePresence mode="wait">
@@ -85,7 +85,7 @@ export default function ClientDigitalGifts() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center p-6 sm:p-8 text-center bg-gradient-to-br from-neutral-900 via-neutral-950 to-black"
+                    className="absolute inset-0 flex flex-col items-center justify-center p-6 sm:p-8 text-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black"
                   >
                     <motion.div
                       animate={{
@@ -93,12 +93,12 @@ export default function ClientDigitalGifts() {
                         rotateZ: [0, 5, -5, 0]
                       }}
                       transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                      className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-rose-500/50"
+                      className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-red-600/50"
                     >
                       <Gift className="text-white w-8 h-8 sm:w-10 sm:h-10" />
                     </motion.div>
                     <p className="text-xs sm:text-sm font-bold tracking-wider mb-2">Tap to reveal</p>
-                    <p className="text-[10px] sm:text-xs text-neutral-500">Your message awaits...</p>
+                    <p className="text-[10px] sm:text-xs text-zinc-500">Your message awaits...</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -106,23 +106,23 @@ export default function ClientDigitalGifts() {
                     initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
                     animate={{ opacity: 1, scale: 1, rotateY: 0 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                    className="absolute inset-0 bg-gradient-to-br from-white to-neutral-100 flex flex-col items-center justify-center p-6 sm:p-10 text-black"
+                    className="absolute inset-0 bg-gradient-to-br from-white to-zinc-100 flex flex-col items-center justify-center p-6 sm:p-10 text-black"
                   >
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.2 }}
                     >
-                      <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-rose-500 fill-rose-500 mb-4" />
+                      <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-red-600 fill-red-600 mb-4" />
                     </motion.div>
                     <p className="text-2xl sm:text-3xl md:text-4xl font-black mb-2">You're Amazing!</p>
-                    <p className="text-xs sm:text-sm text-neutral-600">This could be a voice message, video, or anything you imagine</p>
+                    <p className="text-xs sm:text-sm text-zinc-600">This could be a voice message, video, or anything you imagine</p>
                   </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>
             <motion.div
-              className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-3/4 h-16 bg-rose-600/30 blur-3xl rounded-full -z-10"
+              className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-3/4 h-16 bg-red-600/30 blur-3xl rounded-full -z-10"
               animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
               transition={{ duration: 3, repeat: Infinity }}
             />
@@ -131,7 +131,7 @@ export default function ClientDigitalGifts() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-8 px-4">
             <a href="/digital-gifts/create" className="w-full sm:w-auto">
               <motion.button
-                className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-rose-600 to-purple-600 text-white rounded-full font-bold text-xs sm:text-sm tracking-wide hover:shadow-2xl hover:shadow-rose-500/50 transition-all flex items-center justify-center gap-2 group"
+                className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-bold text-xs sm:text-sm tracking-wide hover:shadow-2xl hover:shadow-red-600/50 transition-all flex items-center justify-center gap-2 group"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -140,7 +140,7 @@ export default function ClientDigitalGifts() {
               </motion.button>
             </a>
             <motion.button
-              className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 border-2 border-neutral-800 bg-neutral-900/50 backdrop-blur-sm rounded-full font-bold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-3 hover:bg-neutral-800 transition-all group"
+              className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 border-2 border-slate-800 bg-zinc-900/50 backdrop-blur-sm rounded-full font-bold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-3 hover:bg-zinc-800 transition-all group"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -150,14 +150,14 @@ export default function ClientDigitalGifts() {
           </div>
           {/* Social proof */}
           <motion.div
-            className="pt-8 sm:pt-12 flex items-center justify-center gap-2 text-neutral-500 text-xs sm:text-sm"
+            className="pt-8 sm:pt-12 flex items-center justify-center gap-2 text-zinc-500 text-xs sm:text-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
           >
             <div className="flex -space-x-2">
               {[1,2,3,4].map(i => (
-                <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-rose-500 to-purple-600 border-2 border-black" />
+                <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-red-600 to-red-700 border-2 border-black" />
               ))}
             </div>
             <span>Join <strong className="text-white">10,000+</strong> people creating magical moments</span>
@@ -165,7 +165,7 @@ export default function ClientDigitalGifts() {
         </motion.div>
       </section>
       {/* WHY IT MATTERS */}
-      <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900">
+      <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-zinc-950 to-zinc-900">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div
             className="space-y-6 sm:space-y-8"
@@ -174,15 +174,15 @@ export default function ClientDigitalGifts() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-block px-4 py-2 bg-rose-500/10 border border-rose-500/20 rounded-full">
-              <span className="text-xs font-bold text-rose-400 tracking-wider">WHY CHOOSE US</span>
+            <div className="inline-block px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-full">
+              <span className="text-xs font-bold text-red-400 tracking-wider">WHY CHOOSE US</span>
             </div>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight">
               Because Words
               <br />
-              <span className="text-rose-500">Deserve More</span>
+              <span className="text-red-600">Deserve More</span>
             </h2>
-            <div className="space-y-4 sm:space-y-6 text-neutral-400 text-sm sm:text-base leading-relaxed">
+            <div className="space-y-4 sm:space-y-6 text-zinc-400 text-sm sm:text-base leading-relaxed">
               <p className="text-base sm:text-lg">
                 A text message fades. But your voice? Your face? The emotion in your eyes?
                 <strong className="text-white"> That stays forever.</strong>
@@ -198,9 +198,9 @@ export default function ClientDigitalGifts() {
                 { num: "10k+", label: "Gifts Sent" },
                 { num: "4.9★", label: "Average Rating" }
               ].map((stat, i) => (
-                <div key={i} className="bg-neutral-800/50 backdrop-blur-sm p-4 sm:p-6 rounded-2xl border border-neutral-700">
-                  <div className="text-2xl sm:text-3xl font-black text-rose-500">{stat.num}</div>
-                  <div className="text-xs sm:text-sm text-neutral-500 mt-1">{stat.label}</div>
+                <div key={i} className="bg-zinc-800/50 backdrop-blur-sm p-4 sm:p-6 rounded-2xl border border-slate-800">
+                  <div className="text-2xl sm:text-3xl font-black text-red-600">{stat.num}</div>
+                  <div className="text-xs sm:text-sm text-zinc-500 mt-1">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -213,7 +213,7 @@ export default function ClientDigitalGifts() {
             transition={{ duration: 0.6 }}
           >
             <motion.div
-              className="aspect-[3/4] bg-gradient-to-br from-rose-600 to-purple-600 rounded-3xl sm:rounded-[40px] border border-white/10 overflow-hidden rotate-[-3deg] shadow-2xl"
+              className="aspect-[3/4] bg-gradient-to-br from-red-600 to-red-700 rounded-3xl sm:rounded-[40px] border border-white/10 overflow-hidden rotate-[-3deg] shadow-2xl"
               whileHover={{ rotate: 0, scale: 1.05 }}
             >
               <div className="p-4 sm:p-6 flex flex-col h-full justify-between">
@@ -227,15 +227,15 @@ export default function ClientDigitalGifts() {
               </div>
             </motion.div>
             <motion.div
-              className="aspect-[3/4] bg-gradient-to-br from-neutral-900 to-black rounded-3xl sm:rounded-[40px] border border-neutral-800 overflow-hidden translate-y-8 sm:translate-y-12 rotate-[3deg] shadow-2xl"
+              className="aspect-[3/4] bg-gradient-to-br from-zinc-900 to-black rounded-3xl sm:rounded-[40px] border border-slate-800 overflow-hidden translate-y-8 sm:translate-y-12 rotate-[3deg] shadow-2xl"
               whileHover={{ rotate: 0, scale: 1.05 }}
             >
-              <div className="p-4 sm:p-6 flex flex-col h-full justify-between bg-gradient-to-b from-purple-600/20 to-transparent">
+              <div className="p-4 sm:p-6 flex flex-col h-full justify-between bg-gradient-to-b from-red-600/20 to-transparent">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white flex items-center justify-center">
                   <Video className="w-5 h-5 sm:w-6 sm:h-6 text-black"/>
                 </div>
                 <div>
-                  <p className="text-xs sm:text-sm font-bold text-neutral-400 mb-1">Video Surprise</p>
+                  <p className="text-xs sm:text-sm font-bold text-zinc-400 mb-1">Video Surprise</p>
                   <p className="text-lg sm:text-xl font-black">"Best birthday ever!"</p>
                 </div>
               </div>
@@ -247,19 +247,19 @@ export default function ClientDigitalGifts() {
       <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 lg:mb-20 space-y-4">
           <motion.div
-            className="inline-block px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full"
+            className="inline-block px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-full"
             initial={{ opacity: 0, scale: 0 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <span className="text-xs font-bold text-purple-400 tracking-wider">SO SIMPLE</span>
+            <span className="text-xs font-bold text-red-400 tracking-wider">SO SIMPLE</span>
           </motion.div>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black">Create Magic in 3 Steps</h2>
-          <p className="text-neutral-500 max-w-2xl mx-auto text-sm sm:text-base">No downloads. No accounts. Just you and your message.</p>
+          <p className="text-zinc-500 max-w-2xl mx-auto text-sm sm:text-base">No downloads. No accounts. Just you and your message.</p>
         </div>
         <div className="grid md:grid-cols-3 gap-6 sm:gap-8 relative">
           {/* Connection lines for desktop */}
-          <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-rose-500/20 to-transparent -translate-y-1/2 -z-10" />
+          <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-600/20 to-transparent -translate-y-1/2 -z-10" />
          
           {[
             {
@@ -267,26 +267,26 @@ export default function ClientDigitalGifts() {
               title: "Pick Your Moment",
               icon: Sparkles,
               desc: "Birthday? Anniversary? Just because? Choose what feels right.",
-              color: "from-rose-500 to-pink-500"
+              color: "from-red-600 to-red-500"
             },
             {
               step: "2",
               title: "Add Your Magic",
               icon: Heart,
               desc: "Record your voice, shoot a quick video, or write something beautiful.",
-              color: "from-purple-500 to-indigo-500"
+              color: "from-red-600 to-red-700"
             },
             {
               step: "3",
               title: "Send & Smile",
               icon: Zap,
               desc: "Share instantly via link, or mail them a beautiful QR card.",
-              color: "from-pink-500 to-rose-500"
+              color: "from-red-500 to-red-600"
             }
           ].map((item, idx) => (
             <motion.div
               key={idx}
-              className="relative bg-gradient-to-br from-neutral-900 to-neutral-950 p-6 sm:p-8 lg:p-10 rounded-3xl sm:rounded-[40px] border border-neutral-800 space-y-4 sm:space-y-6 hover:border-rose-500/50 transition-all group"
+              className="relative bg-gradient-to-br from-zinc-900 to-zinc-950 p-6 sm:p-8 lg:p-10 rounded-3xl sm:rounded-[40px] border border-slate-800 space-y-4 sm:space-y-6 hover:border-red-600/50 transition-all group"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -297,16 +297,16 @@ export default function ClientDigitalGifts() {
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
                   <item.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <span className="text-5xl sm:text-6xl font-black text-neutral-800 group-hover:text-neutral-700 transition-colors">
+                <span className="text-5xl sm:text-6xl font-black text-zinc-800 group-hover:text-zinc-700 transition-colors">
                   {item.step}
                 </span>
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-black mb-2 sm:mb-3">{item.title}</h3>
-                <p className="text-neutral-500 text-sm sm:text-base leading-relaxed">{item.desc}</p>
+                <p className="text-zinc-500 text-sm sm:text-base leading-relaxed">{item.desc}</p>
               </div>
               <motion.div
-                className="pt-2 sm:pt-4 flex items-center gap-2 text-rose-500 font-bold text-xs sm:text-sm group-hover:gap-4 transition-all cursor-pointer"
+                className="pt-2 sm:pt-4 flex items-center gap-2 text-red-600 font-bold text-xs sm:text-sm group-hover:gap-4 transition-all cursor-pointer"
                 whileHover={{ x: 4 }}
               >
                 Learn More <ArrowRight className="w-4 h-4" />
@@ -316,7 +316,7 @@ export default function ClientDigitalGifts() {
         </div>
       </section>
       {/* FEATURES GRID */}
-      <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-white text-black overflow-hidden rounded-t-[40px] sm:rounded-t-[80px]">
+      <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-black text-white overflow-hidden rounded-t-[40px] sm:rounded-t-[80px]">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="mb-12 sm:mb-16 lg:mb-20"
@@ -327,11 +327,11 @@ export default function ClientDigitalGifts() {
             <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 sm:mb-6">
               Packed With
               <br />
-              <span className="bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
                 Everything You Need
               </span>
             </h2>
-            <p className="text-neutral-600 max-w-2xl text-sm sm:text-base">
+            <p className="text-zinc-400 max-w-2xl text-sm sm:text-base">
               We've thought of every detail so you don't have to.
             </p>
           </motion.div>
@@ -341,54 +341,54 @@ export default function ClientDigitalGifts() {
                 title: "Stunning Animations",
                 icon: Star,
                 desc: "Watch their eyes light up with beautiful reveal effects",
-                gradient: "from-rose-500 to-pink-500"
+                gradient: "from-red-600 to-red-500"
               },
               {
                 title: "Schedule Delivery",
                 icon: Clock,
                 desc: "Set it to arrive at the perfect moment, down to the minute",
-                gradient: "from-purple-500 to-indigo-500"
+                gradient: "from-red-600 to-red-700"
               },
               {
                 title: "Physical Cards",
                 icon: Gift,
                 desc: "Get gorgeous printed QR cards mailed to their door",
-                gradient: "from-pink-500 to-rose-500"
+                gradient: "from-red-500 to-red-600"
               },
               {
                 title: "Mix Media",
                 icon: Video,
                 desc: "Combine text, voice clips, videos, and photos seamlessly",
-                gradient: "from-indigo-500 to-purple-500"
+                gradient: "from-red-700 to-red-600"
               },
               {
                 title: "No App Needed",
                 icon: Smartphone,
                 desc: "They just tap the link. Works on any device, anywhere",
-                gradient: "from-rose-500 to-orange-500"
+                gradient: "from-red-600 to-red-500"
               },
               {
                 title: "Unlimited Views",
                 icon: Heart,
                 desc: "They can relive the moment as many times as they want",
-                gradient: "from-purple-500 to-pink-500"
+                gradient: "from-red-600 to-red-700"
               },
               {
                 title: "Privacy First",
                 icon: MessageSquare,
                 desc: "Encrypted and private. Only they can see your message",
-                gradient: "from-pink-500 to-rose-500"
+                gradient: "from-red-500 to-red-600"
               },
               {
                 title: "Instant Sharing",
                 icon: Zap,
                 desc: "Share via text, email, social media, or QR code",
-                gradient: "from-orange-500 to-rose-500"
+                gradient: "from-red-700 to-red-600"
               }
             ].map((f, i) => (
               <motion.div
                 key={i}
-                className="bg-neutral-50 p-6 sm:p-8 rounded-3xl border-2 border-neutral-200 hover:border-rose-300 transition-all space-y-4 group"
+                className="bg-zinc-950 p-6 sm:p-8 rounded-3xl border-2 border-slate-800 hover:border-red-300 transition-all space-y-4 group"
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -400,7 +400,7 @@ export default function ClientDigitalGifts() {
                 </div>
                 <div>
                   <h4 className="text-lg sm:text-xl font-black mb-2">{f.title}</h4>
-                  <p className="text-neutral-600 text-sm leading-relaxed">{f.desc}</p>
+                  <p className="text-zinc-400 text-sm leading-relaxed">{f.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -410,33 +410,33 @@ export default function ClientDigitalGifts() {
       {/* LIMITED OFFER */}
       <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="max-w-4xl mx-auto bg-gradient-to-br from-rose-600 via-purple-600 to-indigo-600 p-1 rounded-[40px] sm:rounded-[60px]"
+          className="max-w-4xl mx-auto bg-gradient-to-br from-red-600 via-red-600 to-red-700 p-1 rounded-[40px] sm:rounded-[60px]"
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
         >
           <div className="bg-black p-8 sm:p-12 lg:p-16 rounded-[38px] sm:rounded-[58px] text-center space-y-6 sm:space-y-8 relative overflow-hidden">
             <motion.div
-              className="absolute top-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-rose-500/20 rounded-full blur-[100px]"
+              className="absolute top-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-red-600/20 rounded-full blur-[100px]"
               animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
               transition={{ duration: 5, repeat: Infinity }}
             />
             <motion.div
-              className="absolute bottom-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/20 rounded-full blur-[100px]"
+              className="absolute bottom-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-red-600/20 rounded-full blur-[100px]"
               animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
               transition={{ duration: 7, repeat: Infinity }}
             />
            
             <div className="relative z-10 space-y-6 sm:space-y-8">
-              <div className="inline-block px-5 py-2 bg-rose-500/20 border border-rose-500/30 rounded-full">
-                <span className="text-xs sm:text-sm font-bold text-rose-300 tracking-wider">LIMITED TIME OFFER</span>
+              <div className="inline-block px-5 py-2 bg-red-600/20 border border-red-600/30 rounded-full">
+                <span className="text-xs sm:text-sm font-bold text-red-300 tracking-wider">LIMITED TIME OFFER</span>
               </div>
              
               <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
                 Start Free.<br />Make Someone's Day.
               </h2>
              
-              <p className="text-neutral-400 text-sm sm:text-base max-w-xl mx-auto">
+              <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto">
                 First 100 gifts this month are completely free. No credit card.
                 No strings attached. Just pure joy.
               </p>
@@ -448,8 +448,8 @@ export default function ClientDigitalGifts() {
                 >
                   Claim Your Free Gift
                 </motion.button>
-                <p className="text-xs sm:text-sm text-neutral-500">
-                  <strong className="text-rose-400">87 spots</strong> left
+                <p className="text-xs sm:text-sm text-zinc-500">
+                  <strong className="text-red-400">87 spots</strong> left
                 </p>
               </div>
             </div>
@@ -465,7 +465,7 @@ export default function ClientDigitalGifts() {
           viewport={{ once: true }}
         >
           <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4">Questions?</h3>
-          <p className="text-neutral-500 text-sm sm:text-base">We've got answers.</p>
+          <p className="text-zinc-500 text-sm sm:text-base">We've got answers.</p>
         </motion.div>
         <div className="space-y-4 sm:space-y-6">
           {[
@@ -500,7 +500,7 @@ export default function ClientDigitalGifts() {
           ].map((faq, index) => (
             <motion.div
               key={index}
-              className="bg-neutral-900 p-4 sm:p-6 rounded-3xl border border-neutral-800 cursor-pointer overflow-hidden"
+              className="bg-zinc-900 p-4 sm:p-6 rounded-3xl border border-slate-800 cursor-pointer overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -518,7 +518,7 @@ export default function ClientDigitalGifts() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="mt-4 text-neutral-400 text-sm sm:text-base"
+                    className="mt-4 text-zinc-400 text-sm sm:text-base"
                   >
                     {faq.a}
                   </motion.p>
