@@ -7,7 +7,6 @@ import {
   Search, ChevronRight, ArrowUpRight, Filter, Loader2, 
   ChevronLeft, X 
 } from 'lucide-react';
-import { console } from 'inspector/promises';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
