@@ -4,11 +4,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image'; // For optimized images
+import Image from 'next/image';
 import { 
-  ShoppingBag, Zap, TrendingUp, Award, ArrowRight, 
-  ShieldCheck, Loader2, Edit3, Palette, ChevronRight,
-  Shirt, Coffee, Home, Briefcase, Gift, Sparkles, Clock, MapPin, Eye, Search, User, Heart, Menu, X, Cake, Image as LucideImage, ThumbsUp, HandHeart, Upload, Package, Truck, Star, Instagram, MessageCircle, Users
+  ShoppingBag, Zap, Award, ArrowRight, 
+  ShieldCheck, Sparkles, Clock, MapPin, Heart, Upload, Gift, Star, Instagram, Users, Home, Coffee, Shirt, ChevronRight, Package, TrendingUp
 } from 'lucide-react';
 
 const getImageUrl = (imagePath: string | null | undefined): string | null => {
@@ -22,98 +21,107 @@ const getImageUrl = (imagePath: string | null | undefined): string | null => {
 
 export default function ClientHomepage({ initialProducts }: { initialProducts: any[] }) {
   const [products] = useState(initialProducts);
-  const [loading] = useState(false); // No loading since pre-fetched
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loading] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
-  const occasions = [
+  const processSteps = [
     {
-      name: "For Love",
-      icon: <Heart className="w-5 h-5" />,
-      color: "from-red-500 to-red-600",
-      tagline: "Show your love with a personalized gift they'll never forget",
-      badge: "Most Popular"
+      step: "01",
+      title: "Choose Your Gift",
+      description: "Browse our collection of premium customizable products",
+      icon: <Package className="w-6 h-6" />
     },
     {
-      name: "For Birthdays",
-      icon: <Cake className="w-5 h-5" />,
-      color: "from-pink-500 to-pink-600",
-      tagline: "Make every birthday unforgettable with a custom gift"
+      step: "02",
+      title: "Upload & Design",
+      description: "Add your photo and personalize every detail",
+      icon: <Upload className="w-6 h-6" />
     },
     {
-      name: "For Memories",
-      icon: <LucideImage className="w-5 h-5" />,
-      color: "from-rose-500 to-rose-600",
-      tagline: "Preserve your precious moments in beautiful, lasting gifts"
+      step: "03",
+      title: "We Create Magic",
+      description: "Our team crafts your gift with premium quality",
+      icon: <Sparkles className="w-6 h-6" />
     },
     {
-      name: "For Thanks",
-      icon: <ThumbsUp className="w-5 h-5" />,
-      color: "from-orange-500 to-orange-600",
-      tagline: "Express gratitude with a thoughtful, personalized touch"
-    },
-    {
-      name: "Mystery",
-      icon: <Sparkles className="w-5 h-5" />,
-      color: "from-purple-500 to-purple-600",
-      tagline: "Can’t decide? Surprise them with a limited mystery box"
-    },
+      step: "04",
+      title: "Fast Delivery",
+      description: "Delivered anywhere in Nigeria within 72 hours",
+      icon: <Clock className="w-6 h-6" />
+    }
   ];
 
-  const heroSlides = [
+  const occasions = [
     {
-      title: "Your Photo",
-      description: "Upload your favorite memory",
-      icon: <Upload className="w-8 h-8" />
+      name: "Love & Romance",
+      icon: <Heart className="w-5 h-5" />,
+      color: "from-red-500 to-red-600",
+      tagline: "Express your feelings with personalized gifts that speak from the heart",
+      count: "50+ Designs"
     },
     {
-      title: "Our Magic",
-      description: "We create your perfect gift",
-      icon: <Sparkles className="w-8 h-8" />
+      name: "Birthday Celebrations",
+      icon: <Gift className="w-5 h-5" />,
+      color: "from-pink-500 to-pink-600",
+      tagline: "Make their special day unforgettable with unique custom gifts",
+      count: "40+ Options"
     },
     {
-      title: "Pure Joy",
-      description: "Delivered to their doorstep",
-      icon: <Gift className="w-8 h-8" />
+      name: "Memorable Moments",
+      icon: <Sparkles className="w-5 h-5" />,
+      color: "from-purple-500 to-purple-600",
+      tagline: "Turn your favorite photos into lasting memories",
+      count: "35+ Products"
+    },
+    {
+      name: "Gratitude Gifts",
+      icon: <Star className="w-5 h-5" />,
+      color: "from-orange-500 to-orange-600",
+      tagline: "Say thank you with thoughtful, personalized appreciation",
+      count: "25+ Ideas"
     }
   ];
 
   const testimonials = [
     {
-      name: "Osas.",
-      location: "Benin",
-      text: "Best Birthday's gift ever! My boyfriend loved the personalized mug. Quality is amazing!",
-      rating: 5,
-      image: null
+      name: "Osas E.",
+      location: "Benin City",
+      text: "Ordered a custom mug for my boyfriend's birthday. The quality blew my mind! Delivery was super fast too. Lensra is now my go-to for all special occasions.",
+      rating: 5
     },
     {
       name: "Tunde O.",
       location: "Lagos",
-      text: "Ordered a custom t-shirt for my mum's birthday. She cried happy tears. Thank you Lensra!",
-      rating: 5,
-      image: null
+      text: "My mum cried when she saw the personalized photo frame. The print quality is incredible and the customer service team was so helpful. 100% recommended!",
+      rating: 5
     },
     {
       name: "Sarah M.",
-      location: "Benin",
-      text: "Fast delivery and beautiful printing. I'm definitely ordering again for Christmas!",
-      rating: 5,
-      image: null
+      location: "Abuja",
+      text: "I've ordered 3 times already! Fast delivery, beautiful printing, and the prices are very reasonable. Thank you Lensra for making gifting so easy!",
+      rating: 5
     }
+  ];
+
+  const stats = [
+    { value: "500+", label: "Happy Customers" },
+    { value: "1000+", label: "Gifts Created" },
+    { value: "72hrs", label: "Fast Delivery" },
+    { value: "99%", label: "Satisfaction Rate" }
   ];
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 3000);
+      setCurrentSlide((prev) => (prev + 1) % processSteps.length);
+    }, 3500);
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+    }, 5500);
     return () => clearInterval(timer);
   }, []);
 
@@ -124,7 +132,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
         <Sparkles className="w-6 h-6 text-red-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
       </div>
       <span className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mt-6 animate-pulse">
-        Loading Studio...
+        Loading...
       </span>
     </div>
   );
@@ -132,296 +140,8 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   return (
     <div className="min-h-screen bg-white selection:bg-red-600 selection:text-white">
       
-      {/* HERO SECTION - Enhanced with emotional headline + carousel */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2">
-            
-            {/* Left Content */}
-            <div className="relative bg-gradient-to-br from-zinc-950 via-zinc-900 to-black px-6 md:px-12 py-16 md:py-24 flex items-center">
-              <div className="absolute inset-0 opacity-[0.03]" 
-                   style={{ 
-                     backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
-                     backgroundSize: '50px 50px' 
-                   }} 
-              />
-              
-              <div className="relative z-10 max-w-xl">
-                <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-red-600/10 border border-red-600/20 rounded-full mb-6">
-                  <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />
-                  <span className="font-black uppercase tracking-[0.3em] text-[10px] text-red-500">
-                    500+ Happy Nigerians Trust Us
-                  </span>
-                </div>
-                
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-[0.95] mb-6 italic uppercase text-white">
-                  Turn Your Photos Into Unforgettable Gifts
-                </h1>
-                
-                <p className="text-base text-zinc-300 mb-4 font-bold uppercase tracking-wider leading-relaxed">
-                  Delivered anywhere in Nigeria in 72 hours
-                </p>
-                
-                <p className="text-sm text-zinc-400 mb-8 font-bold uppercase tracking-wide">
-                  Fast, reliable, and personalized for every occasion
-                </p>
-
-                {/* Visual Process Carousel */}
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
-                  <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase italic text-white mb-6">
-                    How It Works
-                  </h1>
-                  <div className="flex items-center justify-between mb-4">
-                    {heroSlides.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={`h-1 flex-1 mx-1 rounded-full transition-all ${
-                          idx === currentSlide ? 'bg-red-600' : 'bg-white/20'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white">
-                      {heroSlides[currentSlide].icon}
-                    </div>
-                    <h3 className="text-lg font-black uppercase text-white mb-2">
-                      {heroSlides[currentSlide].title}
-                    </h3>
-                    <p className="text-xs font-bold uppercase tracking-wide text-zinc-400">
-                      {heroSlides[currentSlide].description}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                  <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-lg border border-white/10">
-                    <Clock className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Delivery</p>
-                      <p className="text-xs font-black uppercase text-white">72 Hours</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-lg border border-white/10">
-                    <ShieldCheck className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Quality</p>
-                      <p className="text-xs font-black uppercase text-white">Premium</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-lg border border-white/10">
-                    <MapPin className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Coverage</p>
-                      <p className="text-xs font-black uppercase text-white">All Nigeria</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <a 
-                    href="/editor" 
-                    className="inline-flex items-center justify-center gap-4 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all"
-                  >
-                    <span>Start Creating Your Gift</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </a>
-                  <a 
-                    href="/shop" 
-                    className="inline-flex items-center justify-center gap-4 px-10 py-5 bg-white/10 border border-white/20 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-white/20 transition-all"
-                  >
-                    <span>Browse Products</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Hero Image */}
-            <div className="relative bg-zinc-100 min-h-[400px] lg:min-h-[600px] overflow-hidden">
-              <Image 
-                src="/heroimg-41.jpg" 
-                alt="Lensra personalized gifts showcase with custom mugs and t-shirts"
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/20" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* NEW DIGITAL GIFT SECTION */}
-      <section className="py-16 bg-zinc-50">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Left: Text */}
-            <div className="flex flex-col justify-center">
-              <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-[0.95] mb-6 italic uppercase text-zinc-900">
-                Redefining How People Gift
-              </h2>
-              <p className="text-lg md:text-xl text-zinc-600 mb-4 font-bold uppercase tracking-wider">
-                Not just items. Moments, messages, and memories.
-              </p>
-              <p className="text-base text-zinc-500 mb-8 font-bold leading-relaxed">
-                Create a personalized digital gift — a message, voice, or video — revealed through a simple scan or link.
-              </p>
-              <a 
-                href="/digital-gifts" 
-                className="inline-flex items-center justify-center gap-4 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all w-fit"
-              >
-                <span>Create a Digital Gift</span>
-                <ArrowRight className="w-5 h-5" />
-              </a>
-            </div>
-
-            {/* Right: Visual */}
-            <div className="relative">
-              <Image 
-                src="/dg-img.jpg" 
-                alt="Digital gift reveal experience on mobile phone with personalized message"
-                width={800}
-                height={600}
-                className="w-full h-auto rounded-3xl shadow-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* OCCASIONS/BUNDLES - Enhanced with taglines and hover effects */}
-      <section className="py-16 bg-white">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-zinc-900 mb-2">
-              Shop By Occasion
-            </h2>
-            <p className="text-xs font-black uppercase tracking-widest text-zinc-600">
-              Perfect gifts for every special moment
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
-            {occasions.map((occasion) => (
-              <a 
-                key={occasion.name} 
-                href="/shop?category=occasion"
-                className="group relative bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 p-6 md:p-8"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${occasion.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
-                
-                {occasion.badge && (
-                  <div className="absolute top-3 right-3 bg-red-600 text-white px-2 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-wider shadow-lg">
-                    {occasion.badge}
-                  </div>
-                )}
-
-                <div className="relative">
-                  <div className={`w-12 h-12 md:w-16 md:h-16 mb-4 md:mb-6 rounded-full bg-gradient-to-br ${occasion.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
-                    <span className="text-white">{occasion.icon}</span>
-                  </div>
-                  
-                  <p className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900 mb-2 md:mb-3">{occasion.name}</p>
-                  
-                  <p className="text-[10px] md:text-xs text-zinc-600 font-bold uppercase tracking-wide mb-3 md:mb-4 leading-relaxed line-clamp-2">
-                    {occasion.tagline}
-                  </p>
-
-                  <div className="opacity-0 group-hover:opacity-100 transition-all">
-                    <button className="w-full py-2 md:py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-[10px] md:text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all">
-                      Shop Bundle
-                    </button>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRODUCTS - Grouped by category with emotional taglines */}
-      <section className="py-16 bg-zinc-50">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-zinc-900 mb-2">
-              Our Products
-            </h2>
-            <p className="text-xs font-black uppercase tracking-widest text-zinc-600">
-              Premium quality gifts for every occasion
-            </p>
-          </div>
-
-          {/* Home Category */}
-          {products.filter(p => p.category?.toLowerCase().includes('home')).slice(0, 6).length > 0 && (
-            <div className="mb-16">
-              <h3 className="text-2xl font-black uppercase italic text-zinc-900 mb-6 flex items-center gap-3">
-                <Home className="w-6 h-6 text-red-600" />
-                Home & Living
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                {products.filter(p => p.category?.toLowerCase().includes('home')).slice(0, 6).map((product) => (
-                  <EnhancedProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Daily Use Category */}
-          {products.filter(p => p.category?.toLowerCase().includes('daily') || p.category?.toLowerCase().includes('mug') || p.category?.toLowerCase().includes('bottle')).length > 0 && (
-            <div className="mb-16">
-              <h3 className="text-2xl font-black uppercase italic text-zinc-900 mb-6 flex items-center gap-3">
-                <Coffee className="w-6 h-6 text-red-600" />
-                Daily Essentials
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                {products.filter(p => p.category?.toLowerCase().includes('daily') || p.category?.toLowerCase().includes('mug') || p.category?.toLowerCase().includes('bottle')).slice(0, 6).map((product) => (
-                  <EnhancedProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Wearables Category */}
-          {products.filter(p => p.category?.toLowerCase().includes('wear') || p.category?.toLowerCase().includes('shirt') || p.category?.toLowerCase().includes('apparel')).length > 0 && (
-            <div className="mb-16">
-              <h3 className="text-2xl font-black uppercase italic text-zinc-900 mb-6 flex items-center gap-3">
-                <Shirt className="w-6 h-6 text-red-600" />
-                Wearables
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                {products.filter(p => p.category?.toLowerCase().includes('wear') || p.category?.toLowerCase().includes('shirt') || p.category?.toLowerCase().includes('apparel')).slice(0, 6).map((product) => (
-                  <EnhancedProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Fallback - All Products if no categories match */}
-          {products.filter(p => p.category?.toLowerCase().includes('home')).length === 0 && 
-           products.filter(p => p.category?.toLowerCase().includes('daily') || p.category?.toLowerCase().includes('mug')).length === 0 &&
-           products.filter(p => p.category?.toLowerCase().includes('wear') || p.category?.toLowerCase().includes('shirt')).length === 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {products.slice(0, 6).map((product) => (
-                <EnhancedProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-
-          {/* See All Products Button */}
-          <div className="text-center mt-12">
-            <a 
-              href="/shop" 
-              className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full text-xs font-black uppercase tracking-widest hover:shadow-2xl hover:shadow-red-600/30 transition-all"
-            >
-              See All Products
-              <ArrowRight className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* MYSTERY BOXES - With urgency and scarcity */}
-      <section className="py-16 bg-gradient-to-br from-zinc-900 to-black relative overflow-hidden">
+      {/* HERO SECTION - Improved hierarchy and emotional connection */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
         <div className="absolute inset-0 opacity-[0.03]" 
              style={{ 
                backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
@@ -429,102 +149,316 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
              }} 
         />
         
-        <div className="max-w-[1600px] mx-auto px-4 relative z-10">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/10 rounded-full mb-4">
-              <Gift className="w-4 h-4 text-red-500" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">Limited Edition</span>
+        <div className="max-w-[1400px] mx-auto px-4 py-20 md:py-32 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Left Content */}
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-red-600/10 border border-red-600/20 rounded-full mb-8">
+                <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />
+                <span className="font-black uppercase tracking-[0.3em] text-[10px] text-red-500">
+                  Trusted By 500+ Nigerians
+                </span>
+              </div>
+              
+              <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] mb-6 italic uppercase text-white">
+                Gifts That Tell Your Story
+              </h1>
+              
+              <p className="text-lg md:text-xl text-zinc-300 mb-8 font-bold uppercase tracking-wide max-w-xl mx-auto lg:mx-0">
+                Transform your photos into premium personalized gifts. Delivered anywhere in Nigeria in just 72 hours.
+              </p>
+
+              {/* Stats Bar */}
+              <div className="grid grid-cols-4 gap-4 mb-10 max-w-2xl mx-auto lg:mx-0">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="text-center lg:text-left">
+                    <p className="text-2xl md:text-3xl font-black text-red-500">{stat.value}</p>
+                    <p className="text-[9px] font-black uppercase tracking-wider text-zinc-400">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <a 
+                  href="/editor" 
+                  className="inline-flex items-center justify-center gap-4 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all group"
+                >
+                  <span>Create Your Gift</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </a>
+                <a 
+                  href="/shop" 
+                  className="inline-flex items-center justify-center gap-4 px-10 py-5 bg-white/10 border border-white/20 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-white/20 transition-all"
+                >
+                  <span>Browse All Products</span>
+                </a>
+              </div>
             </div>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-white mb-3">
-              Can't Decide? Try Our Mystery Box
+
+            {/* Right - Process Carousel */}
+            <div className="relative">
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-sm">
+                <div className="flex justify-between mb-6">
+                  {processSteps.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-1.5 flex-1 mx-1 rounded-full transition-all ${
+                        idx === currentSlide ? 'bg-red-600' : 'bg-white/20'
+                      }`}
+                    />
+                  ))}
+                </div>
+                
+                <div className="text-center min-h-[280px] flex flex-col justify-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white">
+                    {processSteps[currentSlide].icon}
+                  </div>
+                  <p className="text-5xl font-black text-red-500 mb-2">{processSteps[currentSlide].step}</p>
+                  <h3 className="text-2xl font-black uppercase text-white mb-4">
+                    {processSteps[currentSlide].title}
+                  </h3>
+                  <p className="text-sm font-bold uppercase tracking-wide text-zinc-400 max-w-xs mx-auto">
+                    {processSteps[currentSlide].description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Trust badges */}
+              <div className="grid grid-cols-3 gap-3 mt-6">
+                <div className="flex flex-col items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                  <Clock className="w-5 h-5 text-red-500" />
+                  <p className="text-[9px] font-black uppercase tracking-wider text-zinc-400">72hr Delivery</p>
+                </div>
+                <div className="flex flex-col items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                  <ShieldCheck className="w-5 h-5 text-red-500" />
+                  <p className="text-[9px] font-black uppercase tracking-wider text-zinc-400">Premium Quality</p>
+                </div>
+                <div className="flex flex-col items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                  <MapPin className="w-5 h-5 text-red-500" />
+                  <p className="text-[9px] font-black uppercase tracking-wider text-zinc-400">All Nigeria</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SHOP BY OCCASION - Improved visual hierarchy */}
+      <section className="py-20 bg-zinc-50">
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
+              Perfect For Every Occasion
             </h2>
-            <p className="text-sm text-zinc-400 font-bold uppercase tracking-wide">
-              Surprise gift bundles curated with love
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
+              Find the ideal gift for your special moment
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
-            {[
-              { name: "Love Edition", stock: 5, items: "1 premium gift + 1 surprise item" },
-              { name: "Birthday Special", stock: 3, items: "2 personalized gifts + 1 surprise" }
-            ].map((box) => (
-              <div key={box.name} className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all">
-                <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Gift className="w-10 h-10 text-white" />
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {occasions.map((occasion) => (
+              <a 
+                key={occasion.name} 
+                href="/shop?category=occasion"
+                className="group relative bg-white rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 border border-zinc-200"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${occasion.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
                 
-                <h3 className="text-lg font-black uppercase text-white mb-2">{box.name}</h3>
-                <p className="text-xs font-bold uppercase tracking-wide text-zinc-400 mb-4">
-                  {box.items}
-                </p>
-                
-                <div className="inline-block px-4 py-2 bg-red-600/20 border border-red-600/40 rounded-full mb-6">
-                  <span className="text-xs font-black uppercase tracking-wider text-red-400">
-                    Only {box.stock} Left!
-                  </span>
-                </div>
+                <div className="relative p-8">
+                  <div className={`w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br ${occasion.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
+                    <span className="text-white">{occasion.icon}</span>
+                  </div>
+                  
+                  <p className="text-base font-black uppercase tracking-wide text-zinc-900 mb-3">{occasion.name}</p>
+                  
+                  <p className="text-xs text-zinc-600 font-bold uppercase tracking-wide mb-4 leading-relaxed min-h-[48px]">
+                    {occasion.tagline}
+                  </p>
 
-                <a 
-                  href={`/shop?category=mystery-boxes`}
-                  className="block w-full py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all"
-                >
-                  Grab Yours Now
-                </a>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-red-600">{occasion.count}</span>
+                    <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+                  </div>
+                </div>
+              </a>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-12">
+      {/* PRODUCTS SHOWCASE - Improved categorization */}
+      <section className="py-20 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
+              Our Premium Collection
+            </h2>
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
+              High-quality personalized gifts for every style
+            </p>
+          </div>
+
+          {/* Featured/Trending Products */}
+          {products.filter(p => p.is_featured || p.is_trending).slice(0, 8).length > 0 && (
+            <div className="mb-20">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-2xl font-black uppercase italic text-zinc-900 flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-red-600" />
+                  Most Popular
+                </h3>
+                <a href="/shop" className="text-xs font-black uppercase tracking-wider text-red-600 hover:text-red-700 flex items-center gap-2">
+                  View All
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {products.filter(p => p.is_featured || p.is_trending).slice(0, 8).map((product) => (
+                  <EnhancedProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Categories */}
+          {[
+            { title: "For The Home", icon: Home, filter: (p: any) => p.category?.toLowerCase().includes('home') },
+            { title: "Daily Essentials", icon: Coffee, filter: (p: any) => p.category?.toLowerCase().includes('daily') || p.category?.toLowerCase().includes('mug') || p.category?.toLowerCase().includes('bottle') },
+            { title: "Wearables", icon: Shirt, filter: (p: any) => p.category?.toLowerCase().includes('wear') || p.category?.toLowerCase().includes('shirt') || p.category?.toLowerCase().includes('apparel') }
+          ].map((category) => {
+            const categoryProducts = products.filter(category.filter).slice(0, 4);
+            if (categoryProducts.length === 0) return null;
+            
+            return (
+              <div key={category.title} className="mb-20 last:mb-0">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-black uppercase italic text-zinc-900 flex items-center gap-3">
+                    <category.icon className="w-6 h-6 text-red-600" />
+                    {category.title}
+                  </h3>
+                  <a href="/shop" className="text-xs font-black uppercase tracking-wider text-red-600 hover:text-red-700 flex items-center gap-2">
+                    View All
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {categoryProducts.map((product) => (
+                    <EnhancedProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* CTA */}
+          <div className="text-center mt-16">
             <a 
-              href={`/shop?category=mystery-boxes`}
-              className="inline-flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white hover:text-red-500 transition-colors"
+              href="/shop" 
+              className="inline-flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full text-xs font-black uppercase tracking-widest hover:shadow-2xl hover:shadow-red-600/30 transition-all group"
             >
-              See All Mystery Boxes
-              <ChevronRight className="w-4 h-4" />
+              Explore All Products
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a>
           </div>
         </div>
       </section>
 
-      {/* SOCIAL PROOF - Testimonials & Instagram feed */}
-      <section className="py-16 bg-white">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/10 rounded-full mb-4">
-              <Heart className="w-4 h-4 text-red-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">Customer Love</span>
+      {/* DIGITAL GIFTS - Better positioning and clarity */}
+      <section className="py-20 bg-gradient-to-br from-zinc-900 to-black relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" 
+             style={{ 
+               backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
+               backgroundSize: '50px 50px' 
+             }} 
+        />
+        
+        <div className="max-w-[1400px] mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Image First on Mobile */}
+            <div className="order-2 lg:order-1">
+              <Image 
+                src="/dg-img.jpg" 
+                alt="Digital gift reveal experience"
+                width={800}
+                height={600}
+                className="w-full h-auto rounded-3xl shadow-2xl"
+              />
             </div>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-zinc-900 mb-3">
-              What Our Customers Say
+
+            {/* Text */}
+            <div className="order-1 lg:order-2 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/10 rounded-full mb-6">
+                <Sparkles className="w-4 h-4 text-red-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">Coming Soon</span>
+              </div>
+              
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-[0.95] mb-6 italic uppercase text-white">
+                The Future of Gifting Is Digital
+              </h2>
+              
+              <p className="text-lg text-zinc-300 mb-4 font-bold uppercase tracking-wide">
+                Send messages, videos, and memories
+              </p>
+              
+              <p className="text-base text-zinc-400 mb-8 font-bold leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Create personalized digital experiences that recipients unlock through a simple scan or link. Perfect for adding an emotional touch to any gift.
+              </p>
+
+              <a 
+                href="/digital-gifts" 
+                className="inline-flex items-center gap-4 px-10 py-5 bg-white/10 border border-white/20 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-white/20 transition-all group"
+              >
+                <span>Learn More</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS - Better presentation */}
+      <section className="py-20 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/10 rounded-full mb-6">
+              <Heart className="w-4 h-4 text-red-600 fill-red-600" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">Customer Stories</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
+              Loved By Nigerians
             </h2>
-            <p className="text-sm text-zinc-600 font-bold uppercase tracking-wide max-w-2xl mx-auto">
-              Real stories from real customers across Nigeria
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
+              Real feedback from real customers
             </p>
           </div>
 
-          {/* Auto-sliding carousel for all screen sizes */}
-          <div className="mb-12 max-w-3xl mx-auto">
+          {/* Testimonial Carousel */}
+          <div className="max-w-4xl mx-auto mb-16">
             <div className="relative">
-              <div className="bg-zinc-50 rounded-2xl p-8 md:p-12 border border-zinc-200">
-                <div className="flex gap-1 mb-4 justify-center">
-                  {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-red-600 fill-red-600" />
+              <div className="bg-zinc-50 rounded-3xl p-12 md:p-16 border border-zinc-200">
+                <div className="flex gap-1 mb-6 justify-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-6 h-6 text-red-600 fill-red-600" />
                   ))}
                 </div>
-                <p className="text-base md:text-lg text-zinc-700 mb-8 leading-relaxed text-center">"{testimonials[currentTestimonial].text}"</p>
-                <div className="flex items-center gap-3 justify-center">
-                  <div className="w-14 h-14 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center">
-                    <span className="text-white font-black text-xl">{testimonials[currentTestimonial].name[0]}</span>
+                
+                <p className="text-xl md:text-2xl text-zinc-700 mb-10 leading-relaxed text-center font-medium">
+                  "{testimonials[currentTestimonial].text}"
+                </p>
+                
+                <div className="flex items-center gap-4 justify-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center">
+                    <span className="text-white font-black text-2xl">{testimonials[currentTestimonial].name[0]}</span>
                   </div>
-                  <div>
-                    <p className="text-sm font-black uppercase text-zinc-900">{testimonials[currentTestimonial].name}</p>
+                  <div className="text-left">
+                    <p className="text-base font-black uppercase text-zinc-900">{testimonials[currentTestimonial].name}</p>
                     <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">{testimonials[currentTestimonial].location}</p>
                   </div>
                 </div>
               </div>
               
-              {/* Carousel indicators */}
-              <div className="flex justify-center gap-2 mt-6">
+              {/* Indicators */}
+              <div className="flex justify-center gap-2 mt-8">
                 {testimonials.map((_, idx) => (
                   <button
                     key={idx}
@@ -540,29 +474,77 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           </div>
 
           {/* Instagram CTA */}
-          <div className="text-center bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-2xl p-12 border border-zinc-200">
-            <Instagram className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <h3 className="text-2xl font-black uppercase italic text-zinc-900 mb-3">Share Your Gift Story</h3>
-            <p className="text-sm text-zinc-600 font-bold uppercase tracking-wide mb-6 max-w-md mx-auto">
-              Tag us with #LensraGifts and get featured on our page
+          <div className="text-center bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-3xl p-16 border border-zinc-200">
+            <Instagram className="w-16 h-16 text-red-600 mx-auto mb-6" />
+            <h3 className="text-3xl font-black uppercase italic text-zinc-900 mb-4">Join Our Community</h3>
+            <p className="text-sm text-zinc-600 font-bold uppercase tracking-wide mb-8 max-w-md mx-auto">
+              Share your Lensra gifts with #LensraGifts and get featured
             </p>
             <a 
               href="https://instagram.com/lensragifts" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-widest hover:shadow-2xl hover:shadow-red-600/30 transition-all"
+              className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-widest hover:shadow-2xl hover:shadow-red-600/30 transition-all group"
             >
               Follow @LensraGifts
-              <Instagram className="w-5 h-5" />
+              <Instagram className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </a>
           </div>
         </div>
       </section>
 
-      {/* RESELLER SECTION */}
-      <section className="py-16 bg-zinc-50">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="bg-gradient-to-br from-zinc-900 to-black rounded-3xl p-12 md:p-16 text-center relative overflow-hidden">
+      {/* WHY CHOOSE LENSRA - Clearer value props */}
+      <section className="py-20 bg-zinc-50">
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
+              The Lensra Difference
+            </h2>
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
+              Why thousands choose us for their personalized gifts
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all border border-zinc-200">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <ShieldCheck className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-base font-black uppercase tracking-wide text-zinc-900 mb-3">Premium Quality</h3>
+              <p className="text-sm font-bold uppercase tracking-wide text-zinc-600 leading-relaxed">Italian DTG inks, premium materials, ISO certified production</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all border border-zinc-200">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Zap className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-base font-black uppercase tracking-wide text-zinc-900 mb-3">Lightning Fast</h3>
+              <p className="text-sm font-bold uppercase tracking-wide text-zinc-600 leading-relaxed">72-hour delivery guarantee anywhere in Nigeria</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all border border-zinc-200">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Award className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-base font-black uppercase tracking-wide text-zinc-900 mb-3">Trusted Brand</h3>
+              <p className="text-sm font-bold uppercase tracking-wide text-zinc-600 leading-relaxed">500+ satisfied customers, 99% satisfaction rate</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all border border-zinc-200">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <MapPin className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-base font-black uppercase tracking-wide text-zinc-900 mb-3">Local Support</h3>
+              <p className="text-sm font-bold uppercase tracking-wide text-zinc-600 leading-relaxed">Lagos-based team ready to help you create magic</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* RESELLER PROGRAM */}
+      <section className="py-20 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div className="bg-gradient-to-br from-zinc-900 to-black rounded-3xl p-16 md:p-20 text-center relative overflow-hidden">
             <div className="absolute inset-0 opacity-[0.03]" 
                  style={{ 
                    backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
@@ -571,75 +553,20 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             />
             
             <div className="relative z-10 max-w-3xl mx-auto">
-              <Users className="w-16 h-16 text-red-600 mx-auto mb-6" />
-              <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-white mb-4">
-                Become A Reseller
+              <Users className="w-20 h-20 text-red-600 mx-auto mb-8" />
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-white mb-6">
+                Become A Lensra Partner
               </h2>
-              <p className="text-sm text-zinc-300 font-bold uppercase tracking-wide mb-8">
-                Earn by selling LensraGifts. Join our growing network of resellers across Nigeria
+              <p className="text-base text-zinc-300 font-bold uppercase tracking-wide mb-10 max-w-xl mx-auto">
+                Join our network of resellers across Nigeria and earn while helping people create meaningful gifts
               </p>
               <a 
                 href="/reseller-program" 
-                className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all"
+                className="inline-flex items-center gap-4 px-12 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all group"
               >
-                <span>Learn More</span>
-                <ArrowRight className="w-5 h-5" />
+                <span>Start Earning Today</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TRUST & VALUE PROPS */}
-      <section className="py-16 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]" 
-             style={{ 
-               backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
-               backgroundSize: '50px 50px' 
-             }} 
-        />
-        
-        <div className="max-w-[1600px] mx-auto px-4 relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-white mb-3">
-              Why Choose Lensra?
-            </h2>
-            <p className="text-sm text-zinc-400 font-bold uppercase tracking-wide">
-              Premium quality, lightning-fast delivery
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <ShieldCheck className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-3">Premium Quality</h3>
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-400">Italian DTG Inks & Premium Materials</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Zap className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-3">Fast Delivery</h3>
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-400">72-Hour Turnaround Time</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Award className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-3">ISO Certified</h3>
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-400">Quality Assurance Standards</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <MapPin className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-3">Local Team</h3>
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-400">Lagos-Based Support</p>
             </div>
           </div>
         </div>
@@ -653,13 +580,13 @@ function EnhancedProductCard({ product }: { product: any }) {
   
   return (
     <a href={`/shop/${product.slug}`} className="group block">
-      <div className="relative aspect-square bg-white rounded-2xl overflow-hidden mb-3 border border-zinc-200 group-hover:border-red-300 group-hover:shadow-2xl transition-all">
+      <div className="relative aspect-square bg-white rounded-2xl overflow-hidden mb-4 border border-zinc-200 group-hover:border-red-300 group-hover:shadow-2xl transition-all">
         {imageUrl ? (
           <Image 
             src={imageUrl} 
-            alt={`${product.name} - Personalized gift by Lensra`}
+            alt={`${product.name} - Personalized gift`}
             fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700" 
+            className="object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-zinc-50">
@@ -667,29 +594,26 @@ function EnhancedProductCard({ product }: { product: any }) {
           </div>
         )}
         
-        {product.is_trending && (
+        {(product.is_trending || product.is_featured) && (
           <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg">
-            Most Popular
+            Popular
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform">
-          <button className="w-full py-2.5 bg-white text-zinc-900 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-red-600 hover:text-white transition-colors">
+          <button className="w-full py-3 bg-white text-zinc-900 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-600 hover:text-white transition-colors">
             Customize Now
           </button>
         </div>
       </div>
       
       <div>
-        <h3 className="font-black text-sm tracking-tight uppercase italic text-zinc-900 leading-tight mb-1.5 truncate group-hover:text-red-600 transition-colors">
+        <h3 className="font-black text-sm tracking-tight uppercase italic text-zinc-900 leading-tight mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
           {product.name}
         </h3>
-        <p className="text-xs text-zinc-600 font-bold uppercase tracking-wide mb-2">
-          Perfect for gifting
-        </p>
-        <p className="font-black text-base text-red-600">
-          From ₦{parseFloat(product.base_price || "0").toLocaleString()}
+        <p className="font-black text-lg text-red-600">
+          ₦{parseFloat(product.base_price || "0").toLocaleString()}
         </p>
       </div>
     </a>
