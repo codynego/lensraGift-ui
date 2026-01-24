@@ -376,11 +376,9 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Image First on Mobile */}
             <div className="order-2 lg:order-1">
-              <Image 
+              <img
                 src="/dg-img.jpg" 
                 alt="Digital gift reveal experience"
-                width={800}
-                height={600}
                 className="w-full h-auto rounded-3xl shadow-2xl"
               />
             </div>
@@ -582,10 +580,10 @@ function EnhancedProductCard({ product }: { product: any }) {
     <a href={`/shop/${product.slug}`} className="group block">
       <div className="relative aspect-square bg-white rounded-2xl overflow-hidden mb-4 border border-zinc-200 group-hover:border-red-300 group-hover:shadow-2xl transition-all">
         {imageUrl ? (
-          <Image 
+          <img
             src={imageUrl} 
             alt={`${product.name} - Personalized gift`}
-            fill
+            loading="lazy"
             className="object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         ) : (
