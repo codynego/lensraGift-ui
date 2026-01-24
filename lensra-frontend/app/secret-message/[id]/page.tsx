@@ -9,11 +9,24 @@ const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/
 
 // Helper to ensure full media URLs
 const getMediaUrl = (path?: string) => {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `${BaseUrl}${path.startsWith('/') ? path.slice(1) : path}`;
-};
+  if (!path) return "";
 
+  // Define your bases
+  const localBase = "http://127.0.0.1:8000/";
+  const productionBase = "https://api.lensra.com/";
+
+  // Check if the path starts with the local address and swap it
+  if (path.startsWith(localBase)) {
+    return path.replace(localBase, productionBase);
+  }
+
+  // If it's a relative path (e.g., "media/voice..."), prepend the production base
+  if (!path.startsWith("http")) {
+    return `${productionBase}${path.startsWith('/') ? path.slice(1) : path}`;
+  }
+
+  return path;
+};
 // Occasion-based Experience Configuration - Enhanced with more distinct feels
 const OCCASION_CONFIG: any = {
   'love-confession': {
