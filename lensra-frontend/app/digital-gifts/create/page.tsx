@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Gift, ArrowRight, ArrowLeft, Loader2, Check, Mail, User, MapPin, Sparkles, Heart, Star, Calendar, Package, MessageCircle
+  Gift, ArrowRight, ArrowLeft, Loader2, Check, Mail, User, MapPin, Sparkles, Heart, Star, Calendar, Package, MessageCircle,
+  Mic, Video, Upload, Play, StopCircle
 } from 'lucide-react';
 import CheckoutView from '@/components/CheckoutView';
 
@@ -61,6 +62,16 @@ export default function GiftWizard() {
     shipping_address: '',
   });
 
+  // Media recording states
+  const [mediaType, setMediaType] = useState<'none' | 'audio' | 'video'>('none');
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaBlob, setMediaBlob] = useState<Blob | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -82,6 +93,16 @@ export default function GiftWizard() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Cleanup media URL on unmount
+    return () => {
+      if (mediaUrl) URL.revokeObjectURL(mediaUrl);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [mediaUrl]);
+
   const totalPrice = useMemo(() => {
     const selectedTier = tiers.find(t => t.id === formData.tier);
     const tierPrice = selectedTier ? parseFloat(selectedTier.price) : 0;
@@ -92,6 +113,73 @@ export default function GiftWizard() {
     return tierPrice + addonsPrice;
   }, [formData.tier, formData.addon_ids, tiers, addons]);
 
+  const startRecording = async (type: 'audio' | 'video') => {
+    try {
+      const constraints = type === 'video' 
+        ? { video: true, audio: true } 
+        : { audio: true };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+      
+      if (type === 'video' && videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: type === 'video' ? 'video/webm' : 'audio/webm' });
+        setMediaBlob(blob);
+        setMediaUrl(URL.createObjectURL(blob));
+        stream.getTracks().forEach(track => track.stop());
+        if (type === 'video' && videoRef.current) {
+          videoRef.current.srcObject = null;
+        }
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+      setMediaType(type);
+    } catch (err) {
+      console.error('Recording error:', err);
+      alert('Failed to access microphone/camera. Please check permissions.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+        setUploadedFile(file);
+        setMediaUrl(URL.createObjectURL(file));
+        setMediaType(file.type.startsWith('video/') ? 'video' : 'audio');
+        setMediaBlob(null); // Clear recorded blob if uploading
+      } else {
+        alert('Please upload an audio or video file.');
+      }
+    }
+  };
+
+  const resetMedia = () => {
+    setMediaBlob(null);
+    setUploadedFile(null);
+    if (mediaUrl) URL.revokeObjectURL(mediaUrl);
+    setMediaUrl(null);
+    setMediaType('none');
+  };
+
   const handleCreateGift = async () => {
     if (!formData.sender_email || !formData.sender_name || !formData.sender_phone) {
       alert("Please provide your name, phone, and email to proceed.");
@@ -100,29 +188,34 @@ export default function GiftWizard() {
 
     setIsSubmitting(true);
     try {
-      const params = new URLSearchParams();
-      params.append('sender_name', formData.sender_name);
-      params.append('sender_email', formData.sender_email);
-      params.append('sender_phone', formData.sender_phone);
-      params.append('recipient_name', formData.recipient_name);
-      params.append('occasion', String(formData.occasion));
-      params.append('tier', String(formData.tier));
-      params.append('text_message', formData.text_message);
-      params.append('shipping_address', formData.shipping_address);
+      const form = new FormData();
+      form.append('sender_name', formData.sender_name);
+      form.append('sender_email', formData.sender_email);
+      form.append('sender_phone', formData.sender_phone);
+      form.append('recipient_name', formData.recipient_name);
+      form.append('occasion', String(formData.occasion));
+      form.append('tier', String(formData.tier));
+      form.append('text_message', formData.text_message);
+      form.append('shipping_address', formData.shipping_address);
       
-      formData.addon_ids.forEach(id => params.append('addon_ids', String(id)));
+      formData.addon_ids.forEach(id => form.append('addon_ids', String(id)));
 
       const rEmail = formData.recipient_contact.includes('@') ? formData.recipient_contact : '';
       const rPhone = !formData.recipient_contact.includes('@') ? formData.recipient_contact : '';
-      params.append('recipient_email', rEmail);
-      params.append('recipient_phone', rPhone);
+      form.append('recipient_email', rEmail);
+      form.append('recipient_phone', rPhone);
+
+      // Add media if present
+      if (uploadedFile) {
+        form.append('media_file', uploadedFile);
+      } else if (mediaBlob) {
+        const fileName = `${mediaType === 'video' ? 'video.webm' : 'audio.webm'}`;
+        form.append('media_file', mediaBlob, fileName);
+      }
 
       const res = await fetch(`${BaseUrl}api/digital-gifts/gifts/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params,
+        body: form,
       });
 
       if (!res.ok) {
@@ -154,7 +247,7 @@ export default function GiftWizard() {
   const canProceed = () => {
     if (step === 1) return formData.occasion !== null;
     if (step === 2) return formData.tier !== null;
-    if (step === 4) return formData.sender_name && formData.sender_phone && formData.sender_email;
+    if (step === 4) return formData.sender_name && formData.sender_phone && formData.sender_email && formData.text_message;
     if (step === 5) return formData.recipient_name && formData.recipient_contact;
     return true;
   };
@@ -183,7 +276,7 @@ export default function GiftWizard() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 pt-20 pb-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
         <AnimatePresence mode="wait">
           {/* Step 1: Choose Occasion */}
           {step === 1 && (
@@ -195,13 +288,13 @@ export default function GiftWizard() {
               transition={{ duration: 0.4 }}
               className="space-y-10"
             >
-              <header className="space-y-3">
+              <header className="space-y-3 text-center sm:text-left">
                 <span className="text-red-600 text-[9px] font-black uppercase tracking-[0.4em]">Step 1 of 5</span>
                 <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">Choose the Occasion</h2>
                 <p className="text-sm text-zinc-400 font-medium">What's the celebration?</p>
               </header>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {occasions.map((occ) => {
                   const IconComponent = occasionIcons[occ.slug.toLowerCase()] || occasionIcons.default;
                   const isSelected = formData.occasion === occ.id;
@@ -212,7 +305,7 @@ export default function GiftWizard() {
                       onClick={() => setFormData({...formData, occasion: occ.id})}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className={`relative p-8 rounded-3xl border-2 transition-all duration-300 flex flex-col items-center gap-3 group overflow-hidden
+                      className={`relative p-6 rounded-3xl border-2 transition-all duration-300 flex flex-col items-center gap-3 group overflow-hidden
                         ${isSelected 
                           ? 'border-red-600 bg-red-600/10 shadow-lg shadow-red-600/20' 
                           : 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/50'}`}
@@ -220,7 +313,7 @@ export default function GiftWizard() {
                       <div className={`p-3 rounded-2xl transition-all ${isSelected ? 'bg-red-600/20' : 'bg-zinc-800 group-hover:bg-zinc-700'}`}>
                         <IconComponent className={`w-6 h-6 ${isSelected ? 'text-red-600' : 'text-zinc-400'}`} />
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-wide">{occ.name}</span>
+                      <span className="text-[10px] font-black uppercase tracking-wide text-center">{occ.name}</span>
                       {isSelected && (
                         <motion.div 
                           layoutId="occasion-selected"
@@ -245,13 +338,13 @@ export default function GiftWizard() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-10"
             >
-              <header className="space-y-3">
+              <header className="space-y-3 text-center sm:text-left">
                 <span className="text-red-600 text-[9px] font-black uppercase tracking-[0.4em]">Step 2 of 5</span>
                 <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">Choose Experience Level</h2>
                 <p className="text-sm text-zinc-400 font-medium">Select the perfect tier for your gift</p>
               </header>
               
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tiers.map((t) => {
                   const isSelected = formData.tier === t.id;
                   
@@ -266,20 +359,18 @@ export default function GiftWizard() {
                           ? 'border-red-600 bg-red-600/10 shadow-lg shadow-red-600/20' 
                           : 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/50'}`}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-3">
-                            <h3 className="font-black italic uppercase text-lg">{t.name}</h3>
-                            {t.recommended && (
-                              <span className="px-3 py-1 bg-red-600/20 border border-red-600/30 rounded-full text-[9px] font-black uppercase text-red-600 tracking-wide">
-                                Recommended
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-zinc-400 font-medium leading-relaxed">{t.description}</p>
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-black italic uppercase text-lg">{t.name}</h3>
+                          {t.recommended && (
+                            <span className="px-3 py-1 bg-red-600/20 border border-red-600/30 rounded-full text-[9px] font-black uppercase text-red-600 tracking-wide">
+                              Recommended
+                            </span>
+                          )}
                         </div>
+                        <p className="text-xs text-zinc-400 font-medium leading-relaxed">{t.description}</p>
                         
-                        <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center justify-between mt-auto">
                           <span className="font-black text-xl text-red-600">₦{parseFloat(t.price).toLocaleString()}</span>
                           {isSelected && (
                             <motion.div 
@@ -308,13 +399,13 @@ export default function GiftWizard() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-10"
             >
-              <header className="space-y-3">
+              <header className="space-y-3 text-center sm:text-left">
                 <span className="text-red-600 text-[9px] font-black uppercase tracking-[0.4em]">Step 3 of 5</span>
                 <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">Add Some Magic</h2>
                 <p className="text-sm text-zinc-400 font-medium">Make it extra special (optional)</p>
               </header>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {addons.map((a) => {
                   const isSelected = formData.addon_ids.includes(a.id);
                   
@@ -334,14 +425,14 @@ export default function GiftWizard() {
                           ? 'border-red-600 bg-red-600/10 shadow-lg shadow-red-600/20' 
                           : 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/50'}`}
                     >
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-3">
                           <div className={`p-2 rounded-xl transition-all ${isSelected ? 'bg-red-600/20' : 'bg-zinc-800'}`}>
                             <Sparkles className={`w-4 h-4 ${isSelected ? 'text-red-600' : 'text-zinc-400'}`} />
                           </div>
                           <span className="font-black italic uppercase text-sm">{a.name}</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between mt-auto">
                           <span className="text-[10px] font-black text-zinc-400">+₦{parseFloat(a.price).toLocaleString()}</span>
                           {isSelected && (
                             <motion.div 
@@ -367,7 +458,7 @@ export default function GiftWizard() {
             </motion.div>
           )}
 
-          {/* Step 4: Sender Info */}
+          {/* Step 4: Sender Info with Media Recording */}
           {step === 4 && (
             <motion.div 
               key="step4" 
@@ -376,13 +467,13 @@ export default function GiftWizard() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-10"
             >
-              <header className="space-y-3">
+              <header className="space-y-3 text-center sm:text-left">
                 <span className="text-red-600 text-[9px] font-black uppercase tracking-[0.4em]">Step 4 of 5</span>
                 <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">Your Information</h2>
                 <p className="text-sm text-zinc-400 font-medium">Let us know who's sending this gift</p>
               </header>
               
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div className="relative group">
                   <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 group-focus-within:text-red-600 transition-colors" />
                   <input 
@@ -412,14 +503,71 @@ export default function GiftWizard() {
                   />
                 </div>
                 
-                <div className="relative group">
-                  <MessageCircle className="absolute left-5 top-6 w-5 h-5 text-zinc-500 group-focus-within:text-red-600 transition-colors" />
-                  <textarea 
-                    placeholder="Write your personal message here... (Required)" 
-                    value={formData.text_message} 
-                    onChange={e => setFormData({...formData, text_message: e.target.value})} 
-                    className="w-full bg-zinc-900/80 border-2 border-zinc-800 rounded-3xl pl-14 pr-6 py-5 text-sm font-medium outline-none focus:border-red-600 focus:bg-zinc-900 transition-all min-h-[140px] resize-none" 
-                  />
+                <div className="space-y-4">
+                  <div className="relative group">
+                    <MessageCircle className="absolute left-5 top-6 w-5 h-5 text-zinc-500 group-focus-within:text-red-600 transition-colors" />
+                    <textarea 
+                      placeholder="Write your personal message here... (Required)" 
+                      value={formData.text_message} 
+                      onChange={e => setFormData({...formData, text_message: e.target.value})} 
+                      className="w-full bg-zinc-900/80 border-2 border-zinc-800 rounded-3xl pl-14 pr-6 py-5 text-sm font-medium outline-none focus:border-red-600 focus:bg-zinc-900 transition-all min-h-[140px] resize-none" 
+                    />
+                  </div>
+
+                  {/* Media Controls */}
+                  <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+                    <motion.button
+                      onClick={() => startRecording('audio')}
+                      disabled={isRecording || mediaUrl !== null}
+                      whileHover={{ scale: 1.05 }}
+                      className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50"
+                    >
+                      <Mic className="w-4 h-4" /> Record Audio
+                    </motion.button>
+                    <motion.button
+                      onClick={() => startRecording('video')}
+                      disabled={isRecording || mediaUrl !== null}
+                      whileHover={{ scale: 1.05 }}
+                      className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 disabled:opacity-50"
+                    >
+                      <Video className="w-4 h-4" /> Record Video
+                    </motion.button>
+                    <label className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 cursor-pointer">
+                      <Upload className="w-4 h-4" /> Upload Media
+                      <input type="file" accept="audio/*,video/*" onChange={handleUpload} className="hidden" disabled={isRecording || mediaUrl !== null} />
+                    </label>
+                    {isRecording && (
+                      <motion.button
+                        onClick={stopRecording}
+                        whileHover={{ scale: 1.05 }}
+                        className="px-4 py-2 bg-red-600 rounded-full text-xs font-bold flex items-center gap-2"
+                      >
+                        <StopCircle className="w-4 h-4" /> Stop Recording
+                      </motion.button>
+                    )}
+                  </div>
+
+                  {/* Preview */}
+                  {mediaType === 'video' && isRecording && (
+                    <video ref={videoRef} className="w-full max-w-md mx-auto rounded-2xl border-2 border-red-600" muted playsInline />
+                  )}
+                  {mediaUrl && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-zinc-400">Preview:</p>
+                      {mediaType === 'audio' ? (
+                        <audio src={mediaUrl} controls className="w-full" />
+                      ) : (
+                        <video src={mediaUrl} controls className="w-full max-w-md mx-auto rounded-2xl" />
+                      )}
+                      <motion.button
+                        onClick={resetMedia}
+                        whileHover={{ scale: 1.05 }}
+                        className="px-4 py-2 bg-zinc-800 rounded-full text-xs font-bold flex items-center gap-2 mx-auto"
+                      >
+                        <ArrowLeft className="w-4 h-4" /> Reset Media
+                      </motion.button>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -434,13 +582,13 @@ export default function GiftWizard() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-10"
             >
-              <header className="space-y-3">
+              <header className="space-y-3 text-center sm:text-left">
                 <span className="text-red-600 text-[9px] font-black uppercase tracking-[0.4em]">Step 5 of 5</span>
                 <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">Recipient Details</h2>
                 <p className="text-sm text-zinc-400 font-medium">Who's receiving this special gift?</p>
               </header>
               
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div className="relative group">
                   <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 group-focus-within:text-red-600 transition-colors" />
                   <input 
@@ -475,7 +623,7 @@ export default function GiftWizard() {
               {/* Summary Card */}
               <div className="mt-8 p-6 bg-zinc-900/50 border-2 border-zinc-800 rounded-3xl space-y-4">
                 <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider">Order Summary</h3>
-                <div className="space-y-3 text-sm">
+                <div className="space-y-3 text-sm grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex justify-between items-center">
                     <span className="text-zinc-400 font-medium">Occasion</span>
                     <span className="font-black uppercase text-xs">{selectedOccasion?.name}</span>
@@ -485,13 +633,13 @@ export default function GiftWizard() {
                     <span className="font-black uppercase text-xs">{selectedTier?.name}</span>
                   </div>
                   {selectedAddons.length > 0 && (
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start col-span-1 sm:col-span-2">
                       <span className="text-zinc-400 font-medium">Add-ons</span>
                       <span className="font-black uppercase text-xs text-right">{selectedAddons.map(a => a.name).join(', ')}</span>
                     </div>
                   )}
-                  <div className="h-px bg-zinc-800 my-2" />
-                  <div className="flex justify-between items-center">
+                  <div className="h-px bg-zinc-800 my-2 col-span-1 sm:col-span-2" />
+                  <div className="flex justify-between items-center col-span-1 sm:col-span-2">
                     <span className="text-zinc-400 font-medium">Total</span>
                     <span className="font-black italic text-lg text-red-600">₦{totalPrice.toLocaleString()}</span>
                   </div>
@@ -553,7 +701,7 @@ export default function GiftWizard() {
       {/* Navigation Footer */}
       {step < 6 && (
         <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-[#050505] via-[#050505] to-transparent pt-8 pb-6 z-40">
-          <div className="max-w-4xl mx-auto px-6 flex justify-between items-center gap-4">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
             {/* Back Button */}
             {step > 1 ? (
               <motion.button 
@@ -574,7 +722,7 @@ export default function GiftWizard() {
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="hidden sm:block text-right bg-zinc-900/80 border-2 border-zinc-800 rounded-full px-6 py-3"
+                className="text-right bg-zinc-900/80 border-2 border-zinc-800 rounded-full px-6 py-3"
               >
                 <p className="text-[9px] font-black uppercase text-zinc-500 tracking-wide">Total</p>
                 <p className="text-lg font-black italic text-red-600">₦{totalPrice.toLocaleString()}</p>
