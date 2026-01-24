@@ -120,7 +120,6 @@ function ProductsContent() {
         
         const response = await fetch(url);
         const data = await response.json();
-        console.log("Fetched Products Data:", data);
         
         setProducts(data.results || (Array.isArray(data) ? data : []));
         setTotalProductsCount(data.count || 0);
