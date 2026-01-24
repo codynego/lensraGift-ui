@@ -7,6 +7,7 @@ import {
   Search, ChevronRight, ArrowUpRight, Filter, Loader2, 
   ChevronLeft, X 
 } from 'lucide-react';
+import { console } from 'inspector/promises';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
@@ -119,6 +120,7 @@ function ProductsContent() {
         
         const response = await fetch(url);
         const data = await response.json();
+        console.log("Fetched Products Data:", data);
         
         setProducts(data.results || (Array.isArray(data) ? data : []));
         setTotalProductsCount(data.count || 0);
