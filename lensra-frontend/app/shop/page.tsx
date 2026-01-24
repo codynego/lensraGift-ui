@@ -104,15 +104,16 @@ function ProductsContent() {
         
         // Filter by category slug - assuming backend filter is named 'category' and expects the slug
         if (selectedCategory !== 'all') {
-          params.append('category__slug', selectedCategory);
+          // Change 'category__slug' to 'category' to match the backend filter defined above
+          params.append('category', selectedCategory); 
         }
-
         const range = priceRanges.find(r => r.value === selectedPriceRange);
-        if (range && range.min !== undefined && range.max !== undefined) {
+        if (range && range.min !== undefined) {
           params.append('min_price', range.min.toString());
+        }
+        if (range && range.max !== undefined) {
           params.append('max_price', range.max.toString());
         }
-
         params.append('page', currentPage.toString());
 
         const url = `${BaseUrl}api/products/?${params.toString()}`;
