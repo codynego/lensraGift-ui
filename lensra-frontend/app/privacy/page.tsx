@@ -37,3 +37,6 @@ const PrivacyPolicy = () => {
     </div>
   );
 };
+
+// Add this line:
+export default PrivacyPolicy;
