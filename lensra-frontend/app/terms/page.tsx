@@ -1,4 +1,5 @@
-// components/legal/TermsOfUse.tsx
+"use client";
+
 const TermsOfUse = () => {
   return (
     <div className="max-w-4xl mx-auto px-6 py-16 text-zinc-400 leading-relaxed">

@@ -21,6 +21,10 @@ export default function robots(): MetadataRoute.Robots {
           '/shop',
           '/reseller-program',
           '/support',
+          '/shop',
+          '/shop/*',
+          '/privacy',
+          '/terms',
         ],
         disallow: [
           '/dashboard',
