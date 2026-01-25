@@ -9,6 +9,7 @@ import {
 import CheckoutView from '@/components/CheckoutView';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+const WhatsAppNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '2348051385049';
 
 interface Occasion {
   id: number;
@@ -251,8 +252,8 @@ export default function GiftWizard() {
       }
       
       const data = await res.json();
+      setCreatedGiftData({ id: data.id, amount: totalPrice });
       if (totalPrice > 0) {
-        setCreatedGiftData({ id: data.id, amount: totalPrice });
         setIsFreeGift(false);
         setStep(6);
       } else {
@@ -717,14 +718,24 @@ export default function GiftWizard() {
               
               <div className="space-y-3">
                 <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white">
-                  {isFreeGift ? 'Thanks for Your Gift!' : 'Gift Created!'}
+                  Thanks for your order!
                 </h2>
-                <p className="text-sm text-zinc-400 font-medium max-w-md mx-auto">
-                  {isFreeGift 
-                    ? 'Your free gift has been successfully created and sent. The recipient will receive it shortly.' 
-                    : 'Your gift has been successfully created and sent. The recipient will receive it shortly.'}
-                </p>
+                <div className="text-sm text-zinc-400 font-medium max-w-md mx-auto space-y-2">
+                  <p>To deliver your message quickly (and personalize it perfectly), please continue on WhatsApp.</p>
+                  <p>💡 Bonus: You can also turn this message into a physical gift (frame, mug, or gift box).</p>
+                </div>
               </div>
+              
+              <button 
+                onClick={() => {
+                  const message = `Hi 👋 I just placed an order for a digital message on LensraGifts. Order ID: ${createdGiftData?.id}`;
+                  const url = `https://wa.me/${WhatsAppNumber}?text=${encodeURIComponent(message)}`;
+                  window.open(url, '_blank');
+                }} 
+                className="px-10 py-4 bg-green-500 text-white rounded-full text-[10px] font-black uppercase tracking-wider hover:bg-green-600 transition-all shadow-lg"
+              >
+                Continue on WhatsApp
+              </button>
               
               <button 
                 onClick={() => window.location.reload()} 
