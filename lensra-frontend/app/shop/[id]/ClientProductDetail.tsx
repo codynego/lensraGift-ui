@@ -159,10 +159,10 @@ export default function ClientProductDetail({
           <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-24 self-start">
             <div className="relative bg-zinc-50 rounded-[40px] overflow-hidden aspect-square border border-zinc-100 group">
               {selectedImage && (
-                <Image
+                <img
                   src={selectedImage}
                   alt={product.name}
-                  fill
+                  loading='lazy'
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               )}
@@ -186,7 +186,7 @@ export default function ClientProductDetail({
                   onClick={() => setSelectedImage(img)} 
                   className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-zinc-900 scale-95 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <Image src={img} alt={`Angle ${idx + 1} of ${product.name}`} fill className="object-cover" />
+                  <img src={img} alt={`Angle ${idx + 1} of ${product.name}`} loading="lazy" className="object-cover" />
                 </button>
               ))}
             </div>
@@ -386,7 +386,7 @@ export default function ClientProductDetail({
                 >
                   <div className="aspect-[3/4] rounded-[30px] overflow-hidden bg-zinc-50 mb-3 sm:mb-4 lg:mb-6 border border-zinc-100 relative">
                     {item.image_url && (
-                      <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src={item.image_url} alt={item.name} loading="lazy" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                     )}
                   </div>
                   <h3 className="text-[11px] font-black uppercase tracking-widest mb-1 group-hover:text-red-600 transition-colors">{item.name}</h3>
