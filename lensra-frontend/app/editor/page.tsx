@@ -129,6 +129,7 @@ function EditorContent() {
         // Fetch products
         const productsRes = await fetch(`${BaseUrl}api/products/`);
         const productsData = await productsRes.json();
+        console.log("productsData", productsData)
         const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
         const productList = rawList.filter((p: Product) => p.is_customizable === true);
         console.log("customizable", productList)
