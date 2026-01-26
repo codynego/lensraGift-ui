@@ -25,7 +25,7 @@ const NIGERIAN_STATES = [
   "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", 
   "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", 
   "Taraba", "Yobe", "Zamfara"
-];
+].sort();
 
 interface ShippingLocation {
   id: number;
@@ -82,6 +82,7 @@ export default function CheckoutPage() {
   const { token, user } = useAuth();
   const router = useRouter();
   
+  const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
@@ -92,6 +93,7 @@ export default function CheckoutPage() {
   const [options, setOptions] = useState<ShippingOption[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -104,6 +106,8 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const loadCheckoutData = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
       let sessionId = localStorage.getItem('guest_session_id');
       if (!token) {
         if (!sessionId) {
@@ -139,6 +143,7 @@ export default function CheckoutPage() {
               localStorage.removeItem('guest_session_id');
             } catch (syncError) {
               console.error("Cart sync failed:", syncError);
+              setErrorMessage("Failed to sync cart. Please try again.");
             }
           }
         }
@@ -166,12 +171,14 @@ export default function CheckoutPage() {
           const localKey = token ? 'user_cart' : 'guest_cart';
           const localData = localStorage.getItem(localKey);
           if (localData) setCartItems(JSON.parse(localData));
+          else setErrorMessage("Failed to load cart. Please check your connection.");
         }
       } catch (err) {
         console.error("Cart Fetch Error:", err);
         const localKey = token ? 'user_cart' : 'guest_cart';
         const localData = localStorage.getItem(localKey);
         if (localData) setCartItems(JSON.parse(localData));
+        else setErrorMessage("Failed to load cart. Please check your connection.");
       }
 
       // 3. Fetch Addresses (Auth only)
@@ -180,18 +187,23 @@ export default function CheckoutPage() {
           const res = await fetch(`${BaseUrl}api/users/addresses/`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          const data = await res.json();
-          const addresses = Array.isArray(data) ? data : (data.results || []);
-          setSavedAddresses(addresses);
-          
-          if (addresses.length > 0) {
-            const def = addresses.find((a: Address) => a.is_default) || addresses[0];
-            handleSelectAddress(def);
+          if (res.ok) {
+            const data = await res.json();
+            const addresses = Array.isArray(data) ? data : (data.results || []);
+            setSavedAddresses(addresses);
+            
+            if (addresses.length > 0) {
+              const def = addresses.find((a: Address) => a.is_default) || addresses[0];
+              handleSelectAddress(def);
+            } else {
+              setShowManualForm(true);
+            }
           } else {
-            setShowManualForm(true);
+            setErrorMessage("Failed to load addresses.");
           }
         } catch (err) {
           console.error("Address Fetch Error:", err);
+          setErrorMessage("Failed to load addresses.");
         }
       } else {
         setShowManualForm(true);
@@ -202,26 +214,38 @@ export default function CheckoutPage() {
         const zonesRes = await fetch(`${BaseUrl}api/orders/shipping/zones/`, {
           headers: { ...(token && { 'Authorization': `Bearer ${token}` }) }
         });
-        const zonesData = await zonesRes.json();
-        const zonesList = Array.isArray(zonesData) ? zonesData : (zonesData.results || []);
-        setZones(zonesList);
+        if (zonesRes.ok) {
+          const zonesData = await zonesRes.json();
+          const zonesList = Array.isArray(zonesData) ? zonesData : (zonesData.results || []);
+          setZones(zonesList);
+        } else {
+          setErrorMessage("Failed to load shipping zones.");
+        }
       } catch (err) {
         console.error("Shipping Zones Fetch Error:", err);
+        setErrorMessage("Failed to load shipping zones.");
       }
 
       try {
         const optionsRes = await fetch(`${BaseUrl}api/orders/shipping/options/`, {
           headers: { ...(token && { 'Authorization': `Bearer ${token}` }) }
         });
-        const optionsData = await optionsRes.json();
-        const optionsList = Array.isArray(optionsData) ? optionsData : (optionsData.results || []);
-        setOptions(optionsList);
-        if (optionsList.length > 0) {
-          setSelectedOptionId(optionsList[0].id);
+        if (optionsRes.ok) {
+          const optionsData = await optionsRes.json();
+          const optionsList = Array.isArray(optionsData) ? optionsData : (optionsData.results || []);
+          setOptions(optionsList);
+          if (optionsList.length > 0) {
+            setSelectedOptionId(optionsList[0].id);
+          }
+        } else {
+          setErrorMessage("Failed to load shipping options.");
         }
       } catch (err) {
         console.error("Shipping Options Fetch Error:", err);
+        setErrorMessage("Failed to load shipping options.");
       }
+
+      setIsLoading(false);
     };
 
     loadCheckoutData();
@@ -232,7 +256,7 @@ export default function CheckoutPage() {
       Array.isArray(z.locations)
         ? z.locations.map((l: ShippingLocation) => ({ ...l, zone_name: z.name, base_fee: z.base_fee }))
         : []
-    );
+    ).sort((a, b) => a.city_name.localeCompare(b.city_name));
     setLocations(extendedLocations);
   }, [zones]);
 
@@ -241,6 +265,8 @@ export default function CheckoutPage() {
       const matchedLoc = locations.find((l: ExtendedShippingLocation) => l.city_name.toLowerCase() === formData.city.toLowerCase());
       if (matchedLoc) {
         setSelectedLocationId(matchedLoc.id);
+      } else {
+        setSelectedLocationId(null);
       }
     }
   }, [formData.city, locations]);
@@ -279,15 +305,29 @@ export default function CheckoutPage() {
 
   const total = subtotal + shipping;
 
+  const validateForm = () => {
+    if (!formData.full_name || !formData.address || !formData.city || !formData.state || !formData.phone) {
+      setErrorMessage("Please fill in all required delivery information.");
+      return false;
+    }
+    if (isGuest && !formData.email) {
+      setErrorMessage("Please provide an email address.");
+      return false;
+    }
+    if (!selectedLocationId) {
+      setErrorMessage("Please select a valid delivery location.");
+      return false;
+    }
+    if (!selectedOptionId) {
+      setErrorMessage("Please select a shipping method.");
+      return false;
+    }
+    return true;
+  };
+
   const handleOrder = async () => {
-    if (!formData.address || !formData.city || !formData.state || !formData.phone) {
-      alert("Missing delivery information.");
-      return;
-    }
-    if (!selectedLocationId || !selectedOptionId) {
-      alert("Please select delivery location and shipping method.");
-      return;
-    }
+    setErrorMessage(null);
+    if (!validateForm()) return;
 
     setIsProcessing(true);
     const orderEmail = token ? (user?.email || formData.email) : formData.email;
@@ -303,8 +343,12 @@ export default function CheckoutPage() {
     orderFormData.append('shipping_state', formData.state);
     orderFormData.append('shipping_country', "Nigeria");
     orderFormData.append('phone_number', formData.phone);
-    orderFormData.append('shipping_location_id', selectedLocationId.toString());
-    orderFormData.append('shipping_option_id', selectedOptionId.toString());
+    if (selectedLocationId !== null) {
+      orderFormData.append('shipping_location_id', selectedLocationId.toString());
+    }
+    if (selectedOptionId !== null) {
+      orderFormData.append('shipping_option_id', selectedOptionId.toString());
+    }
 
     if (!token) {
       orderFormData.append('guest_email', formData.email);
@@ -325,7 +369,6 @@ export default function CheckoutPage() {
       });
 
       const orderData = await orderRes.json();
-      console.log("Order Response:", orderData);
 
       if (orderRes.ok) {
         // Clear local storage carts
@@ -336,8 +379,6 @@ export default function CheckoutPage() {
         const payFormData = new FormData();
         payFormData.append('order_id', orderData.id.toString());
         payFormData.append('email', orderEmail);
-        console.log("Payment Payload:", { order_id: orderData.id, email: orderEmail });
-        console.log("order:", orderData)
         if (!token && sessionId) {
           payFormData.append('session_id', sessionId);
         }
@@ -358,178 +399,147 @@ export default function CheckoutPage() {
           router.push(`/order-success?id=${orderData.id}`);
         }
       } else {
-        const errorMsg = orderData.error || orderData.guest_email || "Order creation failed.";
-        alert(errorMsg);
+        const errorMsg = orderData.error || orderData.guest_email || "Order creation failed. Please try again.";
+        setErrorMessage(errorMsg);
       }
     } catch (err) { 
       console.error(err);
-      alert("A connection error occurred.");
+      setErrorMessage("A connection error occurred. Please check your internet.");
     } finally { 
       setIsProcessing(false); 
     }
   };
 
+  const isGuest = !token;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-black font-sans">
-      <nav className="border-b border-zinc-100 py-6 px-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-red-600 transition">
+      <nav className="border-b border-zinc-100 py-4 px-4 md:py-6 md:px-6 sticky top-0 bg-white z-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-xs font-black uppercase tracking-widest hover:text-red-600 transition">
             <ArrowLeft className="w-4 h-4" /> Back to Bag
           </button>
-          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 flex items-center gap-2">
-            <ShieldCheck className="w-3 h-3" /> Secure Checkout
+          <div className="text-xs font-black uppercase tracking-[0.3em] text-zinc-300 flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4" /> Secure Checkout
           </div>
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <div className="grid lg:grid-cols-12 gap-16">
+      <main className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-16">
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm font-medium">
+            {errorMessage}
+          </div>
+        )}
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-16">
           <div className="lg:col-span-7 space-y-12">
             <div>
-              <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none mb-4">Shipping</h1>
-              <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">Shipping</h1>
+              <p className="text-zinc-400 font-bold uppercase text-xs tracking-widest">
                 Checkout as {token ? 'Member' : 'Guest'}
               </p>
             </div>
 
             {token && savedAddresses.length > 0 && !showManualForm ? (
-              <div className="space-y-6">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Saved Addresses</h3>
-                <div className="grid gap-3">
-                  {savedAddresses.map((addr) => (
-                    <button
-                      key={addr.id}
-                      onClick={() => handleSelectAddress(addr)}
-                      className={`flex items-center justify-between p-6 rounded-[24px] border-2 transition-all text-left ${
-                        selectedAddressId === addr.id ? "border-black bg-zinc-50" : "border-zinc-100"
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <CheckCircle2 className={`w-5 h-5 ${selectedAddressId === addr.id ? "text-red-600" : "text-zinc-200"}`} />
-                        <div>
-                          <p className="font-black italic uppercase text-xs">{addr.full_name}</p>
-                          <p className="text-[10px] font-bold text-zinc-400 uppercase">{addr.street_address}, {addr.city}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                  <button 
-                    onClick={() => setShowManualForm(true)}
-                    className="flex items-center justify-center gap-3 p-6 rounded-[24px] border-2 border-dashed border-zinc-200 hover:border-zinc-400 transition-all text-[10px] font-black uppercase tracking-widest"
-                  >
-                    <Plus className="w-4 h-4" /> New Delivery Address
-                  </button>
-                </div>
-              </div>
+              <AddressSelector
+                addresses={savedAddresses}
+                selectedId={selectedAddressId}
+                onSelect={handleSelectAddress}
+                onAddNew={() => setShowManualForm(true)}
+              />
             ) : (
               <ManualAddressForm 
                 formData={formData} 
                 setFormData={setFormData} 
-                isGuest={!token} 
+                isGuest={isGuest} 
                 onCancel={token ? () => setShowManualForm(false) : null}
+                locations={locations}
               />
             )}
 
-            {/* Shipping Location Selection */}
-            <div className="space-y-6">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Delivery Location</h3>
-              <select 
-                className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase"
-                value={selectedLocationId || ""}
-                onChange={(e) => setSelectedLocationId(Number(e.target.value) || null)}
-              >
-                <option value="">Select delivery area</option>
-                {zones.map((z) => (
-                  <optgroup key={z.id} label={`${z.name} (Base ₦${z.base_fee.toLocaleString()})`}>
-                    {z.locations.map((l) => (
-                      <option key={l.id} value={l.id}>{l.city_name}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
+            <ShippingLocationSelector
+              zones={zones}
+              selectedId={selectedLocationId}
+              onSelect={setSelectedLocationId}
+            />
 
-            {/* Shipping Option Selection */}
-            <div className="space-y-6">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Shipping Method</h3>
-              <div className="grid gap-3">
-                {options.map((o) => (
-                  <button
-                    key={o.id}
-                    onClick={() => setSelectedOptionId(o.id)}
-                    className={`flex items-center justify-between p-6 rounded-[24px] border-2 transition-all text-left ${
-                      selectedOptionId === o.id ? "border-black bg-zinc-50" : "border-zinc-100"
-                    }`}
-                  >
-                    <div>
-                      <p className="font-black italic uppercase text-xs">{o.name}</p>
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase">{o.estimated_delivery}</p>
-                    </div>
-                    <span className="font-black italic text-xs">₦{o.additional_cost.toLocaleString()}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ShippingOptionSelector
+              options={options}
+              selectedId={selectedOptionId}
+              onSelect={setSelectedOptionId}
+            />
           </div>
 
           <div className="lg:col-span-5">
-            <div className="bg-zinc-950 text-white rounded-[48px] p-10 sticky top-12 shadow-2xl border border-white/5">
-              <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8 text-red-600">Review</h2>
+            <div className="bg-zinc-950 text-white rounded-[32px] md:rounded-[48px] p-6 md:p-10 sticky top-20 lg:top-24 shadow-xl border border-white/5">
+              <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter mb-8 text-red-600">Review</h2>
               
-              <div className="space-y-4 mb-8 max-h-60 overflow-y-auto pr-2 no-scrollbar">
-                {cartItems.map((item, i) => {
-                  const name = item.placement_details?.product_name || 
-                               item.product_details?.name || 
-                               item.product_name || 
-                               item.name || "Custom Design";
-                  const price = item.placement_details?.product_price || 
-                                item.product_details?.base_price || 
-                                item.price || 0;
+              <div className="space-y-4 mb-8 max-h-[40vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
+                {cartItems.length === 0 ? (
+                  <p className="text-zinc-400 text-sm italic">Your cart is empty.</p>
+                ) : (
+                  cartItems.map((item, i) => {
+                    const name = item.placement_details?.product_name || 
+                                 item.product_details?.name || 
+                                 item.product_name || 
+                                 item.name || "Custom Design";
+                    const price = item.placement_details?.product_price || 
+                                  item.product_details?.base_price || 
+                                  item.price || 0;
 
-                  return (
-                    <div key={i} className="space-y-2">
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[9px] font-bold uppercase text-zinc-400 truncate flex-1">
-                          {item.quantity}x {name}
-                        </span>
-                        <span className="text-[9px] font-black italic whitespace-nowrap">
-                          ₦{(parseFloat(price.toString()) * item.quantity).toLocaleString()}
-                        </span>
-                      </div>
-                      {item.secret_message && (
-                        <div className="flex items-center gap-2 bg-zinc-800 px-4 py-2 rounded-full">
-                          <Star className="w-3 h-3 text-red-600 fill-red-600" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Surprise Reveal</span>
-                          {item.emotion && <span>{EMOTIONS.find(e => e.id === item.emotion)?.emoji}</span>}
+                    return (
+                      <div key={i} className="space-y-2">
+                        <div className="flex justify-between items-center gap-4">
+                          <span className="text-xs font-bold uppercase text-zinc-400 truncate flex-1">
+                            {item.quantity}x {name}
+                          </span>
+                          <span className="text-xs font-black italic whitespace-nowrap">
+                            ₦{(parseFloat(price.toString()) * item.quantity).toLocaleString()}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        {item.secret_message && (
+                          <div className="flex items-center gap-2 bg-zinc-800 px-4 py-2 rounded-full">
+                            <Star className="w-3 h-3 text-red-600 fill-red-600" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Surprise Reveal</span>
+                            {item.emotion && <span>{EMOTIONS.find(e => e.id === item.emotion)?.emoji}</span>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
               <div className="space-y-4 mb-10 border-t border-white/10 pt-8">
-                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-zinc-500">
                   <span>Subtotal</span>
                   <span className="text-white font-black italic">₦{subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-zinc-500">
                   <span>Shipping</span>
                   <span className="text-white font-black italic">{shipping === 0 ? "TBD" : `₦${shipping.toLocaleString()}`}</span>
                 </div>
                 <div className="h-px bg-zinc-800 my-4" />
                 <div className="flex justify-between items-end">
-                  <span className="text-[11px] font-bold uppercase tracking-widest">Total</span>
-                  <span className="text-4xl font-black italic tracking-tighter text-white">₦{total.toLocaleString()}</span>
+                  <span className="text-sm font-bold uppercase tracking-widest">Total</span>
+                  <span className="text-3xl md:text-4xl font-black italic tracking-tighter text-white">₦{total.toLocaleString()}</span>
                 </div>
               </div>
 
               <button 
                 onClick={handleOrder}
                 disabled={isProcessing || cartItems.length === 0 || !selectedLocationId || !selectedOptionId}
-                className="w-full py-6 bg-red-600 hover:bg-white hover:text-black text-white rounded-3xl font-black uppercase tracking-[0.3em] text-xs transition-all flex items-center justify-center gap-3 disabled:opacity-30"
+                className="w-full py-4 md:py-6 bg-red-600 hover:bg-red-700 text-white rounded-3xl font-black uppercase tracking-[0.3em] text-xs md:text-sm transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <><CreditCard className="w-4 h-4" /> Complete & Pay</>}
+                {isProcessing ? <Loader2 className="animate-spin w-4 h-4 md:w-5 md:h-5" /> : <><CreditCard className="w-4 h-4 md:w-5 md:h-5" /> Complete & Pay</>}
               </button>
             </div>
           </div>
@@ -539,50 +549,205 @@ export default function CheckoutPage() {
   );
 }
 
-function ManualAddressForm({ formData, setFormData, isGuest, onCancel }: { formData: any; setFormData: any; isGuest: boolean; onCancel: (() => void) | null }) {
+function AddressSelector({ 
+  addresses, 
+  selectedId, 
+  onSelect, 
+  onAddNew 
+}: { 
+  addresses: Address[]; 
+  selectedId: number | null; 
+  onSelect: (addr: Address) => void; 
+  onAddNew: () => void; 
+}) {
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-2">Saved Addresses</h3>
+      <div className="grid gap-3">
+        {addresses.map((addr) => (
+          <button
+            key={addr.id}
+            onClick={() => onSelect(addr)}
+            className={`flex items-center justify-between p-4 md:p-6 rounded-3xl border-2 transition-all text-left ${
+              selectedId === addr.id ? "border-black bg-zinc-50" : "border-zinc-100 hover:border-zinc-300"
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <CheckCircle2 className={`w-5 h-5 ${selectedId === addr.id ? "text-red-600" : "text-zinc-200"}`} />
+              <div>
+                <p className="font-black italic uppercase text-sm">{addr.full_name}</p>
+                <p className="text-xs font-bold text-zinc-400 uppercase">{addr.street_address}, {addr.city}, {addr.state}</p>
+              </div>
+            </div>
+          </button>
+        ))}
+        <button 
+          onClick={onAddNew}
+          className="flex items-center justify-center gap-3 p-4 md:p-6 rounded-3xl border-2 border-dashed border-zinc-200 hover:border-zinc-400 transition-all text-xs font-black uppercase tracking-widest"
+        >
+          <Plus className="w-4 h-4" /> New Delivery Address
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ManualAddressForm({ 
+  formData, 
+  setFormData, 
+  isGuest, 
+  onCancel,
+  locations 
+}: { 
+  formData: any; 
+  setFormData: any; 
+  isGuest: boolean; 
+  onCancel: (() => void) | null;
+  locations: ExtendedShippingLocation[];
+}) {
+  const cities = useMemo(() => [...new Set(locations.map(l => l.city_name))].sort(), [locations]);
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-center">
-        <h3 className="text-[10px] font-black uppercase tracking-widest text-red-600 ml-2">
+        <h3 className="text-xs font-black uppercase tracking-widest text-red-600 ml-2">
           {isGuest ? 'Contact Information' : 'New Address'}
         </h3>
-        {onCancel && <button onClick={onCancel} className="text-zinc-400 hover:text-black"><X className="w-4 h-4" /></button>}
+        {onCancel && <button onClick={onCancel} className="text-zinc-400 hover:text-black"><X className="w-5 h-5" /></button>}
       </div>
       
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><User className="w-3 h-3" /> Full Name</label>
-        <input type="text" value={formData.full_name} onChange={(e) => setFormData({...formData, full_name: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase" />
+        <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 ml-2"><User className="w-4 h-4" /> Full Name</label>
+        <input 
+          type="text" 
+          value={formData.full_name} 
+          onChange={(e) => setFormData({...formData, full_name: e.target.value})} 
+          className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-4 py-3 md:px-6 md:py-4 outline-none focus:border-black transition text-sm font-bold uppercase" 
+          placeholder="Enter your full name"
+        />
       </div>
 
       {isGuest && (
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><Mail className="w-3 h-3" /> Email Address</label>
-          <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-red-600 transition text-sm font-bold uppercase" />
+          <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 ml-2"><Mail className="w-4 h-4" /> Email Address</label>
+          <input 
+            type="email" 
+            value={formData.email} 
+            onChange={(e) => setFormData({...formData, email: e.target.value})} 
+            className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-4 py-3 md:px-6 md:py-4 outline-none focus:border-black transition text-sm font-bold uppercase" 
+            placeholder="Enter your email"
+          />
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><Phone className="w-3 h-3" /> Phone Number</label>
-          <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase" />
+          <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 ml-2"><Phone className="w-4 h-4" /> Phone Number</label>
+          <input 
+            type="tel" 
+            value={formData.phone} 
+            onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+            className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-4 py-3 md:px-6 md:py-4 outline-none focus:border-black transition text-sm font-bold uppercase" 
+            placeholder="Enter your phone number"
+          />
         </div>
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><MapPin className="w-3 h-3" /> City</label>
-          <input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase" />
+          <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 ml-2"><MapPin className="w-4 h-4" /> City</label>
+          <select 
+            value={formData.city} 
+            onChange={(e) => setFormData({...formData, city: e.target.value})} 
+            className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-4 py-3 md:px-6 md:py-4 outline-none focus:border-black transition text-sm font-bold uppercase appearance-none"
+          >
+            <option value="">Select City</option>
+            {cities.map(city => <option key={city} value={city}>{city}</option>)}
+          </select>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><Globe className="w-3 h-3" /> State</label>
-        <select value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase appearance-none">
+        <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 ml-2"><Globe className="w-4 h-4" /> State</label>
+        <select 
+          value={formData.state} 
+          onChange={(e) => setFormData({...formData, state: e.target.value})} 
+          className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-4 py-3 md:px-6 md:py-4 outline-none focus:border-black transition text-sm font-bold uppercase appearance-none"
+        >
           <option value="">Select State</option>
           {NIGERIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"><MapPin className="w-3 h-3" /> Street Address</label>
-        <textarea rows={2} value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-3xl px-6 py-4 outline-none focus:border-black transition text-sm font-bold uppercase" />
+        <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 ml-2"><MapPin className="w-4 h-4" /> Street Address</label>
+        <textarea 
+          rows={3} 
+          value={formData.address} 
+          onChange={(e) => setFormData({...formData, address: e.target.value})} 
+          className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-3xl px-4 py-3 md:px-6 md:py-4 outline-none focus:border-black transition text-sm font-bold uppercase resize-none" 
+          placeholder="Enter your street address"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ShippingLocationSelector({
+  zones,
+  selectedId,
+  onSelect
+}: {
+  zones: ShippingZone[];
+  selectedId: number | null;
+  onSelect: (id: number | null) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-2">Delivery Location</h3>
+      <select 
+        className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-4 py-3 md:px-6 md:py-4 outline-none focus:border-black transition text-sm font-bold uppercase appearance-none"
+        value={selectedId || ""}
+        onChange={(e) => onSelect(Number(e.target.value) || null)}
+      >
+        <option value="">Select delivery area</option>
+        {zones.map((z) => (
+          <optgroup key={z.id} label={`${z.name} (Base ₦${z.base_fee.toLocaleString()})`}>
+            {z.locations.map((l) => (
+              <option key={l.id} value={l.id}>{l.city_name}</option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function ShippingOptionSelector({
+  options,
+  selectedId,
+  onSelect
+}: {
+  options: ShippingOption[];
+  selectedId: number | null;
+  onSelect: (id: number) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-2">Shipping Method</h3>
+      <div className="grid gap-3">
+        {options.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => onSelect(o.id)}
+            className={`flex items-center justify-between p-4 md:p-6 rounded-3xl border-2 transition-all text-left ${
+              selectedId === o.id ? "border-black bg-zinc-50" : "border-zinc-100 hover:border-zinc-300"
+            }`}
+          >
+            <div>
+              <p className="font-black italic uppercase text-sm">{o.name}</p>
+              <p className="text-xs font-bold text-zinc-400 uppercase">{o.estimated_delivery}</p>
+            </div>
+            <span className="font-black italic text-sm">₦{o.additional_cost.toLocaleString()}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
