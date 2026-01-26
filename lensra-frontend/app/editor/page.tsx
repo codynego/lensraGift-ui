@@ -142,53 +142,53 @@ function EditorContent() {
     }
   };
 
-  // --- FETCH PRODUCTS & TEMPLATE ---
+  // --- FETCH DATA ---
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Fetch products (first page)
-        const productsRes = await fetch(`${BaseUrl}api/products/`);
-        const productsData = await productsRes.json();
-        console.log("productsData", productsData);
-        const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
-        const productList = rawList.filter((p: any) => p.is_customizable === true);
-        console.log("customizable", productList);
-        setProducts(productList);
-        setNextPageUrl(productsData.next || null);
-        setHasMore(!!productsData.next);
 
-        // Fetch template design if provided
+        // Fetch template if provided
         if (templateId) {
           const designRes = await fetch(`${BaseUrl}api/designs/${templateId}/`);
           if (designRes.ok) {
             const designData = await designRes.json();
             setTemplateDesign(designData);
-            // Pre-fill custom text if template has it
             if (designData.custom_text) {
               setCustomText(designData.custom_text);
             }
           }
         }
 
-        // Set selected product if productId is provided
         if (productId) {
-          const found = productList.find((p: Product) => p.id === parseInt(productId));
-          if (found) {
+          // Fetch single product if productId is provided
+          const productRes = await fetch(`${BaseUrl}api/products/id/${productId}/`);
+          if (productRes.ok) {
+            const found = await productRes.json();
             setSelectedProduct(found);
             const variants = found.variants || [];
             if (variants.length > 0) {
               const firstVariant = variants[0];
               setSelectedVariant(firstVariant);
-              
               const initialAttrs: { [key: string]: string } = {};
               (firstVariant.attributes || []).forEach((av: { attribute_name: string; value: string }) => {
                 initialAttrs[av.attribute_name] = av.value;
               });
               setSelectedAttributes(initialAttrs);
             }
+          } else {
+            console.error("Failed to fetch product details");
+            // Optionally handle error, e.g., redirect or show message
           }
+        } else {
+          // Fetch paginated list if no productId
+          const productsRes = await fetch(`${BaseUrl}api/products/`);
+          const productsData = await productsRes.json();
+          const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
+          const productList = rawList.filter((p: any) => p.is_customizable === true);
+          setProducts(productList);
+          setNextPageUrl(productsData.next || null);
+          setHasMore(!!productsData.next);
         }
       } catch (err) {
         console.error("Failed to fetch data", err);
