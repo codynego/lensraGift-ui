@@ -455,9 +455,9 @@ export default function ClientProductDetail({
               {product.is_customizable ? (
                 <button
                   onClick={() => router.push(`/editor?product=${product.id}`)}
-                  className="group relative w-full py-5 bg-zinc-900 border border-zinc-800 text-white rounded-2xl font-bold text-sm uppercase tracking-wider overflow-hidden shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all active:scale-98"
+                  className="group relative w-full py-5 bg-[#dc2626] border border-zinc-800 text-white rounded-2xl font-bold text-sm uppercase tracking-wider overflow-hidden shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all active:scale-98"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#dc2626] to-black opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#dc2626] to-[#dc5454] opacity-0 group-hover:opacity-100 transition-opacity" />
                   <span className="relative z-10 flex items-center justify-center gap-3">
                     <Palette className="w-5 h-5" />
                     Customize Your Design
