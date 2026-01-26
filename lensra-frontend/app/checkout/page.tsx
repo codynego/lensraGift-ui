@@ -181,10 +181,11 @@ export default function CheckoutPage() {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           const data = await res.json();
-          setSavedAddresses(data);
+          const addresses = Array.isArray(data) ? data : (data.results || []);
+          setSavedAddresses(addresses);
           
-          if (data.length > 0) {
-            const def = data.find((a: Address) => a.is_default) || data[0];
+          if (addresses.length > 0) {
+            const def = addresses.find((a: Address) => a.is_default) || addresses[0];
             handleSelectAddress(def);
           } else {
             setShowManualForm(true);
@@ -202,7 +203,8 @@ export default function CheckoutPage() {
           headers: { ...(token && { 'Authorization': `Bearer ${token}` }) }
         });
         const zonesData = await zonesRes.json();
-        setZones(zonesData);
+        const zonesList = Array.isArray(zonesData) ? zonesData : (zonesData.results || []);
+        setZones(zonesList);
       } catch (err) {
         console.error("Shipping Zones Fetch Error:", err);
       }
@@ -212,9 +214,10 @@ export default function CheckoutPage() {
           headers: { ...(token && { 'Authorization': `Bearer ${token}` }) }
         });
         const optionsData = await optionsRes.json();
-        setOptions(optionsData);
-        if (optionsData.length > 0) {
-          setSelectedOptionId(optionsData[0].id);
+        const optionsList = Array.isArray(optionsData) ? optionsData : (optionsData.results || []);
+        setOptions(optionsList);
+        if (optionsList.length > 0) {
+          setSelectedOptionId(optionsList[0].id);
         }
       } catch (err) {
         console.error("Shipping Options Fetch Error:", err);
@@ -225,7 +228,12 @@ export default function CheckoutPage() {
   }, [token, user]);
 
   useEffect(() => {
-    setLocations(zones.flatMap((z: ShippingZone) => z.locations.map((l: ShippingLocation) => ({ ...l, zone_name: z.name, base_fee: z.base_fee }))));
+    const extendedLocations = zones.flatMap((z: ShippingZone) =>
+      Array.isArray(z.locations)
+        ? z.locations.map((l: ShippingLocation) => ({ ...l, zone_name: z.name, base_fee: z.base_fee }))
+        : []
+    );
+    setLocations(extendedLocations);
   }, [zones]);
 
   useEffect(() => {
