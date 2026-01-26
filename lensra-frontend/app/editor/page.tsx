@@ -162,7 +162,7 @@ function EditorContent() {
 
         if (productId) {
           // Fetch single product if productId is provided
-          const productRes = await fetch(`${BaseUrl}api/products/${productId}/`);
+          const productRes = await fetch(`${BaseUrl}api/products/id/${productId}/`);
           if (productRes.ok) {
             const found = await productRes.json();
             setSelectedProduct(found);
