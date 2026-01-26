@@ -202,8 +202,23 @@ const loadMoreProducts = async () => {
           const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
           const productList = rawList.filter((p: any) => p.is_customizable === true);
           setProducts(productList);
-          setNextPageUrl(productsData.next || null);
-          setHasMore(!!productsData.next);
+
+          // Fix next URL host to match production API
+          let correctedNext = productsData.next;
+          if (correctedNext) {
+            try {
+              const url = new URL(correctedNext);
+              const baseUrlObj = new URL(BaseUrl);
+              url.protocol = baseUrlObj.protocol;
+              url.hostname = baseUrlObj.hostname;
+              url.port = baseUrlObj.port;
+              correctedNext = url.toString();
+            } catch (e) {
+              console.error("Failed to correct next URL:", e);
+            }
+          }
+          setNextPageUrl(correctedNext || null);
+          setHasMore(!!correctedNext);
         }
       } catch (err) {
         console.error("Failed to fetch data", err);
