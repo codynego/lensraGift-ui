@@ -124,23 +124,38 @@ function EditorContent() {
   const [secretMessage, setSecretMessage] = useState<string>("");
 
   // --- LOAD MORE PRODUCTS ---
-  const loadMoreProducts = async () => {
-    if (!nextPageUrl || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const res = await fetch(nextPageUrl);
-      const data = await res.json();
-      const rawList = Array.isArray(data) ? data : (data.results || []);
-      const newList = rawList.filter((p: any) => p.is_customizable === true);
-      setProducts(prev => [...prev, ...newList]);
-      setNextPageUrl(data.next || null);
-      setHasMore(!!data.next);
-    } catch (err) {
-      console.error("Failed to load more products", err);
-    } finally {
-      setLoadingMore(false);
+const loadMoreProducts = async () => {
+  if (!nextPageUrl || loadingMore) return;
+  setLoadingMore(true);
+  try {
+    const res = await fetch(nextPageUrl);
+    const data = await res.json();
+    const rawList = Array.isArray(data) ? data : (data.results || []);
+    const newList = rawList.filter((p: any) => p.is_customizable === true);
+    setProducts(prev => [...prev, ...newList]);
+
+    // Fix next URL host for the next page
+    let correctedNext = data.next;
+    if (correctedNext) {
+      try {
+        const url = new URL(correctedNext);
+        const baseUrlObj = new URL(BaseUrl);
+        url.protocol = baseUrlObj.protocol;
+        url.hostname = baseUrlObj.hostname;
+        url.port = baseUrlObj.port;
+        correctedNext = url.toString();
+      } catch (e) {
+        console.error("Failed to correct next URL:", e);
+      }
     }
-  };
+    setNextPageUrl(correctedNext || null);
+    setHasMore(!!correctedNext);
+  } catch (err) {
+    console.error("Failed to load more products", err);
+  } finally {
+    setLoadingMore(false);
+  }
+};
 
   // --- FETCH DATA ---
   useEffect(() => {
