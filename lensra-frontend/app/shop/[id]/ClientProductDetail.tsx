@@ -457,7 +457,7 @@ export default function ClientProductDetail({
                   onClick={() => router.push(`/editor?product=${product.id}`)}
                   className="group relative w-full py-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-bold text-sm uppercase tracking-wider overflow-hidden shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all active:scale-98"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-black opacity-0 group-hover:opacity-100 transition-opacity" />
                   <span className="relative z-10 flex items-center justify-center gap-3">
                     <Palette className="w-5 h-5" />
                     Customize Your Design
