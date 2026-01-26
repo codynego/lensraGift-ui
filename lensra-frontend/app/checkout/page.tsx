@@ -27,18 +27,69 @@ const NIGERIAN_STATES = [
   "Taraba", "Yobe", "Zamfara"
 ];
 
+interface ShippingLocation {
+  id: number;
+  city_name: string;
+}
+
+interface ShippingZone {
+  id: number;
+  name: string;
+  base_fee: number;
+  locations: ShippingLocation[];
+}
+
+interface ShippingOption {
+  id: number;
+  name: string;
+  additional_cost: number;
+  estimated_delivery: string;
+}
+
+interface ExtendedShippingLocation extends ShippingLocation {
+  zone_name: string;
+  base_fee: number;
+}
+
+interface Address {
+  id: number;
+  full_name: string;
+  phone_number: string;
+  street_address: string;
+  city: string;
+  state: string;
+  is_default?: boolean;
+}
+
+interface CartItem {
+  quantity: number;
+  placement_details?: {
+    product_name: string;
+    product_price: number;
+  };
+  product_details?: {
+    name: string;
+    base_price: number;
+  };
+  product_name?: string;
+  name?: string;
+  price?: number;
+  secret_message?: string;
+  emotion?: string;
+}
+
 export default function CheckoutPage() {
   const { token, user } = useAuth();
   const router = useRouter();
   
   const [isProcessing, setIsProcessing] = useState(false);
-  const [cartItems, setCartItems] = useState<any[]>([]);
-  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [showManualForm, setShowManualForm] = useState(false);
-  const [zones, setZones] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
-  const [options, setOptions] = useState<any[]>([]);
+  const [zones, setZones] = useState<ShippingZone[]>([]);
+  const [locations, setLocations] = useState<ExtendedShippingLocation[]>([]);
+  const [options, setOptions] = useState<ShippingOption[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
 
@@ -133,7 +184,7 @@ export default function CheckoutPage() {
           setSavedAddresses(data);
           
           if (data.length > 0) {
-            const def = data.find((a: any) => a.is_default) || data[0];
+            const def = data.find((a: Address) => a.is_default) || data[0];
             handleSelectAddress(def);
           } else {
             setShowManualForm(true);
@@ -174,19 +225,19 @@ export default function CheckoutPage() {
   }, [token, user]);
 
   useEffect(() => {
-    setLocations(zones.flatMap(z => z.locations.map(l => ({ ...l, zone_name: z.name, base_fee: z.base_fee }))));
+    setLocations(zones.flatMap((z: ShippingZone) => z.locations.map((l: ShippingLocation) => ({ ...l, zone_name: z.name, base_fee: z.base_fee }))));
   }, [zones]);
 
   useEffect(() => {
     if (formData.city && locations.length > 0) {
-      const matchedLoc = locations.find(l => l.city_name.toLowerCase() === formData.city.toLowerCase());
+      const matchedLoc = locations.find((l: ExtendedShippingLocation) => l.city_name.toLowerCase() === formData.city.toLowerCase());
       if (matchedLoc) {
         setSelectedLocationId(matchedLoc.id);
       }
     }
   }, [formData.city, locations]);
 
-  const handleSelectAddress = (addr: any) => {
+  const handleSelectAddress = (addr: Address) => {
     setSelectedAddressId(addr.id);
     setFormData({
       full_name: addr.full_name,
@@ -205,15 +256,15 @@ export default function CheckoutPage() {
       const price = item.placement_details?.product_price || 
                     item.product_details?.base_price || 
                     item.price || 0;
-      return acc + (parseFloat(price) * item.quantity);
+      return acc + (parseFloat(price.toString()) * item.quantity);
     }, 0);
   }, [cartItems]);
 
   const shipping = useMemo(() => {
     if (!selectedLocationId || !selectedOptionId) return 0;
-    const selectedLoc = locations.find(l => l.id === selectedLocationId);
+    const selectedLoc = locations.find((l: ExtendedShippingLocation) => l.id === selectedLocationId);
     const baseFee = selectedLoc?.base_fee || 0;
-    const selectedOpt = options.find(o => o.id === selectedOptionId);
+    const selectedOpt = options.find((o: ShippingOption) => o.id === selectedOptionId);
     const additionalCost = selectedOpt?.additional_cost || 0;
     return baseFee + additionalCost;
   }, [selectedLocationId, selectedOptionId, locations, options]);
@@ -382,7 +433,7 @@ export default function CheckoutPage() {
                 <option value="">Select delivery area</option>
                 {zones.map((z) => (
                   <optgroup key={z.id} label={`${z.name} (Base ₦${z.base_fee.toLocaleString()})`}>
-                    {z.locations.map((l: any) => (
+                    {z.locations.map((l) => (
                       <option key={l.id} value={l.id}>{l.city_name}</option>
                     ))}
                   </optgroup>
@@ -434,7 +485,7 @@ export default function CheckoutPage() {
                           {item.quantity}x {name}
                         </span>
                         <span className="text-[9px] font-black italic whitespace-nowrap">
-                          ₦{(parseFloat(price) * item.quantity).toLocaleString()}
+                          ₦{(parseFloat(price.toString()) * item.quantity).toLocaleString()}
                         </span>
                       </div>
                       {item.secret_message && (
@@ -480,7 +531,7 @@ export default function CheckoutPage() {
   );
 }
 
-function ManualAddressForm({ formData, setFormData, isGuest, onCancel }: any) {
+function ManualAddressForm({ formData, setFormData, isGuest, onCancel }: { formData: any; setFormData: any; isGuest: boolean; onCancel: (() => void) | null }) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-center">
