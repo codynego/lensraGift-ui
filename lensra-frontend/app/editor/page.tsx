@@ -131,6 +131,7 @@ function EditorContent() {
         const productsData = await productsRes.json();
         const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
         const productList = rawList.filter((p: Product) => p.is_customizable === true);
+        console.log("customizable", productList)
         setAllProducts(productList);
 
         // Fetch template design if provided
