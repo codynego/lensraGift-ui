@@ -197,10 +197,10 @@ export default function ClientProductDetail({
               onClick={() => setIsImageModalOpen(true)}
             >
               {allImages[selectedImageIndex] && (
-                <Image
+                <img
                   src={allImages[selectedImageIndex]}
                   alt={product.name}
-                  fill
+                  loading="lazy"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -237,7 +237,7 @@ export default function ClientProductDetail({
                     onClick={() => handleImageChange(idx)}
                     className={`relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === idx ? 'border-zinc-900 shadow-lg ring-2 ring-zinc-900 ring-offset-2' : 'border-zinc-200 opacity-50 hover:opacity-100 hover:border-zinc-400'}`}
                   >
-                    <Image src={img} alt={`View ${idx + 1}`} fill className="object-cover" />
+                    <img src={img} alt={`View ${idx + 1}`} loading="lazy" className="object-cover" />
                   </button>
                 ))}
               </div>
@@ -543,10 +543,10 @@ export default function ClientProductDetail({
                 >
                   <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-50 mb-4 border border-zinc-100 relative shadow-sm hover:shadow-xl transition-all duration-300">
                     {item.image_url && (
-                      <Image
+                      <img
                         src={item.image_url}
                         alt={item.name}
-                        fill
+                        loading="lazy"
                         className="object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                     )}
@@ -581,10 +581,10 @@ export default function ClientProductDetail({
               onClick={(e) => e.stopPropagation()}
             >
               {allImages[selectedImageIndex] && (
-                <Image
+                <img
                   src={allImages[selectedImageIndex]}
                   alt={product.name}
-                  fill
+                  loading='lazy'
                   className="object-contain"
                   sizes="100vw"
                 />
