@@ -303,7 +303,7 @@ export default function CheckoutPage() {
     return baseFee + additionalCost;
   }, [selectedLocationId, selectedOptionId, locations, options]);
 
-  const total = subtotal + shipping;
+  const total = parseFloat(subtotal.toString()) + shipping;
 
   const validateForm = () => {
     if (!formData.full_name || !formData.address || !formData.city || !formData.state || !formData.phone) {
