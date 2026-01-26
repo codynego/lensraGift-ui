@@ -162,7 +162,7 @@ function EditorContent() {
 
         if (productId) {
           // Fetch single product if productId is provided
-          const productRes = await fetch(`${BaseUrl}api/products/id/${productId}/`);
+          const productRes = await fetch(`${BaseUrl}api/products/${productId}/`);
           if (productRes.ok) {
             const found = await productRes.json();
             setSelectedProduct(found);
@@ -264,7 +264,9 @@ function EditorContent() {
 
   // --- FINISH DESIGN ---
   const handleFinishDesign = async () => {
-    if (!selectedProduct || !selectedVariant || selectedVariant.stock_quantity <= 0) return;
+    if (!selectedProduct) return;
+    const hasVariants = selectedProduct.variants.length > 0;
+    if (hasVariants && (!selectedVariant || selectedVariant.stock_quantity <= 0)) return;
     setIsSaving(true);
     
     const token = localStorage.getItem('access_token');
@@ -336,7 +338,9 @@ function EditorContent() {
 
   // --- ORDER NOW ---
   const handleOrderNow = async () => {
-    if (!placementId || !selectedProduct || !selectedVariant) return;
+    if (!placementId || !selectedProduct) return;
+    const hasVariants = selectedProduct.variants.length > 0;
+    if (hasVariants && !selectedVariant) return;
     
     const token = localStorage.getItem('access_token');
     const sessionId = getGuestSessionId();
@@ -698,6 +702,10 @@ function Navigation({ router, templateDesign, placementId, isSaving, onFinishDes
 }
 
 function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, setCurrentGalleryIndex, selectedProduct, selectedVariant }: { templateDesign: Design | null; displayImages: string[]; currentGalleryIndex: number; setCurrentGalleryIndex: Dispatch<SetStateAction<number>>; selectedProduct: Product | null; selectedVariant: Variant | null }) {
+  const hasVariants = (selectedProduct?.variants?.length ?? 0) > 0;
+  const isOutOfStock = hasVariants && (selectedVariant?.stock_quantity ?? 0) <= 0;
+  const price = selectedVariant?.price_override || selectedProduct?.base_price || "0";
+
   return (
     <div className="lg:col-span-5 xl:col-span-4">
       <div className="sticky top-32 space-y-6">
@@ -777,13 +785,13 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
               <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">
                 Estimated Price
               </p>
-              {!selectedVariant ? (
+              {hasVariants && !selectedVariant ? (
                 <p className="text-4xl font-black italic text-zinc-400">Select options</p>
-              ) : selectedVariant.stock_quantity <= 0 ? (
+              ) : isOutOfStock ? (
                 <p className="text-4xl font-black italic text-red-600">Out of stock</p>
               ) : (
                 <p className="text-4xl font-black italic bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-                  ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
+                  ₦{parseFloat(price).toLocaleString()}
                 </p>
               )}
             </div>
