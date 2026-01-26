@@ -97,7 +97,10 @@ function EditorContent() {
   
   // Product & Template State
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [templateDesign, setTemplateDesign] = useState<Design | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   
@@ -120,20 +123,41 @@ function EditorContent() {
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [secretMessage, setSecretMessage] = useState<string>("");
 
+  // --- LOAD MORE PRODUCTS ---
+  const loadMoreProducts = async () => {
+    if (!nextPageUrl || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(nextPageUrl);
+      const data = await res.json();
+      const rawList = Array.isArray(data) ? data : (data.results || []);
+      const newList = rawList.filter((p: any) => p.is_customizable === true);
+      setProducts(prev => [...prev, ...newList]);
+      setNextPageUrl(data.next || null);
+      setHasMore(!!data.next);
+    } catch (err) {
+      console.error("Failed to load more products", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   // --- FETCH PRODUCTS & TEMPLATE ---
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         
-        // Fetch products
+        // Fetch products (first page)
         const productsRes = await fetch(`${BaseUrl}api/products/`);
         const productsData = await productsRes.json();
-        console.log("productsData", productsData)
+        console.log("productsData", productsData);
         const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
-        const productList = rawList.filter((p: Product) => p.is_customizable === true);
-        console.log("customizable", productList)
-        setAllProducts(productList);
+        const productList = rawList.filter((p: any) => p.is_customizable === true);
+        console.log("customizable", productList);
+        setProducts(productList);
+        setNextPageUrl(productsData.next || null);
+        setHasMore(!!productsData.next);
 
         // Fetch template design if provided
         if (templateId) {
@@ -369,7 +393,10 @@ function EditorContent() {
   // --- PRODUCT SELECTION SCREEN ---
   if (!selectedProduct && !loading) {
     return <ProductSelectionScreen 
-      allProducts={allProducts}
+      products={products}
+      hasMore={hasMore}
+      loadingMore={loadingMore}
+      onLoadMore={loadMoreProducts}
       templateDesign={templateDesign}
       onSelectProduct={(p: Product) => {
         setSelectedProduct(p);
@@ -497,7 +524,14 @@ function EditorContent() {
 
 // --- COMPONENT PARTS ---
 
-function ProductSelectionScreen({ allProducts, templateDesign, onSelectProduct }: { allProducts: Product[]; templateDesign: Design | null; onSelectProduct: (p: Product) => void }) {
+function ProductSelectionScreen({ products, hasMore, loadingMore, onLoadMore, templateDesign, onSelectProduct }: { 
+  products: Product[]; 
+  hasMore: boolean; 
+  loadingMore: boolean; 
+  onLoadMore: () => void; 
+  templateDesign: Design | null; 
+  onSelectProduct: (p: Product) => void 
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-zinc-50 to-white p-6 md:p-12">
       <div className="max-w-7xl mx-auto space-y-16">
@@ -544,7 +578,7 @@ function ProductSelectionScreen({ allProducts, templateDesign, onSelectProduct }
         
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {allProducts.map((p: Product) => (
+          {products.map((p: Product) => (
             <button 
               key={p.id} 
               onClick={() => onSelectProduct(p)}
@@ -579,6 +613,28 @@ function ProductSelectionScreen({ allProducts, templateDesign, onSelectProduct }
             </button>
           ))}
         </div>
+
+        {/* Pagination Load More */}
+        {hasMore && (
+          <div className="text-center mt-12">
+            <button 
+              onClick={onLoadMore}
+              disabled={loadingMore}
+              className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full text-sm font-black uppercase tracking-widest shadow-lg shadow-red-600/30 hover:shadow-xl hover:shadow-red-600/40 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+            >
+              {loadingMore ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Loading...</span>
+                </>
+              ) : (
+                <>
+                  <span>Load More Products</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
