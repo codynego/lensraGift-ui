@@ -158,10 +158,10 @@ export default function ClientProductDetail({
           <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-24 self-start">
             <div className="relative bg-zinc-50 rounded-[40px] overflow-hidden aspect-[3/4] border border-zinc-100 group">
               {selectedImage && (
-                <Image
+                <img
                   src={selectedImage}
                   alt={product.name}
-                  fill
+                  loading='lazy'
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -186,7 +186,7 @@ export default function ClientProductDetail({
                   onClick={() => setSelectedImageIndex(idx)} 
                   className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === idx ? 'border-zinc-900 shadow-lg' : 'border-zinc-100 opacity-80 hover:opacity-100 hover:border-zinc-300'}`}
                 >
-                  <Image src={img} alt={`View ${idx + 1} of ${product.name}`} fill className="object-cover" />
+                  <img src={img} alt={`View ${idx + 1} of ${product.name}`} loading="lazy" className="object-cover" />
                 </button>
               ))}
             </div>
@@ -408,7 +408,7 @@ export default function ClientProductDetail({
                 >
                   <div className="aspect-[3/4] overflow-hidden bg-zinc-50 relative">
                     {item.image_url && (
-                      <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <img src={item.image_url} alt={item.name} loading="lazy" className="object-cover group-hover:scale-110 transition-transform duration-500" />
                     )}
                   </div>
                   <div className="p-4 bg-white">
