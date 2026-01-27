@@ -20,6 +20,7 @@ export default function BlogPostList() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -31,12 +32,39 @@ export default function BlogPostList() {
         const res = await fetch(`${BaseUrl}api/blog/posts/`);
         if (res.ok) {
           const data = await res.json();
-          const publishedPosts = data.filter((post: BlogPost) => post.is_published);
+          
+          // Debug: Log the response structure
+          console.log('API Response:', data);
+          console.log('Response type:', typeof data);
+          console.log('Is array?', Array.isArray(data));
+          
+          // Handle both paginated and non-paginated responses
+          let postsArray: BlogPost[] = [];
+          
+          if (Array.isArray(data)) {
+            // Direct array response
+            postsArray = data;
+          } else if (data.results && Array.isArray(data.results)) {
+            // Paginated response from DRF
+            postsArray = data.results;
+          } else if (data.data && Array.isArray(data.data)) {
+            // Alternative data structure
+            postsArray = data.data;
+          } else {
+            console.error('Unexpected API response format:', data);
+            setError('Unexpected data format from server');
+            return;
+          }
+          
+          const publishedPosts = postsArray.filter((post: BlogPost) => post.is_published);
           setPosts(publishedPosts);
           setFilteredPosts(publishedPosts);
+        } else {
+          setError(`Failed to fetch posts: ${res.status} ${res.statusText}`);
         }
       } catch (err) {
         console.error("Fetch error:", err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch posts');
       } finally {
         setLoading(false);
       }
@@ -72,6 +100,26 @@ export default function BlogPostList() {
       <div className="text-center">
         <Loader2 className="w-12 h-12 animate-spin text-red-600 mx-auto mb-4" />
         <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Loading Stories</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+      <div className="text-center max-w-md px-6">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-3xl">⚠️</span>
+        </div>
+        <h2 className="text-2xl font-black italic uppercase tracking-tighter text-zinc-800 mb-2">
+          Oops! Something went wrong
+        </h2>
+        <p className="text-zinc-600 mb-6">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all"
+        >
+          Try Again
+        </button>
       </div>
     </div>
   );
