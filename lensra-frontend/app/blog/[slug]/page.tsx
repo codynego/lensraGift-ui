@@ -121,8 +121,9 @@ export default function BlogPostDetail() {
       <div className="max-w-7xl mx-auto px-6 mb-20">
         <div className="relative overflow-hidden rounded-[32px] md:rounded-[48px] shadow-2xl">
           <img
-            src={post.featured_image}
+            src={post.featured_image_url}
             alt={post.title}
+            loading='lazy'
             className="w-full h-[50vh] md:h-[70vh] object-cover"
           />
           {/* Gradient Overlay for depth */}

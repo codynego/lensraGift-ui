@@ -9,7 +9,7 @@ interface BlogPost {
   id: number;
   title: string;
   slug: string;
-  featured_image: string;
+  featured_image_url: string;
   content: string;
   created_at: string;
   is_published: boolean;
@@ -207,8 +207,9 @@ export default function BlogPostList() {
               {/* Image */}
               <div className="relative h-[300px] md:h-[500px] overflow-hidden">
                 <img
-                  src={filteredPosts[0].featured_image}
+                  src={filteredPosts[0].featured_image_url}
                   alt={filteredPosts[0].title}
+                  loading='lazy'
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
@@ -268,8 +269,9 @@ export default function BlogPostList() {
                   {/* Image */}
                   <div className="relative h-[240px] overflow-hidden">
                     <img
-                      src={post.featured_image}
+                      src={post.featured_image_url}
                       alt={post.title}
+                      loading='lazy'
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
