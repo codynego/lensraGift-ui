@@ -730,6 +730,15 @@ function ShippingLocationSelector({
   selectedId: number | null;
   onSelect: (id: number | null) => void;
 }) {
+  const parseSafe = (val: number | string | undefined): number => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const cleaned = val.replace(/,/g, '');
+      return parseFloat(cleaned) || 0;
+    }
+    return 0;
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Delivery Location *</h3>
@@ -762,6 +771,15 @@ function ShippingOptionSelector({
   selectedId: number | null;
   onSelect: (id: number) => void;
 }) {
+  const parseSafe = (val: number | string | undefined): number => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const cleaned = val.replace(/,/g, '');
+      return parseFloat(cleaned) || 0;
+    }
+    return 0;
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Shipping Method *</h3>
