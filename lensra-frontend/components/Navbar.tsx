@@ -139,6 +139,7 @@ export default function Navbar() {
               <NavItem href="/business" label="Business" />
               <NavItem href="/about" label="Our Studio" />
               <NavItem href="/contact" label="Contact Us" />
+              <NavItem href="/blog" label="Blog" /> 
             </ul>
           </nav>
         </div>
