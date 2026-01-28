@@ -101,7 +101,7 @@ export default function BlogPostDetail() {
       "name": "Lensra",
       "logo": {
         "@type": "ImageObject",
-        "url": "/logo.png" 
+        "url": "https://lensra.com/logo.png" 
       }
     },
     "description": post.meta_description,
@@ -199,9 +199,9 @@ export default function BlogPostDetail() {
         <main className="bg-white">
           <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
             <div
-              className="prose prose-base sm:prose-lg lg:prose-xl prose-red max-w-none
+              className="prose prose-sm md:prose-base prose-red max-w-none
               prose-headings:font-black prose-headings:italic prose-headings:uppercase prose-headings:tracking-tighter prose-headings:mb-6 prose-headings:mt-12
-              prose-h2:text-3xl sm:text-4xl prose-h3:text-2xl sm:text-3xl prose-h4:text-xl sm:text-2xl
+              prose-h2:text-2xl md:text-3xl prose-h3:text-xl md:text-2xl prose-h4:text-lg md:text-xl
               prose-p:text-zinc-700 prose-p:leading-relaxed prose-p:mb-6
               prose-strong:text-black prose-strong:font-black
               prose-a:text-red-600 prose-a:font-bold prose-a:no-underline hover:prose-a:underline
@@ -209,7 +209,7 @@ export default function BlogPostDetail() {
               prose-img:rounded-2xl prose-img:shadow-xl prose-img:my-12 w-full
               prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6
               prose-li:text-zinc-700 prose-li:mb-2
-              first-letter:text-6xl sm:text-7xl first-letter:font-black first-letter:float-left first-letter:mr-3 first-letter:leading-none first-letter:text-red-600"
+              first-letter:text-4xl md:text-5xl first-letter:font-black first-letter:float-left first-letter:mr-3 first-letter:leading-none first-letter:text-red-600"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </article>
