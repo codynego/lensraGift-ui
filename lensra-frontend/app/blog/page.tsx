@@ -5,6 +5,12 @@ import { Calendar, Clock, ArrowRight, Loader2, Search, Filter } from 'lucide-rea
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
+interface CategoryDetails {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface BlogPost {
   id: number;
   title: string;
@@ -13,18 +19,18 @@ interface BlogPost {
   content: string;
   created_at: string;
   is_published: boolean;
+  category_details?: CategoryDetails;
 }
 
 export default function BlogPostList() {
   const router = useRouter();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
-  const categories = ['All', 'Fashion', 'Eyewear', 'Style Guide', 'Editorial', 'Trends'];
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -33,22 +39,13 @@ export default function BlogPostList() {
         if (res.ok) {
           const data = await res.json();
           
-          // Debug: Log the response structure
-          console.log('API Response:', data);
-          console.log('Response type:', typeof data);
-          console.log('Is array?', Array.isArray(data));
-          
-          // Handle both paginated and non-paginated responses
           let postsArray: BlogPost[] = [];
           
           if (Array.isArray(data)) {
-            // Direct array response
             postsArray = data;
           } else if (data.results && Array.isArray(data.results)) {
-            // Paginated response from DRF
             postsArray = data.results;
           } else if (data.data && Array.isArray(data.data)) {
-            // Alternative data structure
             postsArray = data.data;
           } else {
             console.error('Unexpected API response format:', data);
@@ -59,6 +56,10 @@ export default function BlogPostList() {
           const publishedPosts = postsArray.filter((post: BlogPost) => post.is_published);
           setPosts(publishedPosts);
           setFilteredPosts(publishedPosts);
+
+          // Extract unique categories dynamically
+          const uniqueCats = [...new Set(publishedPosts.map(post => post.category_details?.name).filter(Boolean))];
+          setCategories(['All', ...uniqueCats as string[]]);
         } else {
           setError(`Failed to fetch posts: ${res.status} ${res.statusText}`);
         }
@@ -79,6 +80,12 @@ export default function BlogPostList() {
     if (searchQuery) {
       filtered = filtered.filter(post =>
         post.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(post =>
+        post.category_details?.name === selectedCategory
       );
     }
 
@@ -127,34 +134,34 @@ export default function BlogPostList() {
   return (
     <div className="min-h-screen bg-zinc-50 text-black font-sans">
       {/* HERO HEADER */}
-      <section className="bg-white border-b border-zinc-100">
-        <div className="max-w-7xl mx-auto px-6 pt-24 pb-16">
+      <header className="bg-white border-b border-zinc-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
           {/* Breadcrumb */}
-          <div className="mb-8">
+          <nav className="mb-8">
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
               Home / <span className="text-red-600">Stories</span>
             </span>
-          </div>
+          </nav>
 
           {/* Main Title */}
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter leading-[0.85] mb-6 max-w-4xl">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter leading-[0.85] mb-6 max-w-4xl">
             Latest Stories
           </h1>
           <p className="text-base md:text-lg text-zinc-600 max-w-2xl leading-relaxed">
             Explore our collection of insights, trends, and perspectives on eyewear, fashion, and style.
           </p>
         </div>
-      </section>
+      </header>
 
       {/* SEARCH & FILTER BAR */}
       <section className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-zinc-100">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Search Input */}
             <div className="relative w-full md:w-96">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
               <input
-                type="text"
+                type="search"
                 placeholder="Search stories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -163,7 +170,7 @@ export default function BlogPostList() {
             </div>
 
             {/* Category Filter */}
-            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
               <Filter className="w-4 h-4 text-zinc-400 flex-shrink-0" />
               {categories.map((category) => (
                 <button
@@ -171,7 +178,7 @@ export default function BlogPostList() {
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all ${
                     selectedCategory === category
-                      ? 'bg-red-600 text-white'
+                      ? 'bg-red-600 text-white shadow-md'
                       : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                   }`}
                 >
@@ -192,31 +199,31 @@ export default function BlogPostList() {
 
       {/* FEATURED POST (First Post - Large) */}
       {filteredPosts.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 py-16">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <div className="mb-8">
             <span className="inline-block px-4 py-2 bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-full">
               Featured Story
             </span>
           </div>
           
-          <div 
+          <article 
             onClick={() => router.push(`/blog/${filteredPosts[0].slug}`)}
-            className="group cursor-pointer bg-white rounded-[32px] md:rounded-[48px] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+            className="group cursor-pointer bg-white rounded-3xl md:rounded-[3rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.01]"
           >
             <div className="grid md:grid-cols-2 gap-0">
               {/* Image */}
-              <div className="relative h-[300px] md:h-[500px] overflow-hidden">
+              <div className="relative h-64 sm:h-80 md:h-[28rem] overflow-hidden">
                 <img
                   src={filteredPosts[0].featured_image_url}
                   alt={filteredPosts[0].title}
-                  loading='lazy'
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-70 group-hover:opacity-50 transition-opacity" />
               </div>
 
               {/* Content */}
-              <div className="p-8 md:p-12 flex flex-col justify-center">
+              <div className="p-6 sm:p-8 md:p-12 flex flex-col justify-center">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                     <Calendar className="w-3.5 h-3.5 text-red-600" />
@@ -232,11 +239,11 @@ export default function BlogPostList() {
                   </div>
                 </div>
 
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-black italic uppercase tracking-tighter leading-[0.9] mb-6 group-hover:text-red-600 transition-colors">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black italic uppercase tracking-tighter leading-[0.9] mb-6 group-hover:text-red-600 transition-colors">
                   {filteredPosts[0].title}
                 </h2>
 
-                <p className="text-zinc-600 leading-relaxed mb-8 line-clamp-3">
+                <p className="text-zinc-600 leading-relaxed mb-8 line-clamp-3 text-sm md:text-base">
                   {getExcerpt(filteredPosts[0].content, 200)}
                 </p>
 
@@ -245,12 +252,12 @@ export default function BlogPostList() {
                 </div>
               </div>
             </div>
-          </div>
+          </article>
         </section>
       )}
 
       {/* POSTS GRID */}
-      <section className="max-w-7xl mx-auto px-6 pb-24">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
         {filteredPosts.length > 1 ? (
           <>
             <div className="mb-12">
@@ -259,26 +266,26 @@ export default function BlogPostList() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {filteredPosts.slice(1).map((post) => (
                 <article
                   key={post.id}
                   onClick={() => router.push(`/blog/${post.slug}`)}
-                  className="group cursor-pointer bg-white rounded-[24px] overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
+                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Image */}
-                  <div className="relative h-[240px] overflow-hidden">
+                  <div className="relative h-48 sm:h-56 md:h-64 overflow-hidden">
                     <img
                       src={post.featured_image_url}
                       alt={post.title}
-                      loading='lazy'
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
+                  <div className="p-5 sm:p-6">
                     {/* Meta */}
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
@@ -300,8 +307,8 @@ export default function BlogPostList() {
                     </h3>
 
                     {/* Excerpt */}
-                    <p className="text-sm text-zinc-600 leading-relaxed mb-4 line-clamp-2">
-                      {getExcerpt(post.content, 120)}
+                    <p className="text-sm text-zinc-600 leading-relaxed mb-4 line-clamp-3">
+                      {getExcerpt(post.content, 150)}
                     </p>
 
                     {/* Read More Link */}
@@ -338,7 +345,7 @@ export default function BlogPostList() {
       </section>
 
       {/* CTA SECTION */}
-      <section className="bg-zinc-950 py-24 px-6 rounded-t-[48px] md:rounded-t-[64px] relative overflow-hidden">
+      <section className="bg-zinc-950 py-20 md:py-24 px-4 sm:px-6 rounded-t-3xl md:rounded-t-[4rem] relative overflow-hidden">
         {/* Decorative Element */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-red-600/10 rounded-full blur-3xl" />
         
@@ -346,7 +353,7 @@ export default function BlogPostList() {
           <p className="text-red-600 text-xs font-black uppercase tracking-[0.3em] mb-4">
             Stay Updated
           </p>
-          <h2 className="text-white text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter leading-tight mb-6">
+          <h2 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter leading-tight mb-6">
             Never Miss a Story
           </h2>
           <p className="text-zinc-400 text-sm md:text-base max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -354,18 +361,19 @@ export default function BlogPostList() {
           </p>
           
           {/* Newsletter Form */}
-          <div className="max-w-md mx-auto mb-8">
-            <div className="flex gap-3">
+          <form className="max-w-md mx-auto mb-8">
+            <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 placeholder="Enter your email"
                 className="flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-full text-white placeholder:text-zinc-500 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                required
               />
-              <button className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all transform hover:scale-105 shadow-lg">
+              <button type="submit" className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all transform hover:scale-105 shadow-lg">
                 Subscribe
               </button>
             </div>
-          </div>
+          </form>
 
           {/* Or Divider */}
           <div className="flex items-center gap-4 max-w-md mx-auto mb-8">
@@ -377,7 +385,7 @@ export default function BlogPostList() {
           {/* Shop CTA */}
           <button
             onClick={() => router.push('/shop')}
-            className="px-10 py-5 bg-transparent border-2 border-white/20 hover:border-white/40 text-white rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all"
+            className="px-10 py-5 bg-transparent border-2 border-white/20 hover:border-white/40 text-white rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all hover:bg-white/5"
           >
             Explore Collection
           </button>
