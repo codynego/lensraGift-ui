@@ -55,7 +55,7 @@ export default function GiftFinderPage() {
 
       {/* Trust Signals */}
       <div className="mt-12 text-center text-gray-500 text-sm md:text-base">
-        <p className="font-medium">Trusted by over 1000 gift-givers in Benin City and beyond.</p>
+        <p className="font-medium">Trusted by over 1,000 gift-givers in Benin City and beyond.</p>
         <div className="flex flex-wrap justify-center gap-4 mt-2">
           <span className="flex items-center">⭐ Premium Quality Prints</span>
           <span className="flex items-center">🚚 Fast Delivery Across Nigeria</span>
