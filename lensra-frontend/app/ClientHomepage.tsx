@@ -286,39 +286,43 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           </div>
         </div>
       </section>
-      {/* GIFT FINDER SECTION - NEW */}
-    <section className="py-20 bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10" 
+     {/* GIFT FINDER SECTION - NEW */}
+    <section className="py-20 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]" 
           style={{ 
             backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
             backgroundSize: '50px 50px' 
           }} 
       />
       
+      {/* Subtle red glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 via-transparent to-red-600/5" />
+      
       <div className="max-w-[1400px] mx-auto px-4 relative z-10 text-center">
         <div className="max-w-3xl mx-auto">
-          <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-8">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-red-600/20">
             <Gift className="w-10 h-10 text-white" />
           </div>
           
-          <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-white mb-6">
+          <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-white mb-6 leading-[0.95]" style={{ fontFamily: 'Syne, sans-serif' }}>
             Not Sure What To Gift?
           </h2>
           
-          <p className="text-lg text-white/90 font-bold uppercase tracking-wide mb-10">
-            Let our AI-powered gift concierge help you find the perfect personalized gift in under 2 minutes
+          <p className="text-lg text-zinc-300 font-bold uppercase tracking-wide mb-10 max-w-2xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Let our personal gift concierge help you find the perfect personalized gift in under 2 minutes
           </p>
 
           <a 
             href="/gift-finder" 
-            className="inline-flex items-center gap-4 px-12 py-5 bg-white text-purple-600 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:bg-zinc-50 transition-all group"
+            className="inline-flex items-center gap-4 px-12 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all group"
+            style={{ fontFamily: 'Archivo Black, sans-serif' }}
           >
             <Gift className="w-5 h-5 group-hover:rotate-12 transition-transform" />
             <span>Start Gift Finder</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </a>
           
-          <p className="text-xs text-white/70 font-bold uppercase tracking-wider mt-6">
+          <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider mt-6" style={{ fontFamily: 'Inter, sans-serif' }}>
             ✨ Takes Less Than 2 Minutes • 100% Free
           </p>
         </div>
