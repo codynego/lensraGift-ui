@@ -243,49 +243,50 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           </div>
         </div>
       </section>
+{/* SHOP BY OCCASION - Improved visual hierarchy */}
+<section className="py-20 bg-zinc-50">
+  <div className="max-w-[1400px] mx-auto px-4">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
+        Perfect For Every Occasion
+      </h2>
+      <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
+        Find the ideal gift for your special moment
+      </p>
+    </div>
 
-      {/* SHOP BY OCCASION - Improved visual hierarchy */}
-      <section className="py-20 bg-zinc-50">
-        <div className="max-w-[1400px] mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
-              Perfect For Every Occasion
-            </h2>
-            <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
-              Find the ideal gift for your special moment
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {occasions.map((occasion) => (
+        <a 
+          key={occasion.name} 
+          href="/shop?category=occasion"
+          className="group relative bg-white rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 border border-zinc-200"
+        >
+          <div className={`absolute inset-0 bg-gradient-to-br ${occasion.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
+          
+          <div className="relative p-4 md:p-8">
+            <div className={`w-12 h-12 md:w-16 md:h-16 mb-4 md:mb-6 rounded-xl md:rounded-2xl bg-gradient-to-br ${occasion.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
+              <span className="text-white scale-75 md:scale-100">{occasion.icon}</span>
+            </div>
+            
+            <p className="text-sm md:text-base font-black uppercase tracking-wide text-zinc-900 mb-2 md:mb-3 leading-tight">
+              {occasion.name}
             </p>
-          </div>
+            
+            <p className="text-[10px] md:text-xs text-zinc-600 font-bold uppercase tracking-wide mb-3 md:mb-4 leading-relaxed min-h-[40px] md:min-h-[48px]">
+              {occasion.tagline}
+            </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {occasions.map((occasion) => (
-              <a 
-                key={occasion.name} 
-                href="/shop?category=occasion"
-                className="group relative bg-white rounded-2xl overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-2 border border-zinc-200"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${occasion.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
-                
-                <div className="relative p-8">
-                  <div className={`w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br ${occasion.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
-                    <span className="text-white">{occasion.icon}</span>
-                  </div>
-                  
-                  <p className="text-base font-black uppercase tracking-wide text-zinc-900 mb-3">{occasion.name}</p>
-                  
-                  <p className="text-xs text-zinc-600 font-bold uppercase tracking-wide mb-4 leading-relaxed min-h-[48px]">
-                    {occasion.tagline}
-                  </p>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase text-red-600">{occasion.count}</span>
-                    <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </div>
-              </a>
-            ))}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] md:text-xs font-black uppercase text-red-600">{occasion.count}</span>
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-zinc-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+            </div>
           </div>
-        </div>
-      </section>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
      {/* GIFT FINDER SECTION - NEW */}
     <section className="py-20 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.03]" 
