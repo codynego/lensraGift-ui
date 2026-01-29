@@ -71,6 +71,7 @@ export default function GiftFinder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
+  const [showAllProducts, setShowAllProducts] = useState(false);
 
   const startQuiz = () => {
     setStep(0);
@@ -119,6 +120,7 @@ export default function GiftFinder() {
     setSelections([]);
     setResults([]);
     setError(null);
+    setShowAllProducts(false);
   };
 
   // Welcome Screen
@@ -365,46 +367,100 @@ export default function GiftFinder() {
                 </motion.div>
 
                 {results.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {results.map((product, idx) => (
+                  <div>
+                    {/* Personal Shopper Message */}
+                    <div className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100">
+                      <p className="text-gray-700 text-lg">
+                        💜 <span className="font-semibold">Here are my top picks for you!</span> {results.length > 3 && !showAllProducts && `I have ${results.length - 3} more great ${results.length - 3 === 1 ? 'option' : 'options'} if you'd like to see them.`}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {(showAllProducts ? results : results.slice(0, 3)).map((product, idx) => (
+                        <motion.div
+                          key={product.id}
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: idx * 0.1 }}
+                          className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                        >
+                          {/* Product Image */}
+                          <div className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                            <img
+                              src={product.image_url}
+                              alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                          </div>
+                          
+                          {/* Product Info */}
+                          <div className="p-6">
+                            <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-2">
+                              {product.name}
+                            </h3>
+                            <p className="text-2xl font-bold text-gray-900 mb-4">
+                              ₦{Number(product.base_price).toLocaleString()}
+                            </p>
+                            <a 
+                              href={`https://www.lensra.com/shop/${product.slug}`}
+                              className="block w-full py-3 bg-black text-white text-sm font-semibold rounded-xl hover:bg-gray-900 transition-colors relative overflow-hidden group text-center"
+                            >
+                              <span className="relative z-10">Personalize & Order</span>
+                            </a>
+                          </div>
+                          
+                          {/* Top Pick Badge */}
+                          {idx < 3 && (
+                            <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                              Top Pick
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Show More Button */}
+                    {results.length > 3 && !showAllProducts && (
                       <motion.div
-                        key={product.id}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="mt-12 text-center"
                       >
-                        {/* Product Image */}
-                        <div className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
-                        </div>
-                        
-                        {/* Product Info */}
-                        <div className="p-6">
-                          <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-2">
-                            {product.name}
-                          </h3>
-                          <p className="text-2xl font-bold text-gray-900 mb-4">
-                            ₦{Number(product.base_price).toLocaleString()}
-                          </p>
-                          <a 
-                            href={`https://www.lensra.com/shop/${product.slug}`}
-                            className="block w-full py-3 bg-black text-white text-sm font-semibold rounded-xl hover:bg-gray-900 transition-colors relative overflow-hidden group text-center"
-                          >
-                            <span className="relative z-10">Personalize & Order</span>
-                          </a>
-                        </div>
-                        
-                        {/* Recommended Badge */}
-                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
-                          Recommended
-                        </div>
+                        <button
+                          onClick={() => setShowAllProducts(true)}
+                          className="px-10 py-4 border-2 border-gray-300 rounded-full font-semibold text-gray-700 hover:border-black hover:text-black hover:shadow-lg transition-all inline-flex items-center gap-3 group"
+                        >
+                          <span>Show Me {results.length - 3} More {results.length - 3 === 1 ? 'Option' : 'Options'}</span>
+                          <svg className="w-5 h-5 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        <p className="text-sm text-gray-400 mt-4">I've found some other great alternatives for you</p>
                       </motion.div>
-                    ))}
+                    )}
+
+                    {/* Show Less Button */}
+                    {showAllProducts && results.length > 3 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="mt-12 text-center"
+                      >
+                        <button
+                          onClick={() => {
+                            setShowAllProducts(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="px-10 py-4 border-2 border-gray-300 rounded-full font-semibold text-gray-700 hover:border-black hover:text-black hover:shadow-lg transition-all inline-flex items-center gap-3 group"
+                        >
+                          <svg className="w-5 h-5 group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                          <span>Show Less</span>
+                        </button>
+                      </motion.div>
+                    )}
                   </div>
                 ) : (
                   <motion.div
