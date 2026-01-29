@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Lensra | Premium Digital Gift Shop",
     description: "Send personalized gifts with instant digital reveals. Experience the magic of giving.",
-    images: ["/logo.jpg"],
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -76,9 +76,9 @@ export const metadata: Metadata = {
     google: "your-google-verification-code", // Replace with actual code
   },
   icons: { // Added: Favicons for better branding in search results
-    icon: "/favicon.jpg",
-    shortcut: "/favicon.jpg",
-    apple: "/favicon.jpg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

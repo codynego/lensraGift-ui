@@ -83,7 +83,7 @@ export default function LoginPage() {
             </div>
 
             {/* Social Login */}
-            <div className="grid grid-cols-3 gap-3 mb-10">
+            {/* <div className="grid grid-cols-3 gap-3 mb-10">
               {[
                 { name: 'Google', icon: <Chrome className="w-4 h-4" /> },
                 { name: 'Apple', icon: <Apple className="w-4 h-4" /> },
@@ -96,16 +96,16 @@ export default function LoginPage() {
                   {provider.icon}
                 </button>
               ))}
-            </div>
+            </div> */}
 
-            <div className="relative mb-10">
+            {/* <div className="relative mb-10">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-zinc-100"></div>
               </div>
               <div className="relative flex justify-center text-[9px] font-bold uppercase tracking-[0.3em]">
                 <span className="bg-white px-4 text-zinc-300">Or use your email</span>
               </div>
-            </div>
+            </div> */}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (

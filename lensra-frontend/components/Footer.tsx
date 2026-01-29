@@ -58,9 +58,9 @@ export default function Footer() {
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 mb-8">Follow Us</h4>
             <div className="flex flex-wrap gap-3">
-              <SocialIcon icon={<Facebook />} color="hover:bg-blue-600" />
-              <SocialIcon icon={<Twitter />} color="hover:bg-zinc-700" />
-              <SocialIcon icon={<Instagram />} color="hover:bg-pink-600" />
+              <SocialIcon icon={<Facebook />} color="hover:bg-blue-600" href="https://www.facebook.com/lensragift" />
+              <SocialIcon icon={<Twitter />} color="hover:bg-zinc-700" href='https://www.twitter.com/lensragift/'/>
+              <SocialIcon icon={<Instagram />} color="hover:bg-pink-600" href="https://www.instagram.com/lensragift/" />
               <SocialIcon icon={<Youtube />} color="hover:bg-red-600" />
             </div>
           </div>
@@ -108,9 +108,9 @@ function ContactLink({ icon, text, href }: { icon: any, text: string, href: stri
   );
 }
 
-function SocialIcon({ icon, color }: { icon: any, color: string }) {
+function SocialIcon({ icon, color, href }: { icon: any, color: string, href?: string }) {
   return (
-    <a href="#" className={`w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center transition-all duration-300 ${color}`}>
+    <a href={href || "#"} className={`w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center transition-all duration-300 ${color}`}>
       {cloneIcon(icon)}
     </a>
   );
