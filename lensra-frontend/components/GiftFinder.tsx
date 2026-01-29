@@ -391,9 +391,12 @@ export default function GiftFinder() {
                           <p className="text-2xl font-bold text-gray-900 mb-4">
                             ₦{Number(product.base_price).toLocaleString()}
                           </p>
-                          <button className="w-full py-3 bg-black text-white text-sm font-semibold rounded-xl hover:bg-gray-900 transition-colors relative overflow-hidden group">
+                          <a 
+                            href={`https://www.lensra.com/shop/${product.slug}`}
+                            className="block w-full py-3 bg-black text-white text-sm font-semibold rounded-xl hover:bg-gray-900 transition-colors relative overflow-hidden group text-center"
+                          >
                             <span className="relative z-10">Personalize & Order</span>
-                          </button>
+                          </a>
                         </div>
                         
                         {/* Recommended Badge */}
