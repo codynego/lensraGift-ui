@@ -79,7 +79,7 @@ export default function GiftFinder() {
         // }
         //
         // This way, the request is made server-side within the same origin, bypassing CORS.
-        const response = await fetch(`https://api.lensra.com/products/gift-finder/recommendations/?tags=${tagsParam}`);
+        const response = await fetch(`https://api.lensra.com/products/gift-finder/recommendations?tags=${tagsParam}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
