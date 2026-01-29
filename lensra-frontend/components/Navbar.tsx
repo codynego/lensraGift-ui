@@ -59,7 +59,7 @@ export default function Navbar() {
     <>
       {/* 1. TOP ANNOUNCEMENT BAR */}
       <div className="bg-[#050505] text-zinc-300 text-[10px] font-black uppercase tracking-[0.2em] py-2.5 text-center border-b border-zinc-800">
-        🎁 Free Delivery over ₦10,000 <span className="text-red-500 mx-2">|</span> Use Code: <span className="text-red-500">LENSRA2026</span>
+        🎁 Free Delivery over ₦50,000 <span className="text-red-500 mx-2">|</span> Use Code: <span className="text-red-500">LENSRA2026</span>
       </div>
 
       {/* 2. MAIN NAVIGATION */}
@@ -218,6 +218,15 @@ export default function Navbar() {
                     className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors"
                   >
                     Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/blog"
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-red-500 transition-colors"
+                  >
+                    Blog
                   </Link>
                 </li>
               </ul>
