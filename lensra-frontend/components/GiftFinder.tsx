@@ -67,7 +67,7 @@ export default function GiftFinder() {
       try {
         const tagsParam = updatedSelections.join(',');
 
-        const response = await fetch(`https://api.lensra.com/api/products/gift-recommendations/?tags=${tagsParam}`);
+        const response = await fetch(`https://api.lensra.com/api/products/gift-finder/recommendations/?tags=${tagsParam}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
