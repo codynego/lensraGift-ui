@@ -65,9 +65,26 @@ export default function GiftFinder() {
       
       try {
         const tagsParam = updatedSelections.join(',');
-        const response = await fetch(`https://api.lensra.com/products/gift-finder/recommendations/?tags=${tagsParam}`);
+        // Changed to use a relative proxy endpoint to avoid CORS issues.
+        // You need to create a Next.js API route at /app/api/gift-recommendations/route.ts (or pages/api/gift-recommendations.ts if using pages router)
+        // that proxies the request to the original API URL, e.g.:
+        //
+        // export async function GET(request: Request) {
+        //   const { searchParams } = new URL(request.url);
+        //   const tags = searchParams.get('tags');
+        //   const apiUrl = `https://api.lensra.com/products/gift-finder/recommendations/?tags=${tags}`;
+        //   const response = await fetch(apiUrl);
+        //   const data = await response.json();
+        //   return Response.json(data);
+        // }
+        //
+        // This way, the request is made server-side within the same origin, bypassing CORS.
+        const response = await fetch(`/api/gift-recommendations?tags=${tagsParam}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        setResults(data.results);
+        setResults(data.results || []);
       } catch (error) {
         console.error("Failed to fetch recommendations", error);
       } finally {
@@ -141,16 +158,16 @@ export default function GiftFinder() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {results.map((product) => (
                       <div key={product.id} className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-shadow">
-                         <div className="aspect-square overflow-hidden bg-gray-100">
-                           <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                         </div>
-                         <div className="p-5">
-                           <h3 className="font-bold text-gray-900 text-lg mb-1">{product.name}</h3>
-                           <p className="text-gray-900 font-bold">₦{Number(product.price).toLocaleString()}</p>
-                           <button className="w-full mt-5 py-3 bg-black text-white text-sm font-bold rounded-xl hover:opacity-90 transition-opacity">
-                             Personalize & Order
-                           </button>
-                         </div>
+                        <div className="aspect-square overflow-hidden bg-gray-100">
+                          <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <div className="p-5">
+                          <h3 className="font-bold text-gray-900 text-lg mb-1">{product.name}</h3>
+                          <p className="text-gray-900 font-bold">₦{Number(product.price).toLocaleString()}</p>
+                          <button className="w-full mt-5 py-3 bg-black text-white text-sm font-bold rounded-xl hover:opacity-90 transition-opacity">
+                            Personalize & Order
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
