@@ -35,9 +35,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.lensra.com"),
   alternates: {
     canonical: "/",
-    languages: { // Added: If you support multiple languages
-      "en-US": "/en-US",
-    },
   },
   openGraph: {
     title: "Lensra | Unique Digital Gift Experiences",
