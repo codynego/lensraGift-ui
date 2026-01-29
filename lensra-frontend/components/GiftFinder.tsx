@@ -153,11 +153,11 @@ export default function GiftFinder() {
                     {results.map((product) => (
                       <div key={product.id} className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-shadow">
                         <div className="aspect-square overflow-hidden bg-gray-100">
-                          <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
                         <div className="p-5">
                           <h3 className="font-bold text-gray-900 text-lg mb-1">{product.name}</h3>
-                          <p className="text-gray-900 font-bold">₦{Number(product.price).toLocaleString()}</p>
+                          <p className="text-gray-900 font-bold">₦{Number(product.base_price).toLocaleString()}</p>
                           <button className="w-full mt-5 py-3 bg-black text-white text-sm font-bold rounded-xl hover:opacity-90 transition-opacity">
                             Personalize & Order
                           </button>
