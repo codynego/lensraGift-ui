@@ -82,7 +82,7 @@ export default function GiftFinder() {
         //   const data = await response.json();
         //   return NextResponse.json(data);
         // }
-        const response = await fetch(`/api/products/gift-recommendations?tags=${tagsParam}`);
+        const response = await fetch(`/api/products/gift-recommendations/?tags=${tagsParam}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
