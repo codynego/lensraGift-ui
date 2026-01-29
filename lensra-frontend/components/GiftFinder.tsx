@@ -66,23 +66,8 @@ export default function GiftFinder() {
      
       try {
         const tagsParam = updatedSelections.join(',');
-        // Use Next.js API proxy route to avoid CORS issues.
-        // Assumes you have created /app/api/gift-recommendations/route.ts with the following:
-        //
-        // import { NextResponse } from 'next/server';
-        //
-        // export async function GET(request: Request) {
-        //   const { searchParams } = new URL(request.url);
-        //   const tags = searchParams.get('tags');
-        //   const apiUrl = `https://api.lensra.com/api/products/gift-finder/recommendations?tags=${tags}`;
-        //   const response = await fetch(apiUrl);
-        //   if (!response.ok) {
-        //     return NextResponse.json({ error: 'Failed to fetch recommendations' }, { status: response.status });
-        //   }
-        //   const data = await response.json();
-        //   return NextResponse.json(data);
-        // }
-        const response = await fetch(`/api/products/gift-recommendations/?tags=${tagsParam}`);
+
+        const response = await fetch(`https://api.lensra.com/api/products/gift-recommendations/?tags=${tagsParam}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
