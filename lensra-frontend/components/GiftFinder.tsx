@@ -1,9 +1,8 @@
 'use client';
-
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// 1. Defined Types to fix the "icon" error
+// Defined Types
 type GiftOption = {
   label: string;
   tag: string;
@@ -52,34 +51,38 @@ export default function GiftFinder() {
   const [selections, setSelections] = useState<string[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleNext = async (tag: string) => {
     const updatedSelections = [...selections, tag];
-    
+   
     if (step < questions.length - 1) {
       setSelections(updatedSelections);
       setStep(step + 1);
     } else {
       setLoading(true);
+      setError(null); // Reset error
       setStep(step + 1);
-      
+     
       try {
         const tagsParam = updatedSelections.join(',');
-        // Changed to use a relative proxy endpoint to avoid CORS issues.
-        // You need to create a Next.js API route at /app/api/gift-recommendations/route.ts (or pages/api/gift-recommendations.ts if using pages router)
-        // that proxies the request to the original API URL, e.g.:
+        // Use Next.js API proxy route to avoid CORS issues.
+        // Assumes you have created /app/api/gift-recommendations/route.ts with the following:
+        //
+        // import { NextResponse } from 'next/server';
         //
         // export async function GET(request: Request) {
         //   const { searchParams } = new URL(request.url);
         //   const tags = searchParams.get('tags');
-        //   const apiUrl = `https://api.lensra.com/products/gift-finder/recommendations/?tags=${tags}`;
+        //   const apiUrl = `https://api.lensra.com/api/products/gift-finder/recommendations?tags=${tags}`;
         //   const response = await fetch(apiUrl);
+        //   if (!response.ok) {
+        //     return NextResponse.json({ error: 'Failed to fetch recommendations' }, { status: response.status });
+        //   }
         //   const data = await response.json();
-        //   return Response.json(data);
+        //   return NextResponse.json(data);
         // }
-        //
-        // This way, the request is made server-side within the same origin, bypassing CORS.
-        const response = await fetch(`https://api.lensra.com/products/gift-finder/recommendations?tags=${tagsParam}`);
+        const response = await fetch(`/api/gift-recommendations?tags=${tagsParam}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -87,6 +90,7 @@ export default function GiftFinder() {
         setResults(data.results || []);
       } catch (error) {
         console.error("Failed to fetch recommendations", error);
+        setError('Sorry, we couldn’t load recommendations right now. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -97,6 +101,7 @@ export default function GiftFinder() {
     setStep(0);
     setSelections([]);
     setResults([]);
+    setError(null);
   };
 
   return (
@@ -104,13 +109,12 @@ export default function GiftFinder() {
       {/* Progress Bar */}
       {step <= questions.length - 1 && (
         <div className="w-full bg-gray-100 h-2 rounded-full mb-8">
-          <div 
-            className="bg-black h-2 rounded-full transition-all duration-300" 
+          <div
+            className="bg-black h-2 rounded-full transition-all duration-300"
             style={{ width: `${((step + 1) / questions.length) * 100}%` }}
           />
         </div>
       )}
-
       <AnimatePresence mode="wait">
         {step < questions.length ? (
           <motion.div
@@ -145,6 +149,11 @@ export default function GiftFinder() {
                 <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-6"></div>
                 <p className="text-xl text-gray-500 font-medium">Curating your perfect Lensra gifts...</p>
               </div>
+            ) : error ? (
+              <div className="text-center py-20 bg-gray-50 rounded-3xl">
+                <p className="text-red-500 text-lg mb-4">{error}</p>
+                <button onClick={resetQuiz} className="px-8 py-3 bg-black text-white rounded-full font-bold">Try Again</button>
+              </div>
             ) : (
               <div>
                 <div className="flex justify-between items-center mb-10">
@@ -153,7 +162,7 @@ export default function GiftFinder() {
                     Start Over
                   </button>
                 </div>
-                
+               
                 {results.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {results.map((product) => (
