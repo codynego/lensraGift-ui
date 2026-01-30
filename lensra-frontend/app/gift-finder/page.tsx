@@ -44,6 +44,8 @@ const GiftFinder = () => {
   const [results, setResults] = useState<Product[] | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
 
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
   const steps: Step[] = [
     {
       id: 'recipient',
@@ -177,7 +179,7 @@ const GiftFinder = () => {
       budgetTag
     ].filter(t => t).join(',');
 
-    fetch(`/products/gift-finder/recommendations/?tags=${tags}`)
+    fetch(`${BaseUrl}api/products/gift-finder/recommendations/?tags=${tags}`)
       .then(response => response.json())
       .then(data => {
         setResults(data.results || []);
