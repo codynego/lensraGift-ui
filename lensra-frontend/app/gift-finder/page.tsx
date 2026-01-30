@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 
@@ -131,9 +133,9 @@ const GiftFinder = () => {
   const canProceed = () => {
     const stepId = currentStep.id;
     if (currentStep.multiSelect) {
-      return answers.preferences.length > 0;
+      return true; // Allow proceeding even with zero selections for preferences
     }
-    return answers[stepId];
+    return !!answers[stepId];
   };
 
   const handleNext = () => {
@@ -186,35 +188,35 @@ const GiftFinder = () => {
       </div>
 
       {/* Options Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
         {currentStep.options.map((option) => (
           <button
             key={option.value}
             onClick={() => handleSelect(option.value)}
             className={`
-              relative group overflow-hidden rounded-2xl p-6 transition-all duration-300
+              relative group overflow-hidden rounded-xl p-4 transition-all duration-300
               ${isSelected(option.value) 
-                ? 'bg-gradient-to-br from-red-600/30 to-red-800/30 border-2 border-red-600 scale-105 shadow-2xl shadow-red-600/20' 
-                : 'bg-zinc-900 border-2 border-zinc-800 hover:border-zinc-700 hover:scale-102'
+                ? 'bg-gradient-to-br from-red-600/30 to-red-800/30 border border-red-600 shadow-lg shadow-red-600/20' 
+                : 'bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800'
               }
             `}
           >
             {/* Animated Background Gradient */}
             <div className={`
-              absolute inset-0 bg-gradient-to-br ${option.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300
+              absolute inset-0 bg-gradient-to-br ${option.color} opacity-0 group-hover:opacity-50 transition-opacity duration-300
             `} />
             
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center text-center space-y-3">
+            <div className="relative z-10 flex flex-col items-center text-center space-y-2">
               <div className={`
-                text-4xl transition-transform duration-300
-                ${isSelected(option.value) ? 'scale-110' : 'group-hover:scale-110'}
+                text-3xl transition-transform duration-300
+                ${isSelected(option.value) ? 'scale-105' : 'group-hover:scale-105'}
               `}>
                 {option.icon}
               </div>
               <div>
                 <div className={`
-                  font-bold text-base md:text-lg transition-colors
+                  font-bold text-sm md:text-base transition-colors
                   ${isSelected(option.value) ? 'text-white' : 'text-zinc-300 group-hover:text-white'}
                 `}>
                   {option.label}
@@ -229,8 +231,8 @@ const GiftFinder = () => {
 
             {/* Selection Indicator */}
             {isSelected(option.value) && (
-              <div className="absolute top-3 right-3 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="absolute top-2 right-2 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -245,7 +247,7 @@ const GiftFinder = () => {
           <p className="text-sm text-zinc-500">
             {answers.preferences.length > 0 
               ? `${answers.preferences.length} interest${answers.preferences.length > 1 ? 's' : ''} selected`
-              : 'Select at least one interest'
+              : 'Select any that apply'
             }
           </p>
         </div>
@@ -256,7 +258,7 @@ const GiftFinder = () => {
         {step > 0 && (
           <button
             onClick={handleBack}
-            className="flex-1 px-6 py-4 bg-zinc-900 border-2 border-zinc-800 text-zinc-300 font-bold rounded-xl hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300 flex items-center justify-center gap-2"
+            className="flex-1 px-6 py-4 bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold rounded-xl hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300 flex items-center justify-center gap-2"
           >
             <ChevronLeft className="w-5 h-5" />
             BACK
@@ -289,18 +291,6 @@ const GiftFinder = () => {
           </button>
         )}
       </div>
-
-      {/* Skip option for multi-select */}
-      {currentStep.multiSelect && answers.preferences.length === 0 && (
-        <div className="text-center mt-4">
-          <button
-            onClick={handleNext}
-            className="text-sm text-zinc-500 hover:text-zinc-400 underline transition-colors"
-          >
-            Skip this step
-          </button>
-        </div>
-      )}
     </div>
   );
 };
