@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 
@@ -26,6 +24,13 @@ interface Step {
   options: Option[];
 }
 
+interface Product {
+  id: number;
+  name: string;
+  base_price: number;
+  image?: string;
+}
+
 const GiftFinder = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answer>({
@@ -34,6 +39,8 @@ const GiftFinder = () => {
     preferences: [],
     priceRange: ''
   });
+  const [results, setResults] = useState<Product[] | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const steps: Step[] = [
     {
@@ -100,6 +107,13 @@ const GiftFinder = () => {
   const currentStep = steps[step];
   const progress = ((step + 1) / steps.length) * 100;
 
+  const priceMap: { [key: string]: string } = {
+    budget: 'low',
+    moderate: 'mid',
+    premium: 'high',
+    luxury: 'high'
+  };
+
   const handleSelect = (value: string) => {
     const stepId = currentStep.id;
     
@@ -153,9 +167,67 @@ const GiftFinder = () => {
   };
 
   const handleSubmit = () => {
-    console.log('Gift Finder Answers:', answers);
-    alert(`Perfect! We're finding gifts for:\n\nRecipient: ${answers.recipient}\nOccasion: ${answers.occasion}\nInterests: ${answers.preferences.join(', ')}\nBudget: ${answers.priceRange}`);
+    const budgetTag = answers.priceRange ? `budget-${priceMap[answers.priceRange]}` : '';
+    const tags = [
+      answers.recipient,
+      answers.occasion,
+      ...answers.preferences,
+      budgetTag
+    ].filter(t => t).join(',');
+
+    fetch(`/products/gift-finder/recommendations/?tags=${tags}`)
+      .then(response => response.json())
+      .then(data => {
+        setResults(data.results || []);
+        setIsCompleted(true);
+      })
+      .catch(error => {
+        console.error('Error fetching recommendations:', error);
+        alert('Failed to fetch recommendations. Please try again.');
+      });
   };
+
+  if (isCompleted) {
+    return (
+      <div className="w-full max-w-4xl mx-auto">
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-8">Recommended Gifts</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+          {results?.map((product) => (
+            <div key={product.id} className="bg-zinc-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-600/20">
+              <img 
+                src={product.image} 
+                alt={product.name} 
+                className="w-full h-40 md:h-48 object-cover"
+              />
+              <div className="p-4">
+                <h3 className="font-bold text-sm md:text-base text-white mb-1">{product.name}</h3>
+                <p className="text-red-500 font-semibold text-sm">₦{product.base_price.toLocaleString()}</p>
+              </div>
+            </div>
+          ))}
+          {(!results || results.length === 0) && (
+            <p className="col-span-full text-center text-zinc-400 text-lg">No recommendations found. Try different options!</p>
+          )}
+        </div>
+        <button 
+          onClick={() => {
+            setIsCompleted(false);
+            setResults(null);
+            setStep(0);
+            setAnswers({
+              recipient: '',
+              occasion: '',
+              preferences: [],
+              priceRange: ''
+            });
+          }} 
+          className="px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 mx-auto block"
+        >
+          Start Over
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto">
