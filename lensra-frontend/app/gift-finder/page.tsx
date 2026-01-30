@@ -77,7 +77,7 @@ const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/
     },
     {
       id: 'preferences',
-      question: 'What are they into?',
+      question: 'What would they like?',
       subtitle: 'Select all that apply',
       multiSelect: true,
       options: [
