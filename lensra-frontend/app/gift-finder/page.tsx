@@ -30,7 +30,7 @@ interface Product {
   id: number;
   name: string;
   base_price: number;
-  image?: string;
+  image_url?: string;
 }
 
 const GiftFinder = () => {
@@ -199,7 +199,7 @@ const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/
           {results?.map((product) => (
             <div key={product.id} className="bg-zinc-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-600/20">
               <img 
-                src={product.image} 
+                src={product.image_url} 
                 alt={product.name} 
                 className="w-full h-40 md:h-48 object-cover"
               />
