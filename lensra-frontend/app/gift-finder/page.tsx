@@ -1,67 +1,308 @@
-import GiftFinder from '@/components/GiftFinder';
+import React, { useState } from 'react';
+import { ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 
-export const metadata = {
-  title: 'Gift Finder | Lensra Benin City',
-  description: 'Not sure what to get? Use the Lensra Gift Finder to discover the perfect personalized gift in seconds.',
-  keywords: [
-    'gift finder Benin City',
-    'personalized gifts Nigeria',
-    'custom gifts Lagos',
-    'Lensra gift recommendations',
-    'anniversary gifts',
-    'birthday surprises',
-  ],
-  openGraph: {
-    title: 'Lensra Gift Finder - Find the Perfect Personalized Gift',
-    description: 'Answer a few quick questions and get tailored gift recommendations from Lensra.',
-    url: 'https://www.lensra.com/gift-finder',
-    images: [
-      {
-        url: 'https://www.lensra.com/images/gift-finder-og.jpg', // Replace with actual OG image URL
-        width: 1200,
-        height: 630,
-        alt: 'Lensra Gift Finder',
-      },
-    ],
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Discover Perfect Gifts with Lensra Finder',
-    description: 'Personalized recommendations for every occasion.',
-    images: ['https://www.lensra.com/images/gift-finder-og.jpg'], // Replace with actual image
-  },
-};
+interface Answer {
+  recipient: string;
+  occasion: string;
+  preferences: string[];
+  priceRange: string;
+}
 
-export default function GiftFinderPage() {
+interface Option {
+  value: string;
+  label: string;
+  icon: string;
+  color: string;
+  range?: string;
+}
+
+interface Step {
+  id: keyof Answer;
+  question: string;
+  subtitle: string;
+  multiSelect?: boolean;
+  options: Option[];
+}
+
+const GiftFinder = () => {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Answer>({
+    recipient: '',
+    occasion: '',
+    preferences: [],
+    priceRange: ''
+  });
+
+  const steps: Step[] = [
+    {
+      id: 'recipient',
+      question: 'Who are you shopping for?',
+      subtitle: 'Choose the lucky recipient',
+      options: [
+        { value: 'him', label: 'For Him', icon: '👨', color: 'from-blue-600/20 to-blue-800/20' },
+        { value: 'her', label: 'For Her', icon: '👩', color: 'from-pink-600/20 to-pink-800/20' },
+        { value: 'kids', label: 'For Kids', icon: '👶', color: 'from-yellow-600/20 to-yellow-800/20' },
+        { value: 'parent', label: 'For Parents', icon: '👴', color: 'from-purple-600/20 to-purple-800/20' },
+        { value: 'self', label: 'For Myself', icon: '🎁', color: 'from-green-600/20 to-green-800/20' },
+        { value: 'couple', label: 'For Couples', icon: '💑', color: 'from-red-600/20 to-red-800/20' }
+      ]
+    },
+    {
+      id: 'occasion',
+      question: "What's the occasion?",
+      subtitle: 'Make it memorable',
+      options: [
+        { value: 'birthday', label: 'Birthday', icon: '🎂', color: 'from-orange-600/20 to-orange-800/20' },
+        { value: 'anniversary', label: 'Anniversary', icon: '💝', color: 'from-red-600/20 to-red-800/20' },
+        { value: 'wedding', label: 'Wedding', icon: '💒', color: 'from-pink-600/20 to-pink-800/20' },
+        { value: 'graduation', label: 'Graduation', icon: '🎓', color: 'from-blue-600/20 to-blue-800/20' },
+        { value: 'christmas', label: 'Christmas', icon: '🎄', color: 'from-green-600/20 to-green-800/20' },
+        { value: 'valentines', label: "Valentine's", icon: '❤️', color: 'from-red-600/20 to-red-800/20' },
+        { value: 'justbecause', label: 'Just Because', icon: '✨', color: 'from-purple-600/20 to-purple-800/20' },
+        { value: 'other', label: 'Other', icon: '🎉', color: 'from-zinc-600/20 to-zinc-800/20' }
+      ]
+    },
+    {
+      id: 'preferences',
+      question: 'What are they into?',
+      subtitle: 'Select all that apply',
+      multiSelect: true,
+      options: [
+        { value: 'fashion', label: 'Fashion', icon: '👔', color: 'from-pink-600/20 to-pink-800/20' },
+        { value: 'gadgets', label: 'Gadgets', icon: '📱', color: 'from-blue-600/20 to-blue-800/20' },
+        { value: 'sports', label: 'Sports', icon: '⚽', color: 'from-green-600/20 to-green-800/20' },
+        { value: 'art', label: 'Art & Design', icon: '🎨', color: 'from-purple-600/20 to-purple-800/20' },
+        { value: 'books', label: 'Books', icon: '📚', color: 'from-orange-600/20 to-orange-800/20' },
+        { value: 'music', label: 'Music', icon: '🎵', color: 'from-red-600/20 to-red-800/20' },
+        { value: 'gaming', label: 'Gaming', icon: '🎮', color: 'from-cyan-600/20 to-cyan-800/20' },
+        { value: 'travel', label: 'Travel', icon: '✈️', color: 'from-yellow-600/20 to-yellow-800/20' },
+        { value: 'home', label: 'Home Decor', icon: '🏠', color: 'from-emerald-600/20 to-emerald-800/20' },
+        { value: 'fitness', label: 'Fitness', icon: '💪', color: 'from-lime-600/20 to-lime-800/20' },
+        { value: 'beauty', label: 'Beauty', icon: '💄', color: 'from-rose-600/20 to-rose-800/20' },
+        { value: 'food', label: 'Food & Drink', icon: '🍕', color: 'from-amber-600/20 to-amber-800/20' }
+      ]
+    },
+    {
+      id: 'priceRange',
+      question: "What's your budget?",
+      subtitle: 'We have something for every budget',
+      options: [
+        { value: 'budget', label: 'Budget Friendly', range: '₦5,000 - ₦15,000', icon: '💵', color: 'from-green-600/20 to-green-800/20' },
+        { value: 'moderate', label: 'Moderate', range: '₦15,000 - ₦35,000', icon: '💰', color: 'from-blue-600/20 to-blue-800/20' },
+        { value: 'premium', label: 'Premium', range: '₦35,000 - ₦75,000', icon: '💎', color: 'from-purple-600/20 to-purple-800/20' },
+        { value: 'luxury', label: 'Luxury', range: '₦75,000+', icon: '👑', color: 'from-red-600/20 to-red-800/20' }
+      ]
+    }
+  ];
+
+  const currentStep = steps[step];
+  const progress = ((step + 1) / steps.length) * 100;
+
+  const handleSelect = (value: string) => {
+    const stepId = currentStep.id;
+    
+    if (currentStep.multiSelect) {
+      setAnswers(prev => {
+        const currentPrefs = prev.preferences || [];
+        const newPrefs = currentPrefs.includes(value)
+          ? currentPrefs.filter(p => p !== value)
+          : [...currentPrefs, value];
+        return { ...prev, preferences: newPrefs };
+      });
+    } else {
+      setAnswers(prev => ({ ...prev, [stepId]: value }));
+      // Auto-advance for single select
+      setTimeout(() => {
+        if (step < steps.length - 1) {
+          setStep(step + 1);
+        }
+      }, 300);
+    }
+  };
+
+  const isSelected = (value: string) => {
+    const stepId = currentStep.id;
+    if (currentStep.multiSelect) {
+      return answers.preferences.includes(value);
+    }
+    return answers[stepId] === value;
+  };
+
+  const canProceed = () => {
+    const stepId = currentStep.id;
+    if (currentStep.multiSelect) {
+      return answers.preferences.length > 0;
+    }
+    return answers[stepId];
+  };
+
+  const handleNext = () => {
+    if (step < steps.length - 1 && canProceed()) {
+      setStep(step + 1);
+    } else if (step === steps.length - 1 && canProceed()) {
+      handleSubmit();
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 0) {
+      setStep(step - 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    console.log('Gift Finder Answers:', answers);
+    alert(`Perfect! We're finding gifts for:\n\nRecipient: ${answers.recipient}\nOccasion: ${answers.occasion}\nInterests: ${answers.preferences.join(', ')}\nBudget: ${answers.priceRange}`);
+  };
+
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 px-4 md:py-20">
-      {/* Brand Header */}
-      <div className="text-center mb-10 max-w-2xl px-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
-          Lensra Gift Finder
-        </h1>
-        <p className="text-lg md:text-xl text-gray-600 max-w-xl mx-auto">
-          Let our smart algorithm be your personal shopper. Answer a few questions to uncover the ideal personalized gift for your loved one.
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Progress Bar */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium text-zinc-400">
+            Step {step + 1} of {steps.length}
+          </span>
+          <span className="text-sm font-medium text-zinc-400">
+            {Math.round(progress)}%
+          </span>
+        </div>
+        <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out rounded-full"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Question Header */}
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+          {currentStep.question}
+        </h2>
+        <p className="text-lg text-zinc-400">
+          {currentStep.subtitle}
         </p>
       </div>
 
-      {/* Quiz Component Wrapper */}
-      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
-        <div className="p-6 md:p-12">
-          <GiftFinder />
-        </div>
+      {/* Options Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        {currentStep.options.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => handleSelect(option.value)}
+            className={`
+              relative group overflow-hidden rounded-2xl p-6 transition-all duration-300
+              ${isSelected(option.value) 
+                ? 'bg-gradient-to-br from-red-600/30 to-red-800/30 border-2 border-red-600 scale-105 shadow-2xl shadow-red-600/20' 
+                : 'bg-zinc-900 border-2 border-zinc-800 hover:border-zinc-700 hover:scale-102'
+              }
+            `}
+          >
+            {/* Animated Background Gradient */}
+            <div className={`
+              absolute inset-0 bg-gradient-to-br ${option.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300
+            `} />
+            
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center text-center space-y-3">
+              <div className={`
+                text-4xl transition-transform duration-300
+                ${isSelected(option.value) ? 'scale-110' : 'group-hover:scale-110'}
+              `}>
+                {option.icon}
+              </div>
+              <div>
+                <div className={`
+                  font-bold text-base md:text-lg transition-colors
+                  ${isSelected(option.value) ? 'text-white' : 'text-zinc-300 group-hover:text-white'}
+                `}>
+                  {option.label}
+                </div>
+                {option.range && (
+                  <div className="text-xs text-zinc-500 mt-1">
+                    {option.range}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Selection Indicator */}
+            {isSelected(option.value) && (
+              <div className="absolute top-3 right-3 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* Trust Signals */}
-      <div className="mt-12 text-center text-gray-500 text-sm md:text-base">
-        <p className="font-medium">Trusted by over 1,000 gift-givers in Benin City and beyond.</p>
-        <div className="flex flex-wrap justify-center gap-4 mt-2">
-          <span className="flex items-center">⭐ Premium Quality Prints</span>
-          <span className="flex items-center">🚚 Fast Delivery Across Nigeria</span>
-          <span className="flex items-center">💯 Satisfaction Guaranteed</span>
+      {/* Multi-select hint */}
+      {currentStep.multiSelect && (
+        <div className="text-center mb-6">
+          <p className="text-sm text-zinc-500">
+            {answers.preferences.length > 0 
+              ? `${answers.preferences.length} interest${answers.preferences.length > 1 ? 's' : ''} selected`
+              : 'Select at least one interest'
+            }
+          </p>
         </div>
+      )}
+
+      {/* Navigation Buttons */}
+      <div className="flex gap-4 mt-8">
+        {step > 0 && (
+          <button
+            onClick={handleBack}
+            className="flex-1 px-6 py-4 bg-zinc-900 border-2 border-zinc-800 text-zinc-300 font-bold rounded-xl hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            BACK
+          </button>
+        )}
+        
+        {(currentStep.multiSelect || step === steps.length - 1) && (
+          <button
+            onClick={handleNext}
+            disabled={!canProceed()}
+            className={`
+              flex-1 px-6 py-4 font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 uppercase tracking-wide
+              ${canProceed()
+                ? 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg shadow-red-600/30'
+                : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+              }
+            `}
+          >
+            {step === steps.length - 1 ? (
+              <>
+                <Sparkles className="w-5 h-5" />
+                Find My Gift
+              </>
+            ) : (
+              <>
+                Continue
+                <ChevronRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+        )}
       </div>
-    </main>
+
+      {/* Skip option for multi-select */}
+      {currentStep.multiSelect && answers.preferences.length === 0 && (
+        <div className="text-center mt-4">
+          <button
+            onClick={handleNext}
+            className="text-sm text-zinc-500 hover:text-zinc-400 underline transition-colors"
+          >
+            Skip this step
+          </button>
+        </div>
+      )}
+    </div>
   );
-}
+};
+
+export default GiftFinder;
