@@ -1,5 +1,5 @@
 // app/shop/[id]/ClientProductDetail.tsx
-// This is the client component for interactivity
+// Updated sleek UI: smaller text, concise copy, Redbubble-inspired layout with large images, quick actions, responsive design, subtle animations
 
 "use client";
 
@@ -150,388 +150,344 @@ export default function ClientProductDetail({
   };
 
   const emotionColorMap: Record<string, string> = {
-    rose: 'bg-rose-100 text-rose-600 border-rose-300',
-    amber: 'bg-amber-100 text-amber-600 border-amber-300',
-    blue: 'bg-blue-100 text-blue-600 border-blue-300',
-    emerald: 'bg-emerald-100 text-emerald-600 border-emerald-300',
-    purple: 'bg-purple-100 text-purple-600 border-purple-300',
+    rose: 'bg-rose-50 text-rose-600 border-rose-200',
+    amber: 'bg-amber-50 text-amber-600 border-amber-200',
+    blue: 'bg-blue-50 text-blue-600 border-blue-200',
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+    purple: 'bg-purple-50 text-purple-600 border-purple-200',
   };
 
   const isColorAttribute = (type: string) => type.toLowerCase().includes('color');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-50 text-zinc-900 font-sans">
-      {/* Sticky Header with Breadcrumb */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-zinc-100">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-white text-zinc-900">
+      {/* Sticky Header - Compact */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-100">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm font-semibold text-zinc-600 hover:text-zinc-900 transition-colors"
+              onClick={() => setIsFavorited(!isFavorited)}
+              className="p-1.5 rounded-full hover:bg-zinc-100 transition"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Shop</span>
+              <Heart className={`w-4 h-4 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-zinc-500'}`} />
             </button>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsFavorited(!isFavorited)}
-                className="p-2.5 rounded-full hover:bg-zinc-100 transition-all"
-              >
-                <Heart className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-zinc-400'}`} />
-              </button>
-              <button className="p-2.5 rounded-full hover:bg-zinc-100 transition-all">
-                <Share2 className="w-5 h-5 text-zinc-400" />
-              </button>
-            </div>
+            <button className="p-1.5 rounded-full hover:bg-zinc-100 transition">
+              <Share2 className="w-4 h-4 text-zinc-500" />
+            </button>
           </div>
         </div>
       </div>
 
-      <main className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 py-8 lg:py-12">
-        <div className="grid lg:grid-cols-[1.2fr,1fr] gap-8 lg:gap-16 mb-20">
-          
-          {/* FULL IMAGE GALLERY - Enhanced with fullscreen capability, using Next Image for optimization */}
-          <div className="space-y-4 lg:sticky lg:top-24 self-start">
-            <div
-              className="relative bg-white rounded-3xl overflow-hidden aspect-[4/5] shadow-2xl shadow-zinc-900/5 cursor-zoom-in group border border-zinc-100"
-              onClick={() => setIsImageModalOpen(true)}
-            >
-              {allImages[selectedImageIndex] && (
-                <img
-                  src={allImages[selectedImageIndex]}
-                  alt={product.name}
-                  loading="lazy"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              )}
-              
-              {/* Navigation Arrows - Always visible on mobile, hover on desktop */}
-              {allImages.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white rounded-full p-3 shadow-xl transition-all lg:opacity-0 lg:group-hover:opacity-100 backdrop-blur-sm"
-                  >
-                    <ChevronLeft className="w-5 h-5 text-zinc-900" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white rounded-full p-3 shadow-xl transition-all lg:opacity-0 lg:group-hover:opacity-100 backdrop-blur-sm"
-                  >
-                    <ChevronRight className="w-5 h-5 text-zinc-900" />
-                  </button>
-                </>
-              )}
-              {/* Image Counter */}
-              <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold">
-                {selectedImageIndex + 1} / {allImages.length}
-              </div>
-            </div>
-            {/* Thumbnail Strip */}
-            {allImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                {allImages.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleImageChange(idx)}
-                    className={`relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === idx ? 'border-zinc-900 shadow-lg ring-2 ring-zinc-900 ring-offset-2' : 'border-zinc-200 opacity-50 hover:opacity-100 hover:border-zinc-400'}`}
-                  >
-                    <img src={img} alt={`View ${idx + 1}`} loading="lazy" className="object-cover" />
-                  </button>
-                ))}
-              </div>
+      <main className="max-w-7xl mx-auto px-4 py-6 lg:py-8 lg:grid lg:grid-cols-2 lg:gap-12">
+        
+        {/* IMAGE GALLERY - Large, responsive, with zoom */}
+        <div className="space-y-3 lg:sticky lg:top-20 self-start">
+          <div
+            className="relative aspect-[3/4] bg-white rounded-2xl overflow-hidden shadow-md border border-zinc-100 cursor-zoom-in group"
+            onClick={() => setIsImageModalOpen(true)}
+          >
+            {allImages[selectedImageIndex] && (
+              <img
+                src={allImages[selectedImageIndex]}
+                alt={product.name}
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+              />
             )}
-            {/* Trust Badges */}
-            <div className="hidden lg:grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-zinc-100">
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                  <Truck className="w-6 h-6 text-emerald-600" />
-                </div>
-                <p className="text-xs font-semibold text-zinc-900">Free Shipping</p>
-                <p className="text-[10px] text-zinc-500">On orders over ₦50,000</p>
-              </div>
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-blue-600" />
-                </div>
-                <p className="text-xs font-semibold text-zinc-900">Secure Payment</p>
-                <p className="text-[10px] text-zinc-500">100% protected</p>
-              </div>
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center">
-                  <RotateCcw className="w-6 h-6 text-purple-600" />
-                </div>
-                <p className="text-xs font-semibold text-zinc-900">Easy Returns</p>
-                <p className="text-[10px] text-zinc-500">30-day guarantee</p>
-              </div>
+            
+            {allImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1.5 shadow-md transition-all opacity-75 hover:opacity-100"
+                >
+                  <ChevronLeft className="w-4 h-4 text-zinc-900" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1.5 shadow-md transition-all opacity-75 hover:opacity-100"
+                >
+                  <ChevronRight className="w-4 h-4 text-zinc-900" />
+                </button>
+              </>
+            )}
+            <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-[10px] font-medium">
+              {selectedImageIndex + 1}/{allImages.length}
             </div>
           </div>
-
-          {/* PRODUCT INFO - Redesigned for better hierarchy */}
-          <div className="flex flex-col">
-            <div className="space-y-6 pb-8 border-b border-zinc-100">
-              <div className="flex items-start justify-between gap-4">
-                <span className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
-                  {product.category_name}
-                </span>
-                {currentStock < 10 && currentStock > 0 && (
-                  <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-bold">
-                    🔥 Only {currentStock} left
-                  </span>
-                )}
-              </div>
-              
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-zinc-900 leading-[0.95] tracking-tight">
-                {product.name}
-              </h1>
-              
-              <div className="flex flex-wrap items-center gap-4">
-                <span className="text-5xl font-black text-zinc-900 tracking-tight">
-                  ₦{parseFloat(currentPrice).toLocaleString()}
-                </span>
-                {!product.is_customizable && (
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-4 py-2 rounded-full border border-amber-200">
-                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                    <span className="text-xs font-bold text-amber-700">Includes Surprise</span>
-                  </div>
-                )}
-              </div>
-              {/* Quick Product Description */}
-              <p className="text-zinc-600 leading-relaxed text-base">
-                {product.description.split('\n')[0].substring(0, 150)}...
-              </p>
-            </div>
-
-            {/* SURPRISE REVEAL - Redesigned as prominent feature */}
-            {!product.is_customizable && (
-              <div className="py-8 space-y-4">
+          {allImages.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {allImages.map((img, idx) => (
                 <button
-                  onClick={() => setShowSurprise(!showSurprise)}
-                  className={`w-full flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 ${showSurprise ? 'border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg' : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md'}`}
+                  key={idx}
+                  onClick={() => handleImageChange(idx)}
+                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border ${selectedImageIndex === idx ? 'border-red-500 shadow-md' : 'border-zinc-200 hover:border-zinc-400'}`}
                 >
-                  <div className="flex items-center gap-4 text-left">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${showSurprise ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30' : 'bg-zinc-100 text-zinc-400'}`}>
-                      <Sparkles className="w-7 h-7" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-zinc-900 mb-1">Add Secret Message</h3>
-                      <p className="text-xs text-zinc-500">Create a magical reveal experience</p>
-                    </div>
-                  </div>
-                  <div className={`transition-transform ${showSurprise ? 'rotate-180' : ''}`}>
-                    <ChevronDown className="w-5 h-5 text-zinc-400" />
-                  </div>
+                  <img src={img} alt={`View ${idx + 1}`} loading="lazy" className="object-cover" />
                 </button>
-                <AnimatePresence>
-                  {showSurprise && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="p-6 bg-white rounded-2xl border-2 border-zinc-100 space-y-6 shadow-sm">
-                        <div className="space-y-3">
-                          <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-600 text-xs font-black">1</span>
-                            Choose an emotion
-                          </label>
-                          <div className="flex flex-wrap gap-2">
-                            {EMOTIONS.map((e) => {
-                              const isSelected = selectedEmotion === e.id;
-                              const colorClass = emotionColorMap[e.color];
-                              return (
-                                <button
-                                  key={e.id}
-                                  onClick={() => setSelectedEmotion(e.id)}
-                                  className={`px-4 py-2.5 rounded-xl border-2 text-xs font-bold transition-all ${isSelected ? `${colorClass} shadow-md scale-105` : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'}`}
-                                >
-                                  <span className="mr-1.5">{e.emoji}</span>
-                                  {e.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                        <div className="space-y-3">
-                          <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-600 text-xs font-black">2</span>
-                            Your secret message
-                          </label>
-                          <div className="relative">
-                            <textarea
-                              value={secretMessage}
-                              onChange={(e) => setSecretMessage(e.target.value.slice(0, maxMessageLength))}
-                              placeholder="Write something heartfelt that will be revealed when they receive their gift..."
-                              className="w-full bg-zinc-50 border-2 border-zinc-200 rounded-xl p-4 text-sm outline-none focus:border-purple-400 focus:bg-white transition-all h-32 font-medium resize-none placeholder:text-zinc-400"
-                            />
-                            <div className="absolute bottom-3 right-3 text-xs text-zinc-400 font-semibold">
-                              {secretMessage.length} / {maxMessageLength}
-                            </div>
-                          </div>
-                          {secretMessage.length > 0 && secretMessage.length < minMessageLength && (
-                            <p className="text-xs text-amber-600 font-medium">✨ Add {minMessageLength - secretMessage.length} more characters</p>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-
-            {/* VARIANT SELECTORS - Improved visual hierarchy with color swatches */}
-            <div className="py-8 space-y-8 border-t border-zinc-100">
-              {attributeTypes.map(type => {
-                const values = Array.from(new Set(
-                  product.variants.flatMap((v) => v.attributes).filter((a) => a.attribute_name === type).map((a) => a.value)
-                ));
-                
-                return (
-                  <div key={type}>
-                    <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider mb-4 block">
-                      {type}: <span className="text-zinc-500 normal-case">{selectedAttributes[type] || 'Select'}</span>
-                    </label>
-                    <div className="flex flex-wrap gap-3">
-                      {values.map(val => {
-                        const isSelected = selectedAttributes[type] === val;
-                        if (isColorAttribute(type)) {
-                          return (
-                            <button
-                              key={val}
-                              onClick={() => setSelectedAttributes(prev => ({ ...prev, [type]: val }))}
-                              className={`w-10 h-10 rounded-full border-2 transition-all shadow-md ${isSelected ? 'border-zinc-900 scale-110 ring-2 ring-zinc-900 ring-offset-2' : 'border-zinc-200 hover:border-zinc-400'} flex items-center justify-center`}
-                              style={{ backgroundColor: val }}
-                              title={val}
-                            >
-                              {isSelected && <Check className="w-5 h-5 text-white drop-shadow" />}
-                            </button>
-                          );
-                        }
-                        return (
-                          <button
-                            key={val}
-                            onClick={() => setSelectedAttributes(prev => ({ ...prev, [type]: val }))}
-                            className={`px-6 py-3 rounded-xl border-2 text-sm font-bold transition-all ${isSelected ? 'border-zinc-900 bg-zinc-900 text-white shadow-xl shadow-zinc-900/20' : 'border-zinc-200 text-zinc-700 hover:border-zinc-400 bg-white'}`}
-                          >
-                            {val}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-              {/* QUANTITY SELECTOR - Modern design */}
-              <div>
-                <label className="text-xs font-bold text-zinc-900 uppercase tracking-wider mb-4 block">Quantity</label>
-                <div className="inline-flex items-center bg-white border-2 border-zinc-200 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= (product.min_order_quantity || 1)}
-                    className="w-12 h-12 flex items-center justify-center hover:bg-zinc-50 disabled:opacity-30 transition-colors"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="w-16 h-12 flex items-center justify-center border-x-2 border-zinc-200 font-bold text-lg">
-                    {quantity}
-                  </div>
-                  <button
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= currentStock}
-                    className="w-12 h-12 flex items-center justify-center hover:bg-zinc-50 disabled:opacity-30 transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* ACTION BUTTONS - Redesigned */}
-            <div className="sticky bottom-0 bg-white pt-6 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 border-t border-zinc-100 mt-auto lg:static lg:border-0 lg:p-0">
-              {product.is_customizable ? (
-                <button
-                  onClick={() => router.push(`/editor?product=${product.id}`)}
-                  className="group relative w-full py-5 bg-[#dc2626] border border-zinc-800 text-white rounded-2xl font-bold text-sm uppercase tracking-wider overflow-hidden shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all active:scale-98"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#dc2626] to-[#dc5454] opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative z-10 flex items-center justify-center gap-3">
-                    <Palette className="w-5 h-5" />
-                    Customize Your Design
-                  </span>
-                </button>
-              ) : (
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAdding || (product.variants.length > 0 && !activeVariant) || quantity > currentStock || currentStock === 0 || !isSurpriseValid}
-                  className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-bold text-sm uppercase tracking-wider hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-zinc-900/20 active:scale-98"
-                >
-                  {isAdding ? (
-                    <Loader2 className="animate-spin w-5 h-5" />
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-5 h-5" />
-                      Add to Cart - ₦{(parseFloat(currentPrice) * quantity).toLocaleString()}
-                    </>
-                  )}
-                </button>
-              )}
+          )}
+          {/* Trust Badges - Compact */}
+          <div className="hidden lg:flex gap-4 mt-4">
+            <div className="flex-1 flex items-center gap-2 bg-zinc-50 p-3 rounded-lg border border-zinc-100">
+              <Truck className="w-4 h-4 text-emerald-500" />
+              <span className="text-[10px] font-medium">Free Shipping over ₦50k</span>
             </div>
-
-            {/* TABS - Modern accordion style */}
-            <div className="mt-8 space-y-2">
-              {[
-                { key: 'details', label: 'Product Details', content: product.description },
-                { key: 'shipping', label: 'Shipping & Returns', content: 'Standard shipping: 3-5 business days. Express shipping available at checkout. Free returns within 30 days.' }
-              ].map((tab) => {
-                const isActive = activeTab === tab.key;
-                return (
-                  <div key={tab.key} className="border border-zinc-200 rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => setActiveTab(isActive ? '' as any : tab.key as any)}
-                      className="w-full flex items-center justify-between p-5 hover:bg-zinc-50 transition-colors"
-                    >
-                      <span className="font-bold text-sm text-zinc-900">{tab.label}</span>
-                      <ChevronDown className={`w-5 h-5 text-zinc-400 transition-transform ${isActive ? 'rotate-180' : ''}`} />
-                    </button>
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.div
-                          initial={{ height: 0 }}
-                          animate={{ height: 'auto' }}
-                          exit={{ height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="p-5 pt-0 text-sm text-zinc-600 leading-relaxed border-t border-zinc-100">
-                            <div dangerouslySetInnerHTML={{ __html: tab.content.replace(/\n/g, '<br />') }} />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
+            <div className="flex-1 flex items-center gap-2 bg-zinc-50 p-3 rounded-lg border border-zinc-100">
+              <Shield className="w-4 h-4 text-blue-500" />
+              <span className="text-[10px] font-medium">Secure Payments</span>
+            </div>
+            <div className="flex-1 flex items-center gap-2 bg-zinc-50 p-3 rounded-lg border border-zinc-100">
+              <RotateCcw className="w-4 h-4 text-purple-500" />
+              <span className="text-[10px] font-medium">30-Day Returns</span>
             </div>
           </div>
         </div>
 
-        {/* RELATED PRODUCTS - Improved cards */}
+        {/* PRODUCT INFO - Concise, sticky on desktop */}
+        <div className="mt-6 lg:mt-0 space-y-6 lg:sticky lg:top-20 self-start">
+          <div className="space-y-3">
+            <span className="inline-flex items-center gap-1 bg-red-50 text-red-500 px-2 py-1 rounded-full text-[10px] font-medium uppercase">
+              <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+              {product.category_name}
+            </span>
+            <h1 className="text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
+              {product.name}
+            </h1>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-zinc-900">
+                ₦{parseFloat(currentPrice).toLocaleString()}
+              </span>
+              {!product.is_customizable && (
+                <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                  Includes Surprise
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-zinc-600 leading-relaxed">
+              {product.description.split('\n')[0].substring(0, 120)}...
+            </p>
+          </div>
+
+          {/* SURPRISE - Compact accordion */}
+          {!product.is_customizable && (
+            <div className="space-y-2">
+              <button
+                onClick={() => setShowSurprise(!showSurprise)}
+                className={`w-full flex items-center justify-between p-4 rounded-lg border border-zinc-100 transition-all ${showSurprise ? 'bg-purple-50 border-purple-200 shadow-sm' : 'hover:bg-zinc-50'}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className={`w-4 h-4 ${showSurprise ? 'text-purple-500' : 'text-zinc-500'}`} />
+                  <span className="text-sm font-medium">Add Secret Message</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${showSurprise ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {showSurprise && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-4 bg-zinc-50 rounded-lg space-y-4 border border-zinc-100">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-medium text-zinc-900 uppercase">Emotion</label>
+                        <div className="flex flex-wrap gap-2">
+                          {EMOTIONS.map((e) => {
+                            const isSelected = selectedEmotion === e.id;
+                            const colorClass = emotionColorMap[e.color];
+                            return (
+                              <button
+                                key={e.id}
+                                onClick={() => setSelectedEmotion(e.id)}
+                                className={`px-3 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${isSelected ? `${colorClass} shadow-sm` : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'}`}
+                              >
+                                <span className="mr-1">{e.emoji}</span>
+                                {e.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-medium text-zinc-900 uppercase">Message</label>
+                        <textarea
+                          value={secretMessage}
+                          onChange={(e) => setSecretMessage(e.target.value.slice(0, maxMessageLength))}
+                          placeholder="Your heartfelt note..."
+                          className="w-full bg-white border border-zinc-200 rounded-lg p-3 text-sm outline-none focus:border-purple-300 transition-all h-24 resize-none placeholder:text-zinc-400"
+                        />
+                        <div className="text-[10px] text-zinc-500 text-right">
+                          {secretMessage.length}/{maxMessageLength}
+                        </div>
+                        {secretMessage.length > 0 && secretMessage.length < minMessageLength && (
+                          <p className="text-[10px] text-amber-500">Add {minMessageLength - secretMessage.length} more characters</p>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* VARIANTS - Swatches for colors */}
+          <div className="space-y-4">
+            {attributeTypes.map(type => {
+              const values = Array.from(new Set(
+                product.variants.flatMap((v) => v.attributes).filter((a) => a.attribute_name === type).map((a) => a.value)
+              ));
+              
+              return (
+                <div key={type}>
+                  <label className="text-[10px] font-medium text-zinc-900 uppercase mb-2 block">
+                    {type}: <span className="text-zinc-500">{selectedAttributes[type] || 'Select'}</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {values.map(val => {
+                      const isSelected = selectedAttributes[type] === val;
+                      if (isColorAttribute(type)) {
+                        return (
+                          <button
+                            key={val}
+                            onClick={() => setSelectedAttributes(prev => ({ ...prev, [type]: val }))}
+                            className={`w-8 h-8 rounded-full border transition-all ${isSelected ? 'border-zinc-900 shadow-md ring-1 ring-zinc-900' : 'border-zinc-200 hover:border-zinc-400'}`}
+                            style={{ backgroundColor: val }}
+                            title={val}
+                          >
+                            {isSelected && <Check className="w-4 h-4 text-white m-2 drop-shadow" />}
+                          </button>
+                        );
+                      }
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => setSelectedAttributes(prev => ({ ...prev, [type]: val }))}
+                          className={`px-4 py-2 rounded-lg border text-[10px] font-medium transition-all ${isSelected ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 text-zinc-700 hover:border-zinc-400 bg-white'}`}
+                        >
+                          {val}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            {/* Quantity - Compact */}
+            <div>
+              <label className="text-[10px] font-medium text-zinc-900 uppercase mb-2 block">Quantity</label>
+              <div className="inline-flex items-center bg-white border border-zinc-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= (product.min_order_quantity || 1)}
+                  className="w-10 h-10 flex items-center justify-center hover:bg-zinc-50 disabled:opacity-30 transition"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <div className="w-12 h-10 flex items-center justify-center border-x border-zinc-200 font-medium text-base">
+                  {quantity}
+                </div>
+                <button
+                  onClick={() => handleQuantityChange(1)}
+                  disabled={quantity >= currentStock}
+                  className="w-10 h-10 flex items-center justify-center hover:bg-zinc-50 disabled:opacity-30 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ACTIONS - Sticky on mobile */}
+          <div className="sticky bottom-0 bg-white py-4 -mx-4 px-4 border-t border-zinc-100 lg:static lg:p-0 lg:border-0">
+            {product.is_customizable ? (
+              <button
+                onClick={() => router.push(`/editor?product=${product.id}`)}
+                className="w-full py-4 bg-red-600 text-white rounded-lg font-medium text-sm uppercase tracking-wide hover:bg-red-700 transition shadow-md active:scale-98"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Palette className="w-4 h-4" />
+                  Customize Now
+                </div>
+              </button>
+            ) : (
+              <button
+                onClick={handleAddToCart}
+                disabled={isAdding || (product.variants.length > 0 && !activeVariant) || quantity > currentStock || currentStock === 0 || !isSurpriseValid}
+                className="w-full py-4 bg-zinc-900 text-white rounded-lg font-medium text-sm uppercase tracking-wide hover:bg-zinc-800 transition flex items-center justify-center gap-2 disabled:opacity-50 shadow-md active:scale-98"
+              >
+                {isAdding ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  <>
+                    <ShoppingBag className="w-4 h-4" />
+                    Add to Cart - ₦{(parseFloat(currentPrice) * quantity).toLocaleString()}
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* TABS - Accordion */}
+          <div className="space-y-2">
+            {[
+              { key: 'details', label: 'Details', content: product.description },
+              { key: 'shipping', label: 'Shipping & Returns', content: 'Standard: 3-5 days. Express available. Free returns in 30 days.' }
+            ].map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <div key={tab.key} className="border border-zinc-100 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setActiveTab(isActive ? '' as any : tab.key as any)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-zinc-50 transition"
+                  >
+                    <span className="text-sm font-medium text-zinc-900">{tab.label}</span>
+                    <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${isActive ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {isActive && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: 'auto' }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-4 pt-0 text-sm text-zinc-600 leading-relaxed border-t border-zinc-100">
+                          <div dangerouslySetInnerHTML={{ __html: tab.content.replace(/\n/g, '<br />') }} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* RELATED - Compact cards */}
         {relatedProducts.length > 0 && (
-          <section className="border-t border-zinc-100 pt-16">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-black text-zinc-900">You May Also Like</h2>
+          <section className="mt-12 border-t border-zinc-100 pt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-zinc-900">Similar Items</h2>
               <button
                 onClick={() => router.push('/shop')}
-                className="text-sm font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-2 group"
+                className="text-[10px] font-medium text-zinc-600 hover:text-zinc-900 flex items-center gap-1"
               >
                 View All
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-3 h-3" />
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {relatedProducts.map((item) => (
                 <div
                   key={item.id}
@@ -541,21 +497,20 @@ export default function ClientProductDetail({
                   }}
                   className="group cursor-pointer"
                 >
-                  <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-50 mb-4 border border-zinc-100 relative shadow-sm hover:shadow-xl transition-all duration-300">
+                  <div className="aspect-[3/4] rounded-lg overflow-hidden bg-zinc-50 mb-2 border border-zinc-100 shadow-sm hover:shadow-md transition">
                     {item.image_url && (
                       <img
                         src={item.image_url}
                         alt={item.name}
                         loading="lazy"
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        className="object-cover group-hover:scale-105 transition duration-300"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <h3 className="text-sm font-bold text-zinc-900 mb-1 group-hover:text-red-600 transition-colors line-clamp-1">
+                  <h3 className="text-sm font-medium text-zinc-900 mb-0.5 group-hover:text-red-500 transition line-clamp-1">
                     {item.name}
                   </h3>
-                  <p className="text-sm font-bold text-zinc-500">
+                  <p className="text-sm font-medium text-zinc-600">
                     ₦{parseFloat(item.base_price).toLocaleString()}
                   </p>
                 </div>
@@ -565,19 +520,18 @@ export default function ClientProductDetail({
         )}
       </main>
 
-      {/* FULLSCREEN IMAGE MODAL */}
+      {/* IMAGE MODAL - Fullscreen */}
       <AnimatePresence>
         {isImageModalOpen && (
           <div
-            className="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4"
             onClick={() => setIsImageModalOpen(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="relative max-w-4xl w-full h-[90vh]"
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative max-w-5xl w-full h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {allImages[selectedImageIndex] && (
@@ -585,68 +539,67 @@ export default function ClientProductDetail({
                   src={allImages[selectedImageIndex]}
                   alt={product.name}
                   loading='lazy'
-                  className="object-contain"
+                  className="object-contain rounded-lg shadow-2xl"
                   sizes="100vw"
                 />
               )}
               <button
                 onClick={() => setIsImageModalOpen(false)}
-                className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors"
+                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 p-1.5 rounded-full transition"
               >
-                <X className="w-6 h-6 text-white" />
+                <X className="w-5 h-5 text-white" />
               </button>
               {allImages.length > 1 && (
                 <>
                   <button
                     onClick={handlePrevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 p-3 rounded-full transition-colors"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full transition"
                   >
-                    <ChevronLeft className="w-6 h-6 text-white" />
+                    <ChevronLeft className="w-5 h-5 text-white" />
                   </button>
                   <button
                     onClick={handleNextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 p-3 rounded-full transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full transition"
                   >
-                    <ChevronRight className="w-6 h-6 text-white" />
+                    <ChevronRight className="w-5 h-5 text-white" />
                   </button>
                 </>
               )}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold">
-                {selectedImageIndex + 1} / {allImages.length}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white px-2 py-1 rounded-full text-[10px] font-medium">
+                {selectedImageIndex + 1}/{allImages.length}
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* SUCCESS MODAL - Enhanced with better design */}
+      {/* SUCCESS MODAL - Compact */}
       <AnimatePresence>
         {showSuccessModal && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[100] p-6">
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4">
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white p-8 lg:p-12 rounded-[40px] max-w-lg w-full text-center shadow-2xl border border-zinc-200"
+              className="bg-white p-6 rounded-2xl max-w-sm w-full text-center shadow-lg border border-zinc-100"
             >
-              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Check className="w-10 h-10" />
+              <div className="w-12 h-12 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black uppercase italic mb-4 text-zinc-900">Added to Cart!</h2>
-              <p className="text-zinc-600 mb-8 font-bold text-sm uppercase tracking-widest leading-relaxed">Your custom experience has been saved to your bag.</p>
-              <div className="flex flex-col gap-3">
+              <h2 className="text-xl font-bold mb-2 text-zinc-900">Added!</h2>
+              <p className="text-[10px] text-zinc-600 mb-4 font-medium">Item added to your cart.</p>
+              <div className="flex gap-2">
                 <button 
                   onClick={() => { setShowSuccessModal(false); router.push('/cart'); }} 
-                  className="w-full py-5 bg-zinc-900 text-white rounded-full font-black text-sm uppercase tracking-[0.2em] hover:bg-red-600 transition-all active:scale-95 shadow-md"
+                  className="flex-1 py-3 bg-zinc-900 text-white rounded-lg text-[10px] font-medium uppercase tracking-wide hover:bg-red-600 transition active:scale-95"
                 >
-                  View Cart & Checkout
+                  View Cart
                 </button>
                 <button 
                   onClick={() => setShowSuccessModal(false)} 
-                  className="w-full py-5 border-2 border-zinc-200 text-zinc-600 rounded-full font-black text-sm uppercase tracking-[0.2em] hover:border-zinc-900 hover:text-zinc-900 transition-all"
+                  className="flex-1 py-3 border border-zinc-200 text-zinc-600 rounded-lg text-[10px] font-medium uppercase tracking-wide hover:border-zinc-400 transition"
                 >
-                  Continue Shopping
+                  Continue
                 </button>
               </div>
             </motion.div>

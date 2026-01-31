@@ -602,7 +602,7 @@ function MarketplaceProductCard({ product }: { product: any }) {
   const imageUrl = getImageUrl(product.image_url);
   
   return (
-    <a href={`/marketplace/${product.slug}`} className="group block">
+    <a href={`/shop/${product.slug}`} className="group block">
       <div className="relative aspect-square bg-zinc-100 rounded-xl overflow-hidden mb-2 border border-zinc-100 group-hover:border-red-200 group-hover:shadow-md transition-all">
         {imageUrl ? (
           <img
