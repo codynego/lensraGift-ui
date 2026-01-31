@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Search, ChevronRight, ArrowUpRight, Filter, Loader2, 
-  ChevronLeft, ChevronDown, X 
+  ChevronLeft, ChevronDown, ChevronUp, X 
 } from 'lucide-react';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
@@ -15,13 +15,23 @@ interface Product {
   name: string;
   slug: string;
   base_price: string;
-  category_name: string;
   image_url: string | null;
+  category_path: string;
+  tags: Tag[];
   is_active: boolean;
 }
 
 interface Category {
   id: number;
+  name: string;
+  slug: string;
+  parent_id?: number;
+  parent_name?: string | null;
+  subcategories?: Category[];
+  full_path: string;
+}
+
+interface Tag {
   name: string;
   slug: string;
 }
@@ -45,18 +55,21 @@ function ProductsContent() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [tagsLoading, setTagsLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProductsCount, setTotalProductsCount] = useState(0);
 
-  const itemsPerPage = 12; // Increased for better marketplace feel
+  const itemsPerPage = 12;
   
   const priceRanges: PriceRange[] = [
     { label: "Any Price", value: "all" },
@@ -69,7 +82,7 @@ function ProductsContent() {
     { label: "Featured", value: "featured", ordering: "" },
     { label: "Price: Low to High", value: "price_asc", ordering: "base_price" },
     { label: "Price: High to Low", value: "price_desc", ordering: "-base_price" },
-    { label: "Newest", value: "newest", ordering: "-created_at" }, // Assuming backend has created_at
+    { label: "Newest", value: "newest", ordering: "-created_at" },
   ];
 
   // Fetch categories on mount
@@ -80,7 +93,6 @@ function ProductsContent() {
         const response = await fetch(`${BaseUrl}api/products/categories/`);
         const data = await response.json();
         
-        // Ensure we set an array
         const categoriesArray = Array.isArray(data) ? data : (data.results ? data.results : []);
         setCategories(categoriesArray);
       } catch (err) {
@@ -94,17 +106,40 @@ function ProductsContent() {
     fetchCategories();
   }, []);
 
+  // Fetch tags on mount
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        setTagsLoading(true);
+        const response = await fetch(`${BaseUrl}api/products/tags/`);
+        const data = await response.json();
+        
+        const tagsArray = Array.isArray(data) ? data : (data.results ? data.results : []);
+        setTags(tagsArray);
+      } catch (err) {
+        console.error("Tags Fetch Error:", err);
+        setTags([]);
+      } finally {
+        setTagsLoading(false);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
   // Initialize state from URL params
   useEffect(() => {
     const q = searchParams.get('q') || '';
     const category = searchParams.get('category') || 'all';
     const price = searchParams.get('price') || 'all';
+    const tagsParam = searchParams.get('tags') || '';
     const sort = searchParams.get('sort') || 'featured';
     const page = Number(searchParams.get('page')) || 1;
 
     setSearchQuery(q);
     setSelectedCategory(category);
     setSelectedPriceRange(price);
+    setSelectedTags(tagsParam ? tagsParam.split(',') : []);
     setSortBy(sort);
     setCurrentPage(page);
   }, [searchParams]);
@@ -127,6 +162,9 @@ function ProductsContent() {
         }
         if (range && range.max !== undefined) {
           params.append('max_price', range.max.toString());
+        }
+        if (selectedTags.length > 0) {
+          params.append('tags', selectedTags.join(','));
         }
         const sortOpt = sortOptions.find(s => s.value === sortBy);
         if (sortOpt && sortOpt.ordering) {
@@ -151,7 +189,7 @@ function ProductsContent() {
 
     const timer = setTimeout(() => fetchProducts(), 300);
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategory, selectedPriceRange, sortBy, currentPage]);
+  }, [searchQuery, selectedCategory, selectedPriceRange, selectedTags, sortBy, currentPage]);
 
   // Update URL when filters change
   const updateURL = useCallback(() => {
@@ -160,12 +198,13 @@ function ProductsContent() {
     if (searchQuery) params.set('q', searchQuery);
     if (selectedCategory !== 'all') params.set('category', selectedCategory);
     if (selectedPriceRange !== 'all') params.set('price', selectedPriceRange);
+    if (selectedTags.length > 0) params.set('tags', selectedTags.join(','));
     if (sortBy !== 'featured') params.set('sort', sortBy);
     if (currentPage > 1) params.set('page', currentPage.toString());
 
     const newUrl = params.toString() ? `/marketplace?${params.toString()}` : '/marketplace';
     router.push(newUrl, { scroll: false });
-  }, [searchQuery, selectedCategory, selectedPriceRange, sortBy, currentPage, router]);
+  }, [searchQuery, selectedCategory, selectedPriceRange, selectedTags, sortBy, currentPage, router]);
 
   useEffect(() => {
     updateURL();
@@ -183,6 +222,13 @@ function ProductsContent() {
     setCurrentPage(1);
   };
 
+  const handleTagToggle = (slug: string) => {
+    setSelectedTags(prev => 
+      prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
+    );
+    setCurrentPage(1);
+  };
+
   const handleSortChange = (value: string) => {
     setSortBy(value);
     setCurrentPage(1);
@@ -192,8 +238,88 @@ function ProductsContent() {
     setSearchQuery('');
     setSelectedCategory('all');
     setSelectedPriceRange('all');
+    setSelectedTags([]);
     setSortBy('featured');
     setCurrentPage(1);
+  };
+
+  interface CategoryItemProps {
+    cat: Category;
+    depth?: number;
+    selectedCategory: string;
+    onSelect: (slug: string) => void;
+  }
+
+  const CategoryItem: React.FC<CategoryItemProps> = ({ cat, depth = 0, selectedCategory, onSelect }) => {
+    const [expanded, setExpanded] = useState(false);
+    const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+
+    return (
+      <>
+        <button 
+          onClick={() => {
+            onSelect(cat.slug);
+            if (hasSubs) setExpanded(!expanded);
+          }} 
+          className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+            selectedCategory === cat.slug ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:bg-white'
+          }`}
+          style={{ paddingLeft: `${depth * 16 + 16}px` }}
+        >
+          {cat.name}
+          {hasSubs ? (
+            expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+          ) : (
+            <ChevronRight className="w-3 h-3" />
+          )}
+        </button>
+        {expanded && hasSubs && cat.subcategories?.map(sub => (
+          <CategoryItem 
+            key={sub.id} 
+            cat={sub} 
+            depth={depth + 1} 
+            selectedCategory={selectedCategory}
+            onSelect={onSelect} 
+          />
+        ))}
+      </>
+    );
+  };
+
+  const MobileCategoryItem: React.FC<CategoryItemProps> = ({ cat, depth = 0, selectedCategory, onSelect }) => {
+    const [expanded, setExpanded] = useState(false);
+    const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+
+    return (
+      <>
+        <button 
+          onClick={() => {
+            onSelect(cat.slug);
+            if (hasSubs) setExpanded(!expanded);
+          }} 
+          className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+            selectedCategory === cat.slug ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
+          }`}
+          style={{ paddingLeft: `${depth * 16 + 16}px` }}
+        >
+          {cat.name}
+          {hasSubs ? (
+            expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+          ) : (
+            <ChevronRight className="w-3 h-3" />
+          )}
+        </button>
+        {expanded && hasSubs && cat.subcategories?.map(sub => (
+          <MobileCategoryItem 
+            key={sub.id} 
+            cat={sub} 
+            depth={depth + 1} 
+            selectedCategory={selectedCategory}
+            onSelect={onSelect} 
+          />
+        ))}
+      </>
+    );
   };
 
   return (
@@ -214,7 +340,7 @@ function ProductsContent() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input 
               type="text" 
-              placeholder="Search marketplace..."
+              placeholder="Search by name, description, or tag..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-50 border-none rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold focus:ring-2 focus:ring-red-600/20"
@@ -296,18 +422,15 @@ function ProductsContent() {
                   All Products <ChevronRight className="w-3 h-3" />
                 </button>
                 {categories.map((cat) => (
-                  <button 
+                  <MobileCategoryItem 
                     key={cat.id} 
-                    onClick={() => {
-                      handleCategoryChange(cat.slug);
+                    cat={cat} 
+                    selectedCategory={selectedCategory}
+                    onSelect={(slug) => {
+                      handleCategoryChange(slug);
                       setShowMobileFilters(false);
                     }} 
-                    className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                      selectedCategory === cat.slug ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
-                    }`}
-                  >
-                    {cat.name} <ChevronRight className="w-3 h-3" />
-                  </button>
+                  />
                 ))}
               </div>
             </div>
@@ -315,7 +438,7 @@ function ProductsContent() {
             {/* Price Range */}
             <div className="pt-6 border-t border-zinc-100">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Price Range</h4>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {priceRanges.map((range) => (
                   <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
                     <input 
@@ -332,6 +455,31 @@ function ProductsContent() {
                       selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'
                     }`}>
                       {range.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div className="pt-6 border-t border-zinc-100">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Tags</h4>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {tags.map((tag) => (
+                  <label key={tag.slug} className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedTags.includes(tag.slug)} 
+                      onChange={() => {
+                        handleTagToggle(tag.slug);
+                        // Don't close drawer to allow multiple selections
+                      }} 
+                      className="w-4 h-4 accent-red-600" 
+                    />
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      selectedTags.includes(tag.slug) ? 'text-zinc-900' : 'text-zinc-400'
+                    }`}>
+                      {tag.name}
                     </span>
                   </label>
                 ))}
@@ -374,22 +522,19 @@ function ProductsContent() {
                     All Products <ChevronRight className="w-3 h-3" />
                   </button>
                   {categories.map((cat) => (
-                    <button 
+                    <CategoryItem 
                       key={cat.id} 
-                      onClick={() => handleCategoryChange(cat.slug)} 
-                      className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                        selectedCategory === cat.slug ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:bg-white'
-                      }`}
-                    >
-                      {cat.name} <ChevronRight className="w-3 h-3" />
-                    </button>
+                      cat={cat} 
+                      selectedCategory={selectedCategory}
+                      onSelect={handleCategoryChange} 
+                    />
                   ))}
                 </div>
               )}
             </div>
 
             {/* Price Range */}
-            <div className="pt-8 border-t border-zinc-100">
+            <div className="pt-10 border-t border-zinc-100">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Price Range</h3>
               <div className="space-y-4">
                 {priceRanges.map((range) => (
@@ -411,6 +556,34 @@ function ProductsContent() {
               </div>
             </div>
 
+            {/* Tags */}
+            <div className="pt-10 border-t border-zinc-100">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Tags</h3>
+              {tagsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-60 overflow-y-auto">
+                  {tags.map((tag) => (
+                    <label key={tag.slug} className="flex items-center gap-3 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedTags.includes(tag.slug)} 
+                        onChange={() => handleTagToggle(tag.slug)} 
+                        className="w-4 h-4 accent-red-600" 
+                      />
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                        selectedTags.includes(tag.slug) ? 'text-zinc-900' : 'text-zinc-400'
+                      }`}>
+                        {tag.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button 
               onClick={clearAllFilters} 
               className="w-full py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest mt-8"
@@ -421,29 +594,6 @@ function ProductsContent() {
 
           {/* MAIN CONTENT */}
           <div className="flex-1">
-            {/* Mobile Category Scroll */}
-            <div className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar pb-4 border-b border-zinc-100 mb-6">
-              <button 
-                onClick={() => handleCategoryChange('all')} 
-                className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-                  selectedCategory === 'all' ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'
-                }`}
-              >
-                All
-              </button>
-              {categories.map((cat) => (
-                <button 
-                  key={cat.id} 
-                  onClick={() => handleCategoryChange(cat.slug)} 
-                  className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-                    selectedCategory === cat.slug ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-
             {/* Products Grid */}
             {loading ? (
               <div className="h-96 flex flex-col items-center justify-center gap-4">
@@ -498,8 +648,18 @@ function ProductsContent() {
                           </p>
                         </div>
                         <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                          {product.category_name}
+                          {product.category_path}
                         </span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {product.tags.map((tag) => (
+                            <span 
+                              key={tag.slug} 
+                              className="text-[8px] bg-zinc-100 px-2 py-0.5 rounded-full text-zinc-600 font-bold uppercase"
+                            >
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   ))}
