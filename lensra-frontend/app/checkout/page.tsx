@@ -332,7 +332,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }) 
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           code: couponCode,
