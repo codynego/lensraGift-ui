@@ -24,6 +24,7 @@ async function getProducts() {
 
 export default async function Marketplace() {
   const products = await getProducts();
+  console.log('Fetched products:', products);
 
   return <MarketplacePage initialProducts={products} />;
 }
