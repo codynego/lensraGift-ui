@@ -59,7 +59,7 @@ export default function Navbar() {
     <>
       {/* 1. TOP ANNOUNCEMENT BAR */}
       <div className="bg-[#050505] text-zinc-300 text-[9px] font-black uppercase tracking-[0.2em] py-2 text-center border-b border-zinc-800">
-        🎁 Free Delivery over ₦50,000 <span className="text-red-500 mx-2">|</span> Use Code: <span className="text-red-500">LENSRA2026</span>
+        🎁 Get 10% discount on your first order<span className="text-red-500 mx-2">|</span> Use Code: <span className="text-red-500">LENSRA26</span>
       </div>
 
       {/* 2. MAIN NAVIGATION */}

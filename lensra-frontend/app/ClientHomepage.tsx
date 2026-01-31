@@ -347,13 +347,9 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products
-              .filter(p => (p.is_featured || p.is_trending) && !p.is_customizable)
-              .slice(0, 8)
-              .map((product) => (
+              {products.filter(p => p.is_featured || p.is_trending).slice(0, 8).map((product) => (
                 <MarketplaceProductCard key={product.id} product={product} />
-              ))
-            }
+              ))}
             </div>
           </div>
 
