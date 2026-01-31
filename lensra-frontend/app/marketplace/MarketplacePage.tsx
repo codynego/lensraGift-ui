@@ -1,6 +1,3 @@
-// app/marketplace/page.tsx
-// Modern marketplace with advanced filtering inspired by Redbubble
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -25,10 +22,10 @@ interface Product {
   name: string;
   slug: string;
   base_price: string;
-  image_url: string;
-  category: string;
-  is_featured: boolean;
-  is_trending: boolean;
+  image_url?: string;
+  category?: string;
+  is_featured?: boolean;
+  is_trending?: boolean;
   occasions?: string[];
   tags?: string[];
 }
@@ -40,8 +37,17 @@ interface FilterState {
   sortBy: string;
 }
 
-export default function MarketplacePage({ initialProducts }: { initialProducts: Product[] }) {
-  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+interface MarketplacePageProps {
+  initialProducts?: Product[];
+}
+
+export default function MarketplacePage({ initialProducts = [] }: MarketplacePageProps) {
+  // Ensure products is always an array
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (!initialProducts) return [];
+    return Array.isArray(initialProducts) ? initialProducts : [];
+  });
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'large'>('grid');
   const [showFilters, setShowFilters] = useState(false);
@@ -94,45 +100,52 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
 
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
+    if (!Array.isArray(products)) return [];
+    
     let result = [...products];
 
     // Search filter
-    if (searchQuery) {
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
       result = result.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
+        product.name?.toLowerCase().includes(query) ||
+        product.category?.toLowerCase().includes(query)
       );
     }
 
     // Occasion filter
-    if (filters.occasion.length > 0) {
-      result = result.filter(product =>
-        product.occasions?.some(occ => filters.occasion.includes(occ))
-      );
+    if (filters.occasion && filters.occasion.length > 0) {
+      result = result.filter(product => {
+        if (!product.occasions || !Array.isArray(product.occasions)) return false;
+        return product.occasions.some(occ => filters.occasion.includes(occ));
+      });
     }
 
     // Category filter
-    if (filters.category.length > 0) {
-      result = result.filter(product =>
-        filters.category.some(cat => 
+    if (filters.category && filters.category.length > 0) {
+      result = result.filter(product => {
+        if (!product.category) return false;
+        return filters.category.some(cat => 
           product.category?.toLowerCase().includes(cat.toLowerCase())
-        )
-      );
+        );
+      });
     }
 
     // Price filter
-    result = result.filter(product => {
-      const price = parseFloat(product.base_price || "0");
-      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
-    });
+    if (filters.priceRange) {
+      result = result.filter(product => {
+        const price = parseFloat(product.base_price || "0");
+        return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+      });
+    }
 
     // Sorting
     switch (filters.sortBy) {
       case 'price-low':
-        result.sort((a, b) => parseFloat(a.base_price) - parseFloat(b.base_price));
+        result.sort((a, b) => parseFloat(a.base_price || "0") - parseFloat(b.base_price || "0"));
         break;
       case 'price-high':
-        result.sort((a, b) => parseFloat(b.base_price) - parseFloat(a.base_price));
+        result.sort((a, b) => parseFloat(b.base_price || "0") - parseFloat(a.base_price || "0"));
         break;
       case 'trending':
         result.sort((a, b) => (b.is_trending ? 1 : 0) - (a.is_trending ? 1 : 0));
@@ -149,12 +162,15 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
   // Toggle filter
   const toggleFilter = (type: keyof FilterState, value: any) => {
     if (type === 'occasion' || type === 'category') {
-      setFilters(prev => ({
-        ...prev,
-        [type]: prev[type].includes(value)
-          ? prev[type].filter(v => v !== value)
-          : [...prev[type], value]
-      }));
+      setFilters(prev => {
+        const currentArray = prev[type] || [];
+        return {
+          ...prev,
+          [type]: currentArray.includes(value)
+            ? currentArray.filter(v => v !== value)
+            : [...currentArray, value]
+        };
+      });
     }
   };
 
@@ -171,9 +187,9 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
 
   // Active filter count
   const activeFilterCount = 
-    filters.occasion.length + 
-    filters.category.length + 
-    (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 50000 ? 1 : 0);
+    (filters.occasion?.length || 0) + 
+    (filters.category?.length || 0) + 
+    (filters.priceRange && (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 50000) ? 1 : 0);
 
   if (loading) {
     return (
@@ -196,7 +212,7 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
                 Marketplace
               </h1>
               <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
-                {filteredProducts.length} Ready-made designs
+                {filteredProducts?.length || 0} Ready-made designs
               </p>
             </div>
 
@@ -268,14 +284,14 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
             {/* Active Filters */}
             {activeFilterCount > 0 && (
               <div className="flex-1 flex items-center gap-2 overflow-x-auto">
-                {filters.occasion.map(occ => (
+                {(filters.occasion || []).map(occ => (
                   <FilterChip
                     key={occ}
                     label={occasions.find(o => o.id === occ)?.name || occ}
                     onRemove={() => toggleFilter('occasion', occ)}
                   />
                 ))}
-                {filters.category.map(cat => (
+                {(filters.category || []).map(cat => (
                   <FilterChip
                     key={cat}
                     label={categories.find(c => c.id === cat)?.name || cat}
@@ -348,7 +364,7 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
                     >
                       <input
                         type="checkbox"
-                        checked={filters.occasion.includes(occasion.id)}
+                        checked={(filters.occasion || []).includes(occasion.id)}
                         onChange={() => toggleFilter('occasion', occasion.id)}
                         className="w-4 h-4 accent-red-500 cursor-pointer"
                       />
@@ -377,7 +393,7 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
                     >
                       <input
                         type="checkbox"
-                        checked={filters.category.includes(category.id)}
+                        checked={(filters.category || []).includes(category.id)}
                         onChange={() => toggleFilter('category', category.id)}
                         className="w-4 h-4 accent-red-500 cursor-pointer"
                       />
@@ -407,7 +423,7 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
                         priceRange: [range.min, range.max] 
                       }))}
                       className={`w-full text-left p-3 rounded-xl transition-all ${
-                        filters.priceRange[0] === range.min && filters.priceRange[1] === range.max
+                        filters.priceRange && filters.priceRange[0] === range.min && filters.priceRange[1] === range.max
                           ? 'bg-red-50 border-2 border-red-500 text-red-700 font-semibold'
                           : 'hover:bg-zinc-50 text-zinc-700 border-2 border-transparent'
                       }`}
@@ -432,7 +448,7 @@ export default function MarketplacePage({ initialProducts }: { initialProducts: 
 
           {/* Products Grid */}
           <main className="flex-1">
-            {filteredProducts.length === 0 ? (
+            {!filteredProducts || filteredProducts.length === 0 ? (
               <div className="text-center py-20">
                 <ShoppingBag className="w-16 h-16 text-zinc-300 mx-auto mb-4" />
                 <h3 className="text-2xl font-black uppercase text-zinc-900 mb-2">
@@ -510,7 +526,7 @@ function ProductCard({ product, viewMode }: { product: Product; viewMode: 'grid'
               {imageUrl ? (
                 <img
                   src={imageUrl}
-                  alt={product.name}
+                  alt={product.name || 'Product'}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -553,7 +569,7 @@ function ProductCard({ product, viewMode }: { product: Product; viewMode: 'grid'
                   {product.name}
                 </h3>
                 <p className="text-sm font-semibold text-zinc-600 mb-4">
-                  {product.category}
+                  {product.category || 'Personalized Gift'}
                 </p>
 
                 {/* Price */}
@@ -582,7 +598,7 @@ function ProductCard({ product, viewMode }: { product: Product; viewMode: 'grid'
         {imageUrl ? (
           <img
             src={imageUrl}
-            alt={product.name}
+            alt={product.name || 'Product'}
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
@@ -628,7 +644,7 @@ function ProductCard({ product, viewMode }: { product: Product; viewMode: 'grid'
         <h3 className="font-semibold text-zinc-900 mb-1 line-clamp-2 group-hover:text-red-500 transition-colors">
           {product.name}
         </h3>
-        <p className="text-xs font-semibold text-zinc-500 mb-2">{product.category}</p>
+        <p className="text-xs font-semibold text-zinc-500 mb-2">{product.category || 'Gift'}</p>
         <p className="text-lg font-black text-red-500">
           ₦{parseFloat(product.base_price || "0").toLocaleString()}
         </p>
@@ -636,3 +652,4 @@ function ProductCard({ product, viewMode }: { product: Product; viewMode: 'grid'
     </a>
   );
 }
+

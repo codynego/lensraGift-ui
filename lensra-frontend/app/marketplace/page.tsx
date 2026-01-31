@@ -1,6 +1,4 @@
-// app/marketplace/page.tsx
-// Server component that fetches products
-
+"use client";
 import MarketplacePage from './MarketplacePage'; 
 
 async function getProducts() {
