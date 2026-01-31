@@ -226,7 +226,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                     <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                   </a>
                   <a 
-                    href="/products" 
+                    href="/shop" 
                     className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-zinc-200 rounded-lg font-semibold uppercase text-[10px] tracking-wide hover:bg-white/10 transition-all"
                   >
                     All Products
@@ -419,7 +419,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               ].map((cat) => (
                 <a
                   key={cat.name}
-                  href={`/products?category=${cat.name.toLowerCase()}`}
+                  href={`/marketplace?category=${cat.name.toLowerCase()}`}
                   className="group bg-zinc-50 border border-zinc-100 rounded-lg p-4 hover:border-red-200 hover:shadow-md transition-all text-center"
                 >
                   <cat.icon className="w-6 h-6 text-red-500 mx-auto mb-2" />
