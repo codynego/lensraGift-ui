@@ -381,9 +381,6 @@ function ProductsContent() {
                 <p className="text-[9px] text-zinc-400 max-w-xs text-center">
                   Try adjusting your filters or search query
                 </p>
-                <Link href="/marketplace" className="mt-2 text-[10px] font-black uppercase tracking-widest text-red-600 hover:underline flex items-center gap-1">
-                  Not sure what to design? → Browse ready-made gifts
-                </Link>
               </div>
             ) : (
               <>
