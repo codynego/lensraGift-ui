@@ -55,6 +55,7 @@ function ProductsContent() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [topLevelCategories, setTopLevelCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -95,9 +96,11 @@ function ProductsContent() {
         
         const categoriesArray = Array.isArray(data) ? data : (data.results ? data.results : []);
         setCategories(categoriesArray);
+        setTopLevelCategories(categoriesArray.filter((cat: Category) => !cat.parent_id));
       } catch (err) {
         console.error("Categories Fetch Error:", err);
         setCategories([]);
+        setTopLevelCategories([]);
       } finally {
         setCategoriesLoading(false);
       }
@@ -243,6 +246,34 @@ function ProductsContent() {
     setCurrentPage(1);
   };
 
+  const findTopLevelForSlug = (slug: string): Category | null => {
+    if (slug === 'all') return null;
+    for (const cat of topLevelCategories) {
+      if (cat.slug === slug) return cat;
+      if (cat.subcategories) {
+        const foundInSub = cat.subcategories.find(sub => sub.slug === slug);
+        if (foundInSub) return cat;
+        for (const sub of cat.subcategories) {
+          if (sub.subcategories?.find(subsub => subsub.slug === slug)) return cat;
+        }
+      }
+    }
+    return null;
+  };
+
+  const selectedMainCat = findTopLevelForSlug(selectedCategory);
+
+  const isTopLevelSelected = (cat: Category) => {
+    if (selectedCategory === 'all') return false;
+    if (selectedCategory === cat.slug) return true;
+    const main = selectedMainCat;
+    return main?.slug === cat.slug;
+  };
+
+  const isSubSelected = (sub: Category, main: Category) => {
+    return selectedCategory === sub.slug || (selectedCategory === main.slug && false); // false since 'All in' is separate
+  };
+
   interface CategoryItemProps {
     cat: Category;
     depth?: number;
@@ -322,6 +353,11 @@ function ProductsContent() {
     );
   };
 
+  const categoryButtonClass = (isSelected: boolean) => 
+    `px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+      isSelected ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'
+    }`;
+
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       
@@ -366,6 +402,46 @@ function ProductsContent() {
               <Filter className="w-4 h-4 text-zinc-900" />
             </button>
           </div>
+        </div>
+
+        {/* Mobile Category Bars */}
+        <div className="lg:hidden px-6 pb-4">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button 
+              onClick={() => handleCategoryChange('all')} 
+              className={categoryButtonClass(selectedCategory === 'all')}
+            >
+              All
+            </button>
+            {topLevelCategories.map((cat) => (
+              <button 
+                key={cat.id} 
+                onClick={() => handleCategoryChange(cat.slug)} 
+                className={categoryButtonClass(isTopLevelSelected(cat))}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+          {selectedMainCat && selectedMainCat.subcategories && selectedMainCat.subcategories.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar mt-2">
+              <button 
+                onClick={() => handleCategoryChange(selectedMainCat.slug)} 
+                className={categoryButtonClass(selectedCategory === selectedMainCat.slug)}
+              >
+                All in {selectedMainCat.name}
+              </button>
+              {selectedMainCat.subcategories.map((sub) => (
+                <button 
+                  key={sub.id} 
+                  onClick={() => handleCategoryChange(sub.slug)} 
+                  className={categoryButtonClass(selectedCategory === sub.slug)}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
