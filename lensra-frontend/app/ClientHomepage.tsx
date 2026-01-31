@@ -1,5 +1,5 @@
 // app/ClientHomepage.tsx
-// Updated sleek UI inspired by Redbubble: cleaner layout, reduced text sizes, better copy, enhanced responsiveness, subtle animations, vibrant accents
+// Updated sleek UI with subscribe popup modal
 
 "use client";
 
@@ -9,6 +9,7 @@ import {
   ShoppingBag, Zap, Award, ArrowRight, 
   ShieldCheck, Sparkles, Clock, MapPin, Heart, Upload, Gift, Star, Instagram, Users, Home, Coffee, Shirt, ChevronRight, Package, TrendingUp, Palette, Search, Filter, X
 } from 'lucide-react';
+import LensraSubscribe from '@/components/LensraSubscribe'; // Adjust path as needed
 
 const getImageUrl = (imagePath: string | null | undefined): string | null => {
   const BaseUrl = "https://api.lensra.com/";
@@ -24,6 +25,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   const [loading] = useState(false);
   const [activeTab, setActiveTab] = useState<'marketplace' | 'custom'>('marketplace');
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
   const marketplaceCategories = [
     {
@@ -117,12 +119,31 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
     }
   ];
 
+  // Testimonials carousel
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
+  // Subscribe popup timer - shows after 15 seconds on first visit
+  useEffect(() => {
+    const hasSeenPopup = localStorage.getItem('lensra_subscribe_popup_seen');
+    
+    if (!hasSeenPopup) {
+      const timer = setTimeout(() => {
+        setShowSubscribeModal(true);
+        localStorage.setItem('lensra_subscribe_popup_seen', 'true');
+      }, 15000); // 15 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const closeModal = () => {
+    setShowSubscribeModal(false);
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -135,6 +156,28 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   return (
     <div className="min-h-screen bg-white selection:bg-red-100 selection:text-red-900">
       
+      {/* SUBSCRIBE MODAL */}
+      {showSubscribeModal && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={closeModal}
+        >
+          <div 
+            className="relative animate-in zoom-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeModal}
+              className="absolute -top-2 -right-2 w-8 h-8 bg-zinc-900 border border-zinc-700 rounded-full flex items-center justify-center hover:bg-red-600 transition-all z-10 group"
+              aria-label="Close popup"
+            >
+              <X className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+            </button>
+            <LensraSubscribe source="first_gift_popup" />
+          </div>
+        </div>
+      )}
+
       {/* HERO SECTION - Sleek Dual Path with Search Inspiration */}
       <section className="relative bg-gradient-to-br from-zinc-950 to-zinc-900 overflow-hidden">
         {/* Subtle Pattern */}
