@@ -111,6 +111,7 @@ export default async function Homepage() {
     const prodRes = await fetch(`${BaseUrl}api/products/`, { next: { revalidate: 3600 } }); // ISR
     if (!prodRes.ok) throw new Error('Failed to fetch products');
     const prodData = await prodRes.json();
+    console.log("Fetched Products Data:", prodData);
     products = Array.isArray(prodData) ? prodData : (prodData.results || []);
   } catch (err) {
     console.error("Fetch Error:", err);
