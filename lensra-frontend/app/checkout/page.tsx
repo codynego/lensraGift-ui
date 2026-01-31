@@ -101,6 +101,10 @@ export default function CheckoutPage() {
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -290,7 +294,8 @@ export default function CheckoutPage() {
     return baseFee + addCost;
   }, [selectedLocationId, selectedOptionId, locations, options]);
 
-  const total = subtotal + shipping;
+  const totalBeforeDiscount = subtotal + shipping;
+  const total = totalBeforeDiscount - appliedDiscount;
 
   const validateForm = () => {
     if (!formData.full_name || !formData.address || !formData.city || !formData.state || !formData.phone) {
@@ -316,6 +321,42 @@ export default function CheckoutPage() {
     return true;
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsApplyingCoupon(true);
+    setCouponMessage(null);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch(`${BaseUrl}api/orders/validate-coupon/`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }) 
+        },
+        body: JSON.stringify({
+          coupon_code: couponCode,
+          subtotal: subtotal
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setAppliedDiscount(data.discount_amount);
+        setCouponMessage('Coupon applied successfully!');
+      } else {
+        setCouponMessage(data.coupon_code?.[0] || data.non_field_errors?.[0] || 'Invalid coupon');
+        setAppliedDiscount(0);
+      }
+    } catch (err) {
+      setCouponMessage('Failed to apply coupon');
+      setAppliedDiscount(0);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
   const handleOrder = async () => {
     setErrorMessage(null);
     if (!validateForm()) return;
@@ -336,6 +377,7 @@ export default function CheckoutPage() {
     orderFormData.append('phone_number', formData.phone);
     orderFormData.append('shipping_location_id', selectedLocationId!.toString());
     orderFormData.append('shipping_option_id', selectedOptionId!.toString());
+    if (couponCode) orderFormData.append('coupon_code', couponCode);
 
     if (!token) {
       orderFormData.append('guest_email', formData.email);
@@ -417,6 +459,11 @@ export default function CheckoutPage() {
         {errorMessage && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm font-medium">
             {errorMessage}
+          </div>
+        )}
+        {couponMessage && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-700 text-sm font-medium">
+            {couponMessage}
           </div>
         )}
 
@@ -510,21 +557,47 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-white/10">
-                <div className="flex justify-between text-sm font-bold uppercase tracking-wider text-zinc-400">
-                  <span>Subtotal</span>
-                  <span className="text-white font-black italic">{formatCurrency(subtotal)}</span>
+              {/* Coupon Section */}
+              <div className="mb-6 pt-4 border-t border-zinc-800">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="COUPON CODE"
+                    className="flex-1 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm font-medium uppercase tracking-wide text-zinc-300 placeholder-zinc-500 focus:border-red-500 outline-none transition"
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={isApplyingCoupon || !couponCode.trim()}
+                    className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold uppercase tracking-wide disabled:opacity-50 transition"
+                  >
+                    {isApplyingCoupon ? <Loader2 className="animate-spin w-4 h-4 mx-auto" /> : 'Apply'}
+                  </button>
                 </div>
-                <div className="flex justify-between text-sm font-bold uppercase tracking-wider text-zinc-400">
+              </div>
+
+              <div className="space-y-3 pt-4 border-t border-white/10">
+                <div className="flex justify-between text-sm font-medium uppercase tracking-wide text-zinc-400">
+                  <span>Subtotal</span>
+                  <span className="text-white font-medium">{formatCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-medium uppercase tracking-wide text-zinc-400">
                   <span>Shipping</span>
-                  <span className="text-white font-black italic">
-                    {shipping === 0 ? "Calculated at next step" : formatCurrency(shipping)}
+                  <span className="text-white font-medium">
+                    {shipping === 0 ? "TBD" : formatCurrency(shipping)}
                   </span>
                 </div>
-                <div className="h-px bg-zinc-800 my-4" />
+                {appliedDiscount > 0 && (
+                  <div className="flex justify-between text-sm font-medium uppercase tracking-wide text-green-400">
+                    <span>Discount</span>
+                    <span className="font-medium">-{formatCurrency(appliedDiscount)}</span>
+                  </div>
+                )}
+                <div className="h-px bg-zinc-800 my-3" />
                 <div className="flex justify-between items-end">
-                  <span className="text-base font-bold uppercase tracking-wider">Total</span>
-                  <span className="text-3xl md:text-4xl lg:text-5xl font-black italic tracking-tighter text-white">
+                  <span className="text-sm font-medium uppercase tracking-wide">Total</span>
+                  <span className="text-2xl md:text-3xl lg:text-4xl font-bold italic tracking-tight text-white">
                     {formatCurrency(total)}
                   </span>
                 </div>
@@ -533,13 +606,13 @@ export default function CheckoutPage() {
               <button
                 onClick={handleOrder}
                 disabled={isProcessing || cartItems.length === 0 || !selectedLocationId || !selectedOptionId}
-                className="w-full mt-8 py-5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-3xl font-black uppercase tracking-[0.3em] text-sm transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="w-full mt-6 py-4 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-2xl font-medium text-sm uppercase tracking-wide transition flex items-center justify-center gap-2 disabled:opacity-50 shadow-md"
               >
                 {isProcessing ? (
-                  <Loader2 className="animate-spin w-5 h-5" />
+                  <Loader2 className="animate-spin w-4 h-4" />
                 ) : (
                   <>
-                    <CreditCard className="w-5 h-5" /> Proceed to Pay
+                    <CreditCard className="w-4 h-4" /> Pay Now
                   </>
                 )}
               </button>
@@ -551,8 +624,7 @@ export default function CheckoutPage() {
   );
 }
 
-// Reusable sub-components remain the same as previous version, with minor tweaks for consistency
-
+// Reusable sub-components with minor adjustments for sleekness
 function AddressSelector({ addresses, selectedId, onSelect, onAddNew }: {
   addresses: Address[];
   selectedId: number | null;
@@ -560,36 +632,36 @@ function AddressSelector({ addresses, selectedId, onSelect, onAddNew }: {
   onAddNew: () => void;
 }) {
   return (
-    <div className="space-y-6">
-      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Saved Addresses</h3>
-      <div className="grid gap-4">
+    <div className="space-y-4">
+      <h3 className="text-[10px] font-medium uppercase tracking-widest text-zinc-500">Addresses</h3>
+      <div className="grid gap-3">
         {addresses.map((addr) => (
           <button
             key={addr.id}
             onClick={() => onSelect(addr)}
-            className={`p-5 md:p-6 rounded-3xl border-2 transition-all text-left ${
+            className={`p-4 rounded-2xl border transition-all text-left ${
               selectedId === addr.id 
-                ? "border-black bg-zinc-50 shadow-sm" 
+                ? "border-zinc-900 bg-zinc-50" 
                 : "border-zinc-200 hover:border-zinc-400"
             }`}
           >
-            <div className="flex items-start gap-4">
-              <CheckCircle2 className={`w-6 h-6 mt-1 ${selectedId === addr.id ? "text-red-600" : "text-zinc-300"}`} />
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className={`w-5 h-5 mt-0.5 ${selectedId === addr.id ? "text-red-500" : "text-zinc-300"}`} />
               <div>
-                <p className="font-black italic uppercase text-base">{addr.full_name}</p>
-                <p className="text-sm text-zinc-600 mt-1">
+                <p className="font-medium text-sm">{addr.full_name}</p>
+                <p className="text-[10px] text-zinc-500 mt-0.5">
                   {addr.street_address}, {addr.city}, {addr.state}
                 </p>
-                <p className="text-sm text-zinc-500 mt-1">{addr.phone_number}</p>
+                <p className="text-[10px] text-zinc-500 mt-0.5">{addr.phone_number}</p>
               </div>
             </div>
           </button>
         ))}
         <button
           onClick={onAddNew}
-          className="flex items-center justify-center gap-3 p-5 md:p-6 rounded-3xl border-2 border-dashed border-zinc-300 hover:border-zinc-500 transition-all text-sm font-black uppercase tracking-widest text-zinc-600 hover:text-black"
+          className="flex items-center justify-center gap-2 p-4 rounded-2xl border border-dashed border-zinc-300 hover:border-zinc-500 transition-all text-[10px] font-medium uppercase tracking-widest text-zinc-600 hover:text-zinc-900"
         >
-          <Plus className="w-5 h-5" /> Add New Address
+          <Plus className="w-4 h-4" /> New Address
         </button>
       </div>
     </div>
@@ -612,74 +684,74 @@ function ManualAddressForm({
   const cities = useMemo(() => [...new Set(locations.map(l => l.city_name))].sort(), [locations]);
 
   return (
-    <div className="space-y-6 bg-zinc-50 p-6 rounded-3xl border border-zinc-200">
+    <div className="space-y-4 bg-zinc-50 p-4 rounded-2xl border border-zinc-200">
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-black uppercase tracking-widest text-red-600">
-          {isGuest ? 'Contact & Delivery Details' : 'New Delivery Address'}
+        <h3 className="text-sm font-medium text-zinc-900">
+          {isGuest ? 'Delivery Details' : 'New Address'}
         </h3>
         {onCancel && (
-          <button onClick={onCancel} className="text-zinc-500 hover:text-black transition">
-            <X className="w-6 h-6" />
+          <button onClick={onCancel} className="text-zinc-500 hover:text-zinc-900 transition">
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>
 
-      <div className="space-y-5">
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
-            <User className="w-4 h-4" /> Full Name *
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <label className="flex items-center gap-1 text-[10px] font-medium uppercase text-zinc-600">
+            <User className="w-3 h-3" /> Name *
           </label>
           <input
             type="text"
             value={formData.full_name}
             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-            className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-2xl focus:border-black outline-none transition text-sm font-medium"
-            placeholder="Enter full name"
+            className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg focus:border-zinc-900 outline-none transition text-sm"
+            placeholder="Full name"
             required
           />
         </div>
 
         {isGuest && (
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
-              <Mail className="w-4 h-4" /> Email Address *
+          <div className="space-y-1">
+            <label className="flex items-center gap-1 text-[10px] font-medium uppercase text-zinc-600">
+              <Mail className="w-3 h-3" /> Email *
             </label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-2xl focus:border-black outline-none transition text-sm font-medium"
-              placeholder="Enter email"
+              className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg focus:border-zinc-900 outline-none transition text-sm"
+              placeholder="Email"
               required
             />
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
-              <Phone className="w-4 h-4" /> Phone Number *
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="flex items-center gap-1 text-[10px] font-medium uppercase text-zinc-600">
+              <Phone className="w-3 h-3" /> Phone *
             </label>
             <input
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-2xl focus:border-black outline-none transition text-sm font-medium"
-              placeholder="Enter phone number"
+              className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg focus:border-zinc-900 outline-none transition text-sm"
+              placeholder="Phone"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
-              <MapPin className="w-4 h-4" /> City *
+          <div className="space-y-1">
+            <label className="flex items-center gap-1 text-[10px] font-medium uppercase text-zinc-600">
+              <MapPin className="w-3 h-3" /> City *
             </label>
             <select
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-2xl focus:border-black outline-none transition text-sm font-medium appearance-none"
+              className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg focus:border-zinc-900 outline-none transition text-sm"
             >
-              <option value="">Select or type city</option>
+              <option value="">Select city</option>
               {cities.map((city) => (
                 <option key={city} value={city}>{city}</option>
               ))}
@@ -687,14 +759,14 @@ function ManualAddressForm({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
-            <Globe className="w-4 h-4" /> State *
+        <div className="space-y-1">
+          <label className="flex items-center gap-1 text-[10px] font-medium uppercase text-zinc-600">
+            <Globe className="w-3 h-3" /> State *
           </label>
           <select
             value={formData.state}
             onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-            className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-2xl focus:border-black outline-none transition text-sm font-medium appearance-none"
+            className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg focus:border-zinc-900 outline-none transition text-sm"
           >
             <option value="">Select state</option>
             {NIGERIAN_STATES.map((s) => (
@@ -703,16 +775,16 @@ function ManualAddressForm({
           </select>
         </div>
 
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
-            <MapPin className="w-4 h-4" /> Street Address *
+        <div className="space-y-1">
+          <label className="flex items-center gap-1 text-[10px] font-medium uppercase text-zinc-600">
+            <MapPin className="w-3 h-3" /> Address *
           </label>
           <textarea
-            rows={3}
+            rows={2}
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-2xl focus:border-black outline-none transition text-sm font-medium resize-none"
-            placeholder="Enter full street address"
+            className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg focus:border-zinc-900 outline-none transition text-sm resize-none"
+            placeholder="Street address"
             required
           />
         </div>
@@ -740,16 +812,16 @@ function ShippingLocationSelector({
   };
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Delivery Location *</h3>
+    <div className="space-y-4">
+      <h3 className="text-[10px] font-medium uppercase tracking-widest text-zinc-500">Location *</h3>
       <select
-        className="w-full px-5 py-4 bg-white border-2 border-zinc-200 rounded-2xl focus:border-black outline-none transition text-sm font-medium appearance-none"
+        className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg focus:border-zinc-900 outline-none transition text-sm"
         value={selectedId || ""}
         onChange={(e) => onSelect(Number(e.target.value) || null)}
       >
-        <option value="">Select delivery area</option>
+        <option value="">Select area</option>
         {zones.map((z) => (
-          <optgroup key={z.id} label={`${z.name} - Base ${formatCurrency(parseSafe(z.base_fee))}`}>
+          <optgroup key={z.id} label={`${z.name} - ${formatCurrency(parseSafe(z.base_fee))}`}>
             {z.locations.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.city_name}
@@ -781,25 +853,25 @@ function ShippingOptionSelector({
   };
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Shipping Method *</h3>
-      <div className="grid gap-4">
+    <div className="space-y-4">
+      <h3 className="text-[10px] font-medium uppercase tracking-widest text-zinc-500">Method *</h3>
+      <div className="grid gap-3">
         {options.map((o) => (
           <button
             key={o.id}
             onClick={() => onSelect(o.id)}
-            className={`p-5 md:p-6 rounded-3xl border-2 transition-all text-left ${
+            className={`p-4 rounded-2xl border transition-all text-left ${
               selectedId === o.id
-                ? "border-black bg-zinc-50 shadow-sm"
+                ? "border-zinc-900 bg-zinc-50"
                 : "border-zinc-200 hover:border-zinc-400"
             }`}
           >
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex justify-between items-center gap-3">
               <div>
-                <p className="font-black uppercase text-base">{o.name}</p>
-                <p className="text-sm text-zinc-600 mt-1">{o.estimated_delivery}</p>
+                <p className="font-medium text-sm">{o.name}</p>
+                <p className="text-[10px] text-zinc-500 mt-0.5">{o.estimated_delivery}</p>
               </div>
-              <span className="font-black text-lg">
+              <span className="font-medium text-sm">
                 {formatCurrency(parseSafe(o.additional_cost))}
               </span>
             </div>
