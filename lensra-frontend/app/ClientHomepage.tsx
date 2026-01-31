@@ -440,7 +440,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
 
           {/* Featured Custom Products */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-            {products.slice(0, 8).map((product) => (
+            {products.filter(product => product.is_customizable).slice(0, 8).map((product) => (
               <CustomProductCard key={product.id} product={product} />
             ))}
           </div>
