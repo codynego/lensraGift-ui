@@ -133,68 +133,69 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white selection:bg-red-600 selection:text-white">
       
       {/* HERO SECTION - Dual Path */}
-      <section className="relative bg-gradient-to-br from-neutral-50 via-white to-neutral-50 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-zinc-950 via-zinc-900 to-black overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-[0.03]" 
              style={{ 
-               backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="black" fill-opacity="1"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+               backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
+               backgroundSize: '50px 50px' 
              }} 
         />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
+        <div className="max-w-[1400px] mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="text-center max-w-4xl mx-auto mb-16">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 rounded-full mb-8">
-              <Sparkles className="w-4 h-4 text-red-500" />
-              <span className="text-xs font-semibold text-red-600 tracking-wide">
-                Nigeria's #1 Personalized Gift Platform
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-red-600/10 border border-red-600/20 rounded-full mb-8">
+              <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />
+              <span className="font-black uppercase tracking-[0.3em] text-[10px] text-red-500">
+                Trusted By 500+ Nigerians
               </span>
             </div>
             
             {/* Main Heading */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-neutral-900 mb-6 leading-none">
-              Gifts that tell
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-orange-500">
-                your story
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] mb-6 italic uppercase text-white">
+              Gifts That Tell
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500">
+                Your Story
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-neutral-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-zinc-300 mb-12 font-bold uppercase tracking-wide max-w-2xl mx-auto">
               Choose from our curated marketplace or create something completely unique. Either way, you'll give a gift they'll never forget.
             </p>
 
             {/* Dual CTA Tabs */}
-            <div className="inline-flex bg-neutral-100 p-1.5 rounded-2xl mb-8 shadow-sm">
+            <div className="inline-flex bg-white/5 border border-white/10 p-1.5 rounded-2xl mb-8 backdrop-blur-sm">
               <button
                 onClick={() => setActiveTab('marketplace')}
-                className={`px-8 py-4 rounded-xl text-sm font-semibold transition-all ${
+                className={`px-8 py-4 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all ${
                   activeTab === 'marketplace'
-                    ? 'bg-white text-neutral-900 shadow-md'
-                    : 'text-neutral-600 hover:text-neutral-900'
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4" />
                   <span>Browse Marketplace</span>
                 </div>
-                <p className="text-xs text-neutral-500 mt-1">Ready-made designs</p>
+                <p className="text-[9px] font-black uppercase tracking-wider mt-1 opacity-70">Ready-made designs</p>
               </button>
               <button
                 onClick={() => setActiveTab('custom')}
-                className={`px-8 py-4 rounded-xl text-sm font-semibold transition-all ${
+                className={`px-8 py-4 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all ${
                   activeTab === 'custom'
-                    ? 'bg-white text-neutral-900 shadow-md'
-                    : 'text-neutral-600 hover:text-neutral-900'
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <Palette className="w-4 h-4" />
                   <span>Custom Creator</span>
                 </div>
-                <p className="text-xs text-neutral-500 mt-1">Design from scratch</p>
+                <p className="text-[9px] font-black uppercase tracking-wider mt-1 opacity-70">Design from scratch</p>
               </button>
             </div>
 
@@ -204,14 +205,14 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                 <>
                   <a 
                     href="/marketplace" 
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full font-semibold hover:shadow-2xl hover:shadow-red-500/30 transition-all group"
+                    className="inline-flex items-center gap-4 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all group"
                   >
                     <span>Explore Marketplace</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </a>
                   <a 
                     href="/gift-finder" 
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-semibold hover:border-neutral-300 transition-all"
+                    className="inline-flex items-center gap-4 px-10 py-5 bg-white/10 border border-white/20 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-white/20 transition-all"
                   >
                     <Gift className="w-5 h-5" />
                     <span>Gift Finder Quiz</span>
@@ -221,14 +222,14 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                 <>
                   <a 
                     href="/editor" 
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full font-semibold hover:shadow-2xl hover:shadow-purple-500/30 transition-all group"
+                    className="inline-flex items-center gap-4 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all group"
                   >
                     <span>Start Creating</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </a>
                   <a 
                     href="/products" 
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-semibold hover:border-neutral-300 transition-all"
+                    className="inline-flex items-center gap-4 px-10 py-5 bg-white/10 border border-white/20 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-white/20 transition-all"
                   >
                     <span>View All Products</span>
                   </a>
@@ -241,11 +242,11 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {features.map((feature, idx) => (
               <div key={idx} className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-red-50 text-red-500 rounded-xl mb-3">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-red-600/10 border border-red-600/20 text-red-500 rounded-xl mb-3">
                   {feature.icon}
                 </div>
-                <p className="font-semibold text-neutral-900 mb-1">{feature.title}</p>
-                <p className="text-sm text-neutral-600">{feature.description}</p>
+                <p className="font-black uppercase tracking-wide text-sm text-white mb-1">{feature.title}</p>
+                <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -253,20 +254,20 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
       </section>
 
       {/* MARKETPLACE SECTION */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-zinc-50">
+        <div className="max-w-[1400px] mx-auto px-4">
           {/* Section Header */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 rounded-full mb-4">
-              <ShoppingBag className="w-4 h-4 text-pink-600" />
-              <span className="text-xs font-semibold text-pink-600 tracking-wide">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-full mb-4">
+              <ShoppingBag className="w-4 h-4 text-red-600" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600">
                 Shop Ready-Made Gifts
               </span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold text-neutral-900 mb-4">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
               Find Your Perfect Gift
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-600">
               Expertly designed gifts for every occasion. Just click, personalize a name (optional), and order.
             </p>
           </div>
@@ -277,20 +278,20 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               <a
                 key={category.title}
                 href={`/marketplace?occasion=${category.title.toLowerCase()}`}
-                className="group relative bg-white border-2 border-neutral-200 rounded-2xl p-6 hover:border-neutral-300 hover:shadow-xl transition-all overflow-hidden"
+                className="group relative bg-white border-2 border-zinc-200 rounded-2xl p-6 hover:border-red-300 hover:shadow-xl transition-all overflow-hidden"
               >
                 {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />
                 
                 <div className="relative">
                   <div className="text-4xl mb-3">{category.emoji}</div>
-                  <h3 className="font-semibold text-neutral-900 mb-1">{category.title}</h3>
-                  <p className="text-xs text-neutral-500 mb-2">{category.description}</p>
-                  <p className="text-xs font-semibold text-red-500">{category.count}</p>
+                  <h3 className="font-black uppercase tracking-tight text-sm text-zinc-900 mb-1">{category.title}</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 mb-2 leading-relaxed">{category.description}</p>
+                  <p className="text-[10px] font-black uppercase text-red-600">{category.count}</p>
                 </div>
                 
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ChevronRight className="w-5 h-5 text-neutral-400" />
+                  <ChevronRight className="w-5 h-5 text-red-600" />
                 </div>
               </a>
             ))}
@@ -299,10 +300,10 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           {/* Featured Marketplace Items */}
           <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-neutral-900">Trending This Week</h3>
+              <h3 className="text-2xl font-black uppercase italic text-zinc-900">Trending This Week</h3>
               <a 
                 href="/marketplace" 
-                className="text-sm font-semibold text-red-500 hover:text-red-600 flex items-center gap-1"
+                className="text-xs font-black uppercase tracking-wider text-red-600 hover:text-red-700 flex items-center gap-1"
               >
                 View all
                 <ArrowRight className="w-4 h-4" />
@@ -317,41 +318,54 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           </div>
 
           {/* Gift Finder CTA */}
-          <div className="bg-gradient-to-br from-orange-50 to-pink-50 rounded-3xl p-12 text-center border-2 border-orange-100">
-            <Gift className="w-16 h-16 text-orange-500 mx-auto mb-6" />
-            <h3 className="text-3xl font-bold text-neutral-900 mb-4">
-              Not Sure What to Get?
-            </h3>
-            <p className="text-lg text-neutral-600 mb-8 max-w-xl mx-auto">
-              Take our 2-minute quiz and we'll recommend the perfect gift based on the occasion, personality, and your budget.
-            </p>
-            <a 
-              href="/gift-finder" 
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-full font-semibold hover:shadow-2xl hover:shadow-orange-500/30 transition-all group"
-            >
-              <Gift className="w-5 h-5" />
-              <span>Start Gift Finder</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
+          <div className="bg-gradient-to-br from-zinc-900 to-black rounded-3xl p-12 text-center border-2 border-zinc-800 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-[0.03]" 
+                 style={{ 
+                   backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
+                   backgroundSize: '50px 50px' 
+                 }} 
+            />
+            <div className="relative z-10">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-red-600/20">
+                <Gift className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-white mb-4">
+                Not Sure What to Get?
+              </h3>
+              <p className="text-base md:text-lg text-zinc-300 font-bold uppercase tracking-wide mb-8 max-w-xl mx-auto">
+                Take our 2-minute quiz and we'll recommend the perfect gift based on the occasion, personality, and your budget.
+              </p>
+              <a 
+                href="/gift-finder" 
+                className="inline-flex items-center gap-4 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/50 transition-all group"
+              >
+                <Gift className="w-5 h-5" />
+                <span>Start Gift Finder</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+              <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider mt-6">
+                ✨ Takes Less Than 2 Minutes • 100% Free
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CUSTOM CREATOR SECTION */}
-      <section className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4">
           {/* Section Header */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full mb-4">
-              <Palette className="w-4 h-4 text-purple-600" />
-              <span className="text-xs font-semibold text-purple-600 tracking-wide">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-full mb-4">
+              <Palette className="w-4 h-4 text-red-600" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600">
                 Design Your Own
               </span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold text-neutral-900 mb-4">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">
               Unleash Your Creativity
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-600 max-w-2xl mx-auto">
               Upload your photos, add text, choose from premium products. Create something truly one-of-a-kind.
             </p>
           </div>
@@ -385,15 +399,15 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               }
             ].map((item) => (
               <div key={item.step} className="relative">
-                <div className="bg-white rounded-2xl p-8 border-2 border-neutral-200 hover:border-purple-300 transition-all h-full">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 text-purple-600 rounded-xl mb-4">
+                <div className="bg-zinc-50 rounded-2xl p-8 border-2 border-zinc-200 hover:border-red-300 transition-all h-full">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-red-600/10 border border-red-600/20 text-red-600 rounded-xl mb-4">
                     {item.icon}
                   </div>
-                  <div className="absolute top-4 right-4 text-6xl font-bold text-neutral-100">
+                  <div className="absolute top-4 right-4 text-6xl font-black text-zinc-100 select-none">
                     {item.step}
                   </div>
-                  <h3 className="font-semibold text-neutral-900 mb-2 relative z-10">{item.title}</h3>
-                  <p className="text-sm text-neutral-600 relative z-10">{item.description}</p>
+                  <h3 className="font-black uppercase tracking-tight text-sm text-zinc-900 mb-2 relative z-10">{item.title}</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-zinc-600 relative z-10 leading-relaxed">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -401,7 +415,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
 
           {/* Product Categories */}
           <div className="mb-12">
-            <h3 className="text-2xl font-bold text-neutral-900 mb-6">Popular Categories</h3>
+            <h3 className="text-2xl font-black uppercase italic text-zinc-900 mb-6">Popular Categories</h3>
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
               {[
@@ -414,11 +428,11 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                 <a
                   key={cat.name}
                   href={`/products?category=${cat.name.toLowerCase()}`}
-                  className="group bg-white border-2 border-neutral-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-lg transition-all text-center"
+                  className="group bg-zinc-50 border-2 border-zinc-200 rounded-xl p-6 hover:border-red-300 hover:shadow-lg transition-all text-center"
                 >
-                  <cat.icon className="w-8 h-8 text-purple-500 mx-auto mb-3" />
-                  <h4 className="font-semibold text-neutral-900 mb-1">{cat.name}</h4>
-                  <p className="text-xs text-neutral-500">{cat.count}</p>
+                  <cat.icon className="w-8 h-8 text-red-600 mx-auto mb-3" />
+                  <h4 className="font-black uppercase tracking-tight text-xs text-zinc-900 mb-1">{cat.name}</h4>
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">{cat.count}</p>
                 </a>
               ))}
             </div>
@@ -435,7 +449,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           <div className="text-center">
             <a 
               href="/editor" 
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full font-semibold hover:shadow-2xl hover:shadow-purple-500/30 transition-all group"
+              className="inline-flex items-center gap-4 px-10 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:shadow-2xl hover:shadow-red-600/30 transition-all group"
             >
               <Palette className="w-5 h-5" />
               <span>Start Designing Now</span>
@@ -643,7 +657,7 @@ function CustomProductCard({ product }: { product: any }) {
   const imageUrl = getImageUrl(product.image_url);
   
   return (
-    <a href={`/editor?product=${product.slug}`} className="group block">
+    <a href={`/editor?product=${product.id}`} className="group block">
       <div className="relative aspect-square bg-neutral-100 rounded-2xl overflow-hidden mb-3 border-2 border-neutral-200 group-hover:border-purple-300 group-hover:shadow-xl transition-all">
         {imageUrl ? (
           <img
