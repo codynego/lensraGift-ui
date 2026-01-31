@@ -27,6 +27,8 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
+  console.log("Initial Products:", products);
+
   const marketplaceCategories = [
     {
       title: "Birthdays",
