@@ -277,7 +277,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             {marketplaceCategories.map((category) => (
               <a
                 key={category.title}
-                href={`/marketplace?occasion=${category.title.toLowerCase()}`}
+                href={`/marketplace?category=${category.title.toLowerCase()}`}
                 className="group relative bg-white border-2 border-zinc-200 rounded-2xl p-6 hover:border-red-300 hover:shadow-xl transition-all overflow-hidden"
               >
                 {/* Gradient Background */}
