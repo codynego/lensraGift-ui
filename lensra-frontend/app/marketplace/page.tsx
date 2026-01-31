@@ -1,5 +1,5 @@
-"use client";
-import MarketplacePage from './MarketplacePage'; 
+
+import MarketplacePage from './MarketplacePage';
 
 async function getProducts() {
   try {
