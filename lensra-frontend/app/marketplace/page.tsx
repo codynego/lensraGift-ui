@@ -173,6 +173,7 @@ function ProductsContent() {
         if (sortOpt && sortOpt.ordering) {
           params.append('ordering', sortOpt.ordering);
         }
+        params.append('is_customizable', 'false');
         params.append('page', currentPage.toString());
         params.append('page_size', itemsPerPage.toString());
 
