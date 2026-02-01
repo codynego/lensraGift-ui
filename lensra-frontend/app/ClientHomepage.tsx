@@ -559,7 +559,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               Share your gifts with #LensraMoments and get featured
             </p>
             <a 
-              href="https://instagram.com/lensragifts" 
+              href="https://instagram.com/lensragift" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg font-semibold text-[10px] uppercase tracking-wide hover:shadow-md hover:shadow-pink-500/20 transition-all group"
