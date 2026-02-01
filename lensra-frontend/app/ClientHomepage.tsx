@@ -28,6 +28,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
+  console.log("Initial Products:", products);
 
   useEffect(() => {
     fetch(`${BaseUrl}api/products/featured/`)
@@ -35,8 +36,6 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
       .then(data => setTrendingProducts(data))
       .catch(err => console.error('Error fetching trending products:', err));
   }, []);
-
-  console.log("trendingProducts:", trendingProducts);
 
   const marketplaceCategories = [
     {
@@ -225,11 +224,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             <div className="inline-flex bg-white/5 border border-white/5 p-1 rounded-xl mb-6 backdrop-blur-md shadow-md">
               <button
                 onClick={() => setActiveTab('marketplace')}
-                className={`px-6 py-2.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all ${
-                  activeTab === 'marketplace'
-                    ? 'bg-red-600 text-white shadow-md shadow-red-600/20'
-                    : 'text-zinc-300 hover:text-white'
-                }`}
+                className={"px-6 py-2.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all " + (activeTab === 'marketplace' ? 'bg-red-600 text-white shadow-md shadow-red-600/20' : 'text-zinc-300 hover:text-white')}
               >
                 <div className="flex items-center gap-1.5">
                   <ShoppingBag className="w-3 h-3" />
@@ -238,11 +233,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               </button>
               <button
                 onClick={() => setActiveTab('custom')}
-                className={`px-6 py-2.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all ${
-                  activeTab === 'custom'
-                    ? 'bg-red-600 text-white shadow-md shadow-red-600/20'
-                    : 'text-zinc-300 hover:text-white'
-                }`}
+                className={"px-6 py-2.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all " + (activeTab === 'custom' ? 'bg-red-600 text-white shadow-md shadow-red-600/20' : 'text-zinc-300 hover:text-white')}
               >
                 <div className="flex items-center gap-1.5">
                   <Palette className="w-3 h-3" />
@@ -332,7 +323,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                 href={`/marketplace?category=${category.title.toLowerCase()}`}
                 className="group relative bg-white border border-zinc-100 rounded-xl p-4 hover:border-red-200 hover:shadow-md transition-all flex-shrink-0 w-[160px] md:w-auto snap-center overflow-hidden"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />
+                <div className={"absolute inset-0 bg-gradient-to-br " + category.gradient + " opacity-0 group-hover:opacity-5 transition-opacity"} />
                 <div className="relative">
                   <div className="text-3xl mb-2">{category.emoji}</div>
                   <h3 className="font-semibold uppercase tracking-tight text-xs text-zinc-900 mb-1">{category.title}</h3>
@@ -552,9 +543,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                 <button
                   key={idx}
                   onClick={() => setCurrentTestimonial(idx)}
-                  className={`h-1.5 rounded-full transition-all ${
-                    idx === currentTestimonial ? 'w-6 bg-red-500' : 'w-1.5 bg-zinc-300'
-                  }`}
+                  className={"h-1.5 rounded-full transition-all " + (idx === currentTestimonial ? 'w-6 bg-red-500' : 'w-1.5 bg-zinc-300')}
                 />
               ))}
             </div>
