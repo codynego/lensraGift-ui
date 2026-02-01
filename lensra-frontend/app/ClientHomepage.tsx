@@ -4,15 +4,16 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { 
   ShoppingBag, Zap, Award, ArrowRight, 
   ShieldCheck, Sparkles, Clock, MapPin, Heart, Upload, Gift, Star, Instagram, Users, Home, Coffee, Shirt, ChevronRight, Package, TrendingUp, Palette, Search, Filter, X
 } from 'lucide-react';
 import LensraSubscribe from '@/components/LensraSubscribe'; // Adjust path as needed
 
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
+
 const getImageUrl = (imagePath: string | null | undefined): string | null => {
-  const BaseUrl = "https://api.lensra.com/";
   if (!imagePath) return null;
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath;
