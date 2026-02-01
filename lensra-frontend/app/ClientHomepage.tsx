@@ -29,12 +29,11 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
-  console.log("Initial Products:", products);
 
   useEffect(() => {
     fetch(`${BaseUrl}api/products/featured/`)
       .then(res => res.json())
-      .then(data => setTrendingProducts(data))
+      .then(data => setTrendingProducts(data.results || []))
       .catch(err => console.error('Error fetching trending products:', err));
   }, []);
 
