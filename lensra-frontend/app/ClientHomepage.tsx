@@ -29,13 +29,14 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
 
-
   useEffect(() => {
     fetch('/api/products/featured/')
       .then(res => res.json())
-      .then(data => setTrendingProducts(data); console.log(data))
+      .then(data => setTrendingProducts(data))
       .catch(err => console.error('Error fetching trending products:', err));
   }, []);
+
+  console.log("trendingProducts:", trendingProducts);
 
   const marketplaceCategories = [
     {
