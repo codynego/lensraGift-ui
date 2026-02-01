@@ -22,12 +22,20 @@ const getImageUrl = (imagePath: string | null | undefined): string | null => {
 
 export default function ClientHomepage({ initialProducts }: { initialProducts: any[] }) {
   const [products] = useState(initialProducts);
+  const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
   const [loading] = useState(false);
   const [activeTab, setActiveTab] = useState<'marketplace' | 'custom'>('marketplace');
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
   console.log("Initial Products:", products);
+
+  useEffect(() => {
+    fetch('/api/products/featured/')
+      .then(res => res.json())
+      .then(data => setTrendingProducts(data))
+      .catch(err => console.error('Error fetching trending products:', err));
+  }, []);
 
   const marketplaceCategories = [
     {
@@ -349,7 +357,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.filter(p => p.is_featured || p.is_trending).slice(0, 8).map((product) => (
+              {trendingProducts.slice(0, 8).map((product) => (
                 <MarketplaceProductCard key={product.id} product={product} />
               ))}
             </div>
