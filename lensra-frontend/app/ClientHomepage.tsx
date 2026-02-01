@@ -30,7 +30,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
 
 
   useEffect(() => {
-    fetch('/api/products/featured/')
+    fetch(`${BaseUrl}api/products/featured/`)
       .then(res => res.json())
       .then(data => setTrendingProducts(data))
       .catch(err => console.error('Error fetching trending products:', err));
