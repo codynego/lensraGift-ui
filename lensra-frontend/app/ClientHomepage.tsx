@@ -269,7 +269,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
 
           <div className="text-center">
             <a 
-              href="/shop" 
+              href="/marketplace" 
               className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all group"
             >
               View All Gifts
@@ -498,7 +498,7 @@ function ProductCard({ product, showTrending = false }: { product: any; showTren
   const imageUrl = getImageUrl(product.image_url);
   
   return (
-    <a href={`/shop/${product.slug}`} className="group block">
+    <a href={`/marketplace/${product.slug}`} className="group block">
       <div className="relative aspect-square bg-zinc-100 rounded-xl overflow-hidden mb-3 border-2 border-zinc-100 group-hover:border-red-300 group-hover:shadow-xl transition-all">
         {imageUrl ? (
           <img
