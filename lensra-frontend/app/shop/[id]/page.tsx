@@ -2,8 +2,9 @@
 // Note: This is the server component for the product detail page
 
 import { Metadata } from 'next';
-import ClientProductDetail from './ClientProductDetail'; // We'll define this below
-import ProductSchema from '@/components/ProductSchema'; // Assuming this is in components
+import { notFound } from 'next/navigation';
+import ClientProductDetail from './ClientProductDetail';
+import ProductSchema from '@/components/ProductSchema'; // Assuming this is in components; update to support image array and offers
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
@@ -37,19 +38,31 @@ interface ProductDetail {
   variants: ProductVariant[];
   min_order_quantity: number;
   is_customizable: boolean;
+  // Add if API provides: category_slug?: string; ratings?: { average: number; count: number };
 }
+
+const getFullImageUrl = (imagePath: string | null | undefined, baseUrl: string): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  return `${baseUrl.replace(/\/$/, '')}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}`;
+};
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   try {
-    const response = await fetch(`${BaseUrl}api/products/${params.id}/`, { next: { revalidate: 3600 } }); // ISR every hour
+    const response = await fetch(`${BaseUrl}api/products/${params.id}/`, { next: { revalidate: 3600 } });
     if (!response.ok) throw new Error('Product not found');
     const product: ProductDetail = await response.json();
 
-    const images = [product.image_url, ...product.gallery.map((g) => g.image_url)].filter(Boolean) as string[];
+    const images = [
+      product.image_url,
+      ...product.gallery.map((g) => g.image_url),
+    ].filter(Boolean).map((img) => getFullImageUrl(img, BaseUrl)) as string[];
 
     return {
       title: `${product.name} | Personalized ${product.category_name} Gifts in Nigeria - Lensra`,
-      description: product.description.slice(0, 160) + '...', // Truncate for meta
+      description: product.description.slice(0, 160) + '...',
       keywords: [
         product.name.toLowerCase(),
         `${product.category_name.toLowerCase()} gifts Nigeria`,
@@ -64,7 +77,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         url: `https://www.lensra.com/shop/${params.id}`,
         images: images.map((img) => ({
           url: img,
-          width: 800, // Adjust based on actual sizes
+          width: 800, // Adjust based on actual image dimensions if known
           height: 600,
           alt: `${product.name} Image`,
         })),
@@ -74,13 +87,13 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         card: 'summary_large_image',
         title: `${product.name} | Lensra Gifts`,
         description: 'Personalized with secret messages and emotions. Shop now!',
-        images: images,
+        images,
       },
       alternates: {
         canonical: `/shop/${params.id}`,
       },
     };
-  } catch (err) {
+  } catch {
     return {
       title: 'Product Not Found | Lensra Gifts',
       description: 'Browse our collection of premium personalized gifts.',
@@ -98,20 +111,35 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     product = await response.json();
 
     if (product) {
-      const relatedRes = await fetch(`${BaseUrl}api/products/?category__name=${product.category_name}`, { next: { revalidate: 3600 } });
-      if (relatedRes.ok) {
+      // Preprocess images for product
+      if (product.image_url) {
+        product.image_url = getFullImageUrl(product.image_url, BaseUrl);
+      }
+      product.gallery = product.gallery.map((g) => ({
+        ...g,
+        image_url: getFullImageUrl(g.image_url, BaseUrl),
+      }));
+
+      const relatedRes = await fetch(`${BaseUrl}api/products/?category__name=${encodeURIComponent(product.category_name)}`, { next: { revalidate: 3600 } });
+      if (relatedRes.ok && product) {
         const relatedData = await relatedRes.json();
         const productsArray = Array.isArray(relatedData) ? relatedData : (relatedData.results || []);
-        relatedProducts = productsArray.filter((p: ProductDetail) => product && p.id !== product.id).slice(0, 4);
+        relatedProducts = productsArray
+          .filter((p: ProductDetail) => p.id !== product?.id)
+          .slice(0, 4)
+          .map((p: ProductDetail) => ({
+            ...p,
+            image_url: getFullImageUrl(p.image_url, BaseUrl),
+            // Preprocess gallery if needed for cards, but since cards use image_url, fine
+          }));
       }
     }
   } catch (err) {
-    console.error(err);
-    // Optionally render error UI
+    console.error('Error fetching product:', err);
   }
 
   if (!product) {
-    return <div className="min-h-screen flex items-center justify-center font-black uppercase text-4xl italic">Item not found.</div>;
+    notFound(); // Throws to Next.js 404 page
   }
 
   return (
@@ -120,26 +148,28 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         id={product.id.toString()}
         name={product.name}
         description={product.description}
-        image={product.image_url || product.gallery[0]?.image_url || ''} // Or array if multiple
+        image={[
+          product.image_url || '',
+          ...product.gallery.map((g) => g.image_url),
+        ].filter(Boolean)}
         price={parseFloat(product.base_price)}
         currency="NGN"
         availability={product.variants.some((v) => v.stock_quantity > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}
         url={`https://www.lensra.com/shop/${params.id}`}
         category={product.category_name}
-        // Add rating if available from product data
-        // breadcrumbs as before
+        // Add rating if available: reviewCount, aggregateRating
         breadcrumbs={{
           itemListElement: [
             { position: 1, name: 'Home', item: 'https://www.lensra.com' },
-            { position: 2, name: product.category_name, item: `https://www.lensra.com/shop?category=${product.category_name}` },
+            { position: 2, name: product.category_name, item: `https://www.lensra.com/shop?category=${encodeURIComponent(product.category_name)}` },
             { position: 3, name: product.name, item: `https://www.lensra.com/shop/${params.id}` },
-          ]
+          ],
         }}
       />
-      <ClientProductDetail 
-        initialProduct={product} 
-        initialRelatedProducts={relatedProducts} 
-        baseUrl={BaseUrl} 
+      <ClientProductDetail
+        initialProduct={product}
+        initialRelatedProducts={relatedProducts}
+        baseUrl={BaseUrl}
       />
     </>
   );
