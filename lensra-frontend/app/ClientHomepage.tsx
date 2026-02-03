@@ -34,12 +34,17 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
       .then(data => setPopularProducts(data.results || []))
       .catch(err => console.error('Error fetching popular products:', err));
 
-    // Fetch staff picks (can be same endpoint with different filter)
-    fetch(`${BaseUrl}api/products/?is_featured=true&limit=4`)
+    // Fetch staff picks based on selected intent or default
+    const tag = selectedIntent || '';
+    const endpoint = tag 
+      ? `${BaseUrl}api/products/featured/?tag=${tag}`
+      : `${BaseUrl}api/products/?is_featured=true&limit=8`;
+    
+    fetch(endpoint)
       .then(res => res.json())
       .then(data => setStaffPicks(data.results || []))
       .catch(err => console.error('Error fetching staff picks:', err));
-  }, []);
+  }, [selectedIntent]);
 
   // Subscribe popup - shows after 15 seconds on first visit
   useEffect(() => {
@@ -142,7 +147,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             {/* Primary CTAs - Clear Split */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto">
               <a 
-                href="/gift-finder" 
+                href="/marketplace" 
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl font-bold text-sm uppercase tracking-wide hover:shadow-xl hover:shadow-red-500/30 transition-all group"
               >
                 <Gift className="w-5 h-5" />
@@ -151,11 +156,11 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               </a>
               
               <a 
-                href="/send-surprise" 
+                href="/shop" 
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 border-2 border-white/20 text-white rounded-xl font-bold text-sm uppercase tracking-wide hover:bg-white/20 transition-all backdrop-blur-sm"
               >
-                <Sparkles className="w-5 h-5" />
-                Send a Surprise Gift
+                <Palette className="w-5 h-5" />
+                Customize Your Gift
               </a>
             </div>
 
@@ -295,7 +300,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               return (
                 <a
                   key={budget.range}
-                  href={`/shop?${params.toString()}`}
+                  href={`/marketplace?${params.toString()}`}
                   className="group relative bg-gradient-to-br from-zinc-50 to-white border-2 border-zinc-100 rounded-2xl p-8 hover:border-red-300 hover:shadow-xl transition-all text-center overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-rose-50 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -343,30 +348,30 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
         </div>
       </section>
 
-      {/* 7. VIRAL FEATURE BLOCK - Subtle Introduction */}
+      {/* 7. GIFT FINDER FEATURE BLOCK */}
       <section className="py-16 bg-gradient-to-br from-red-600 to-red-500 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
-            <Sparkles className="w-8 h-8" />
+            <Gift className="w-8 h-8" />
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Send a Surprise Gift 🎁
+            Find the Perfect Gift 🎁
           </h2>
           <p className="text-lg md:text-xl text-red-50 mb-8 max-w-2xl mx-auto">
-            No address needed. Let them claim it.
+            Answer a few quick questions and we'll recommend the ideal gift
           </p>
           
           <a 
-            href="/send-surprise" 
+            href="/gift-finder" 
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-red-600 rounded-xl font-bold text-sm uppercase tracking-wide hover:shadow-2xl transition-all group"
           >
-            Send a Gift
+            Start Gift Finder
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </a>
 
           <p className="text-xs text-red-100 mt-6 max-w-md mx-auto">
-            Perfect for surprising friends across Nigeria • They choose exactly what they want
+            Takes 2 minutes • Personalized recommendations • Completely free
           </p>
         </div>
       </section>
@@ -448,7 +453,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               <ul className="space-y-2 text-sm">
                 <li><a href="/shop" className="hover:text-red-400 transition-colors">All Products</a></li>
                 <li><a href="/gift-finder" className="hover:text-red-400 transition-colors">Gift Finder</a></li>
-                <li><a href="/send-surprise" className="hover:text-red-400 transition-colors">Send Surprise Gift</a></li>
+                <li><a href="/editor" className="hover:text-red-400 transition-colors">Customize Gift</a></li>
               </ul>
             </div>
 
@@ -482,7 +487,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-full font-bold text-sm shadow-2xl hover:shadow-red-500/50 transition-all"
         >
           <Gift className="w-5 h-5" />
-          Find a Gift
+          Gift Finder
         </a>
       </div>
     </div>
