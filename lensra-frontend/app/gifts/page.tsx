@@ -29,7 +29,7 @@ export default function CategoriesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
-    fetch(`${BaseUrl}api/categories/`)
+    fetch(`${BaseUrl}api/products/categories/`)
       .then(res => res.json())
       .then(data => {
         setCategories(data.results || data);
@@ -213,7 +213,7 @@ function CategoryCard({ category }: { category: Category }) {
   const hasSubcategories = category.subcategories && category.subcategories.length > 0;
 
   return (
-    <Link href={`/categories/${category.slug}`}>
+    <Link href={`/gifts/${category.slug}`}>
       <div className="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-8 hover:border-red-500/50 transition-all duration-300 overflow-hidden h-full">
         {/* Hover Gradient Effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-red-600/0 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -268,7 +268,7 @@ function CategoryListItem({ category }: { category: Category }) {
   const hasSubcategories = category.subcategories && category.subcategories.length > 0;
 
   return (
-    <Link href={`/categories/${category.slug}`}>
+    <Link href={`/gifts/${category.slug}`}>
       <div className="group bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-red-500/50 transition-all duration-300 flex items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Icon */}

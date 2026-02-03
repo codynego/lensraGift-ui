@@ -46,7 +46,7 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
 
   useEffect(() => {
     // Fetch category details
-    fetch(`${BaseUrl}api/categories/${params.slug}/`)
+    fetch(`${BaseUrl}api/products/categories/${params.slug}/`)
       .then(res => res.json())
       .then(data => {
         setCategory(data);
@@ -111,7 +111,7 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
             <Package className="w-10 h-10 text-zinc-600" />
           </div>
           <h2 className="text-2xl font-bold mb-4">Category not found</h2>
-          <Link href="/categories" className="text-red-500 hover:text-red-400">
+          <Link href="/gifts" className="text-red-500 hover:text-red-400">
             ← Back to categories
           </Link>
         </div>
@@ -126,7 +126,7 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm mb-4">
-            <Link href="/categories" className="text-zinc-500 hover:text-red-500 transition-colors">
+            <Link href="/gifts" className="text-zinc-500 hover:text-red-500 transition-colors">
               Categories
             </Link>
             {category.full_path.split(' > ').map((part, idx, arr) => (
@@ -152,7 +152,7 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
 
             {/* Back Button - Desktop */}
             <Link
-              href="/categories"
+              href="/gifts"
               className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-red-500 transition-all text-sm font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -173,7 +173,7 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
               {category.subcategories.map((sub) => (
                 <Link
                   key={sub.id}
-                  href={`/categories/${sub.slug}`}
+                  href={`/gifts/${sub.slug}`}
                   className="flex-shrink-0 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-red-500 hover:bg-zinc-750 transition-all text-sm font-medium whitespace-nowrap"
                 >
                   {sub.name}
@@ -358,7 +358,7 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
               More in {category.parent_name}
             </h3>
             <Link
-              href={`/categories`}
+              href={`/gifts`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-red-500 transition-all font-semibold"
             >
               Browse All Categories
