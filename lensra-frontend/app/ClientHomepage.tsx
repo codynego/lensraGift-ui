@@ -451,9 +451,9 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             <div>
               <h4 className="font-bold text-white mb-4">Shop</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="/shop" className="hover:text-red-400 transition-colors">All Products</a></li>
+                <li><a href="/marketplace" className="hover:text-red-400 transition-colors">All Products</a></li>
                 <li><a href="/gift-finder" className="hover:text-red-400 transition-colors">Gift Finder</a></li>
-                <li><a href="/editor" className="hover:text-red-400 transition-colors">Customize Gift</a></li>
+                <li><a href="/shop" className="hover:text-red-400 transition-colors">Customize Gift</a></li>
               </ul>
             </div>
 
@@ -498,7 +498,7 @@ function ProductCard({ product, showTrending = false }: { product: any; showTren
   const imageUrl = getImageUrl(product.image_url);
   
   return (
-    <a href={`/marketplace/${product.slug}`} className="group block">
+    <a href={`/shop/${product.slug}`} className="group block">
       <div className="relative aspect-square bg-zinc-100 rounded-xl overflow-hidden mb-3 border-2 border-zinc-100 group-hover:border-red-300 group-hover:shadow-xl transition-all">
         {imageUrl ? (
           <img
