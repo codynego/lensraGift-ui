@@ -34,12 +34,18 @@ interface ProductDetail {
   description: string;
   base_price: string;
   category_name: string;
+  category_slug: string;
   image_url: string | null;
   gallery: ProductImage[];
   variants: ProductVariant[];
   min_order_quantity: number;
   is_customizable: boolean;
-  // Add if API provides: category_slug?: string; ratings?: { average: number; count: number };
+  is_active: boolean;
+  is_featured: boolean;
+  is_trending: boolean;
+  stock_quantity?: number;
+  sku?: string;
+  // Add if API provides: ratings?: { average: number; count: number };
 }
 
 const getFullImageUrl = (imagePath: string | null | undefined, baseUrl: string): string => {
@@ -165,7 +171,8 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         }}
       />
       <ClientProductDetail
-      params={{ slug: product.slug }}
+        product={product}
+        relatedProducts={relatedProducts}
       />
     </>
   );

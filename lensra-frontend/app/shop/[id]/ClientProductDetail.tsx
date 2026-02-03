@@ -1,9 +1,9 @@
-// app/shop/[slug]/page.tsx
+// app/shop/[slug]/ClientProductDetail.tsx
 // Product Detail - Bold, immersive product showcase with fixed image sizes
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { 
   ChevronLeft, ChevronRight, Heart, Share2, ShoppingCart, 
@@ -11,9 +11,26 @@ import {
   Plus, Minus, X, ArrowRight, Zap, Info
 } from 'lucide-react';
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+interface AttributeValue {
+  id: number;
+  attribute_name: string;
+  value: string;
+}
 
-interface Product {
+interface ProductVariant {
+  id: number;
+  attributes: AttributeValue[];
+  price_override: string | null;
+  stock_quantity: number;
+}
+
+interface ProductImage {
+  id: number;
+  image_url: string;
+  alt_text: string;
+}
+
+interface ProductDetail {
   id: number;
   name: string;
   slug: string;
@@ -22,53 +39,27 @@ interface Product {
   category_name: string;
   category_slug: string;
   image_url: string | null;
+  gallery: ProductImage[];
+  variants: ProductVariant[];
+  min_order_quantity: number;
+  is_customizable: boolean;
   is_active: boolean;
   is_featured: boolean;
   is_trending: boolean;
-  is_customizable: boolean;
   stock_quantity?: number;
   sku?: string;
+  // Add if API provides: ratings?: { average: number; count: number };
 }
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ClientProductDetail({ product: initialProduct, relatedProducts: initialRelatedProducts }: { product: ProductDetail; relatedProducts: ProductDetail[] }) {
+  const [product, setProduct] = useState<ProductDetail | null>(initialProduct);
+  const [relatedProducts, setRelatedProducts] = useState<ProductDetail[]>(initialRelatedProducts);
+  const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
-
-  useEffect(() => {
-    // Fetch product details
-    fetch(`${BaseUrl}api/products/${params.slug}/`)
-      .then(res => res.json())
-      .then(data => {
-        setProduct(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching product:', err);
-        setLoading(false);
-      });
-
-    // Fetch related products
-    fetch(`${BaseUrl}api/products/related/${params.slug}/`)
-      .then(res => res.json())
-      .then(data => {
-        setRelatedProducts(data.results || data);
-      })
-      .catch(err => console.error('Error fetching related products:', err));
-  }, [params.slug]);
-
-  const getImageUrl = (imagePath: string | null | undefined): string | null => {
-    if (!imagePath) return null;
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    return `${BaseUrl.replace(/\/$/, '')}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}`;
-  };
 
   const handleAddToCart = () => {
     // TODO: Implement cart logic
@@ -124,12 +115,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     );
   }
 
-  const imageUrl = getImageUrl(product.image_url);
   const price = parseFloat(product.base_price);
   const totalPrice = price * quantity;
 
-  // For demo purposes - in production, you'd have multiple product images
-  const productImages = imageUrl ? [imageUrl] : [];
+  const productImages = [
+    product.image_url,
+    ...product.gallery.map((g) => g.image_url),
+  ].filter((url): url is string => !!url);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -465,7 +457,6 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 <RelatedProductCard 
                   key={relatedProduct.id} 
                   product={relatedProduct}
-                  getImageUrl={getImageUrl}
                 />
               ))}
             </div>
@@ -477,13 +468,11 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 }
 
 function RelatedProductCard({ 
-  product, 
-  getImageUrl 
+  product
 }: { 
-  product: Product; 
-  getImageUrl: (path: string | null | undefined) => string | null;
+  product: ProductDetail; 
 }) {
-  const imageUrl = getImageUrl(product.image_url);
+  const imageUrl = product.image_url;
 
   return (
     <Link href={`/shop/${product.slug}`} className="group block">
