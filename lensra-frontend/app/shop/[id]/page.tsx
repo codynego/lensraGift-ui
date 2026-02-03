@@ -165,9 +165,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         }}
       />
       <ClientProductDetail
-        initialProduct={product}
-        initialRelatedProducts={relatedProducts}
-        baseUrl={BaseUrl}
+      params={{ slug: product.slug }}
       />
     </>
   );

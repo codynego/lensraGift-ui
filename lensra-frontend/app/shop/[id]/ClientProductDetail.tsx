@@ -1,106 +1,77 @@
-// app/shop/[id]/ClientProductDetail.tsx
+// app/shop/[slug]/page.tsx
+// Product Detail - Bold, immersive product showcase with fixed image sizes
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { 
   ChevronLeft, ChevronRight, Heart, Share2, ShoppingCart, 
   Check, Star, Package, Truck, ShieldCheck, Sparkles,
   Plus, Minus, X, ArrowRight, Zap, Info
 } from 'lucide-react';
 
-interface AttributeValue {
-  id: number;
-  attribute_name: string;
-  value: string;
-}
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
-interface ProductVariant {
-  id: number;
-  attributes: AttributeValue[];
-  price_override: string | null;
-  stock_quantity: number;
-}
-
-interface ProductImage {
-  id: number;
-  image_url: string;
-  alt_text: string;
-}
-
-interface ProductDetail {
+interface Product {
   id: number;
   name: string;
+  slug: string;
   description: string;
   base_price: string;
   category_name: string;
+  category_slug: string;
   image_url: string | null;
-  gallery: ProductImage[];
-  variants: ProductVariant[];
-  min_order_quantity: number;
+  is_active: boolean;
+  is_featured: boolean;
+  is_trending: boolean;
   is_customizable: boolean;
-  // Assume no is_featured, is_trending, sku, stock_quantity on root (moved to variants)
+  stock_quantity?: number;
+  sku?: string;
 }
 
-interface ClientProductDetailProps {
-  initialProduct: ProductDetail;
-  initialRelatedProducts: ProductDetail[];
-  baseUrl: string;
-}
-
-export default function ClientProductDetail({ initialProduct, initialRelatedProducts, baseUrl }: ClientProductDetailProps) {
-  const product = initialProduct; // Rename for consistency; already non-null from server
-  const relatedProducts = initialRelatedProducts;
-
-  const [quantity, setQuantity] = useState(product.min_order_quantity || 1);
+export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
-  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
 
-  // Process images (already absolute from server)
-  const productImages = [
-    product.image_url,
-    ...product.gallery.map((g) => g.image_url),
-  ].filter(Boolean) as string[];
+  useEffect(() => {
+    // Fetch product details
+    fetch(`${BaseUrl}api/products/${params.slug}/`)
+      .then(res => res.json())
+      .then(data => {
+        setProduct(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching product:', err);
+        setLoading(false);
+      });
 
-  // Group attributes for selection
-  const attributeGroups = product.variants.reduce((acc, variant) => {
-    variant.attributes.forEach((attr) => {
-      if (!acc[attr.attribute_name]) {
-        acc[attr.attribute_name] = new Set<string>();
-      }
-      acc[attr.attribute_name].add(attr.value);
-    });
-    return acc;
-  }, {} as Record<string, Set<string>>);
+    // Fetch related products
+    fetch(`${BaseUrl}api/products/related/${params.slug}/`)
+      .then(res => res.json())
+      .then(data => {
+        setRelatedProducts(data.results || data);
+      })
+      .catch(err => console.error('Error fetching related products:', err));
+  }, [params.slug]);
 
-  // Find matching variant based on selected attributes
-  const matchingVariant = product.variants.find((v) =>
-    v.attributes.every((attr) => selectedAttributes[attr.attribute_name] === attr.value) &&
-    Object.keys(selectedAttributes).length === v.attributes.length
-  );
-
-  const currentPrice = matchingVariant
-    ? parseFloat(matchingVariant.price_override || product.base_price)
-    : parseFloat(product.base_price);
-
-  const currentStock = matchingVariant ? matchingVariant.stock_quantity : product.variants.reduce((sum, v) => sum + v.stock_quantity, 0);
-
-  const maxQuantity = currentStock ?? Infinity;
-  const minQuantity = product.min_order_quantity || 1;
-  const totalPrice = currentPrice * quantity;
-  const isValidSelection = !!matchingVariant || product.variants.length === 0;
-
-  const handleAttributeChange = (attrName: string, value: string) => {
-    setSelectedAttributes((prev) => ({ ...prev, [attrName]: value }));
+  const getImageUrl = (imagePath: string | null | undefined): string | null => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    return `${BaseUrl.replace(/\/$/, '')}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}`;
   };
 
   const handleAddToCart = () => {
-    if (!isValidSelection) return; // TODO: Show error toast
-    // TODO: Implement cart logic with matchingVariant.id
+    // TODO: Implement cart logic
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 3000);
   };
@@ -109,8 +80,8 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
     if (navigator.share) {
       try {
         await navigator.share({
-          title: product.name,
-          text: `Check out ${product.name} on Lensra!`,
+          title: product?.name,
+          text: `Check out ${product?.name} on Lensra!`,
           url: window.location.href,
         });
       } catch (err) {
@@ -125,6 +96,40 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
     navigator.clipboard.writeText(window.location.href);
     setShowShareModal(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full border-4 border-zinc-800 border-t-red-500 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-zinc-800 rounded-full mb-6">
+            <Package className="w-10 h-10 text-zinc-600" />
+          </div>
+          <h2 className="text-2xl font-bold mb-4">Product not found</h2>
+          <Link href="/shop" className="text-red-500 hover:text-red-400 flex items-center gap-2 justify-center">
+            <ChevronLeft className="w-4 h-4" />
+            Back to Shop
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const imageUrl = getImageUrl(product.image_url);
+  const price = parseFloat(product.base_price);
+  const totalPrice = price * quantity;
+
+  // For demo purposes - in production, you'd have multiple product images
+  const productImages = imageUrl ? [imageUrl] : [];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -163,7 +168,7 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
             </Link>
             <ChevronRight className="w-4 h-4 text-zinc-700" />
             <Link 
-              href={`/shop?category=${encodeURIComponent(product.category_name)}`} 
+              href={`/shop?category=${product.category_slug}`} 
               className="text-zinc-500 hover:text-red-500 transition-colors"
             >
               {product.category_name}
@@ -182,17 +187,26 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
             <div className="relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden aspect-square max-w-2xl mx-auto">
               {productImages.length > 0 ? (
                 <>
-                  <Image
+                  <img
                     src={productImages[selectedImage]}
-                    alt={product.gallery[selectedImage]?.alt_text || `${product.name} - Image ${selectedImage + 1}`}
-                    fill
-                    className="object-contain p-8"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    priority
+                    alt={product.name}
+                    className="w-full h-full object-contain p-8"
                   />
                   
-                  {/* Badges - assume based on data; add if API provides is_trending etc. */}
+                  {/* Badges */}
                   <div className="absolute top-6 left-6 flex flex-col gap-2">
+                    {product.is_trending && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold shadow-lg">
+                        <Zap className="w-3 h-3 fill-white" />
+                        Trending
+                      </span>
+                    )}
+                    {product.is_featured && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold shadow-lg">
+                        <Star className="w-3 h-3 fill-white" />
+                        Featured
+                      </span>
+                    )}
                     {product.is_customizable && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-bold shadow-lg">
                         <Sparkles className="w-3 h-3" />
@@ -209,7 +223,7 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
               )}
             </div>
 
-            {/* Thumbnail Gallery */}
+            {/* Thumbnail Gallery - if multiple images exist */}
             {productImages.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {productImages.map((img, idx) => (
@@ -219,15 +233,8 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
                     className={`relative flex-shrink-0 w-20 h-20 bg-zinc-900 border-2 rounded-xl overflow-hidden transition-all ${
                       selectedImage === idx ? 'border-red-500' : 'border-zinc-800 hover:border-zinc-700'
                     }`}
-                    aria-label={`Select image ${idx + 1}`}
                   >
-                    <Image
-                      src={img}
-                      alt={product.gallery[idx]?.alt_text || `${product.name} thumbnail ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="80px"
-                    />
+                    <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -239,7 +246,7 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
             {/* Title & Category */}
             <div>
               <Link 
-                href={`/shop?category=${encodeURIComponent(product.category_name)}`}
+                href={`/shop?category=${product.category_slug}`}
                 className="inline-block mb-3 text-xs font-bold uppercase tracking-wider text-red-500 hover:text-red-400 transition-colors"
               >
                 {product.category_name}
@@ -247,13 +254,16 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight mb-4">
                 {product.name}
               </h1>
+              {product.sku && (
+                <p className="text-sm text-zinc-500">SKU: {product.sku}</p>
+              )}
             </div>
 
             {/* Price */}
             <div className="border-y border-zinc-800 py-6">
               <div className="flex items-baseline gap-3">
                 <span className="text-5xl font-black text-red-500">
-                  ₦{currentPrice.toLocaleString()}
+                  ₦{price.toLocaleString()}
                 </span>
                 {product.is_customizable && (
                   <span className="text-sm text-zinc-500">+ customization</span>
@@ -271,47 +281,21 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
             )}
 
             {/* Stock Status */}
-            <div className="flex items-center gap-2">
-              {currentStock > 0 ? (
-                <>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-sm font-semibold text-green-500">
-                    {currentStock > 10 ? 'In Stock' : `Only ${currentStock} left`}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <div className="w-2 h-2 bg-red-500 rounded-full" />
-                  <span className="text-sm font-semibold text-red-500">Out of Stock</span>
-                </>
-              )}
-            </div>
-
-            {/* Attribute Selectors */}
-            {Object.keys(attributeGroups).length > 0 && (
-              <div className="space-y-4">
-                {Object.entries(attributeGroups).map(([attrName, values]) => (
-                  <div key={attrName}>
-                    <label className="text-sm font-semibold uppercase tracking-wider text-zinc-400 block mb-2">
-                      {attrName}
-                    </label>
-                    <div className="flex gap-2 flex-wrap">
-                      {Array.from(values).map((value) => (
-                        <button
-                          key={value}
-                          onClick={() => handleAttributeChange(attrName, value)}
-                          className={`px-4 py-2 border rounded-xl font-semibold text-sm transition-all ${
-                            selectedAttributes[attrName] === value
-                              ? 'border-red-500 bg-red-500/10 text-red-500'
-                              : 'border-zinc-800 text-zinc-400 hover:border-zinc-700'
-                          }`}
-                        >
-                          {value}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+            {product.stock_quantity !== undefined && (
+              <div className="flex items-center gap-2">
+                {product.stock_quantity > 0 ? (
+                  <>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-sm font-semibold text-green-500">
+                      {product.stock_quantity > 10 ? 'In Stock' : `Only ${product.stock_quantity} left`}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <span className="text-sm font-semibold text-red-500">Out of Stock</span>
+                  </>
+                )}
               </div>
             )}
 
@@ -323,10 +307,9 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
               <div className="flex items-center gap-4">
                 <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
                   <button
-                    onClick={() => setQuantity(q => Math.max(minQuantity, q - 1))}
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
                     className="p-4 hover:bg-zinc-800 transition-colors"
-                    disabled={quantity <= minQuantity}
-                    aria-label="Decrease quantity"
+                    disabled={quantity <= 1}
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -334,10 +317,8 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
                     {quantity}
                   </span>
                   <button
-                    onClick={() => setQuantity(q => Math.min(maxQuantity, q + 1))}
+                    onClick={() => setQuantity(q => q + 1)}
                     className="p-4 hover:bg-zinc-800 transition-colors"
-                    disabled={quantity >= maxQuantity}
-                    aria-label="Increase quantity"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -364,15 +345,14 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
               ) : (
                 <button
                   onClick={handleAddToCart}
-                  disabled={currentStock === 0 || !isValidSelection}
+                  disabled={product.stock_quantity === 0}
                   className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-lg transition-all ${
                     addedToCart
                       ? 'bg-green-600 text-white'
-                      : currentStock === 0 || !isValidSelection
+                      : product.stock_quantity === 0
                       ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
                       : 'bg-gradient-to-r from-red-600 to-red-500 text-white hover:shadow-xl hover:shadow-red-500/30'
                   }`}
-                  aria-label={addedToCart ? 'Added to cart' : 'Add to cart'}
                 >
                   {addedToCart ? (
                     <>
@@ -396,7 +376,6 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
                       ? 'border-red-500 bg-red-500/10 text-red-500'
                       : 'border-zinc-800 text-zinc-400 hover:border-zinc-700'
                   }`}
-                  aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                 >
                   <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />
                   {isFavorite ? 'Saved' : 'Save'}
@@ -404,7 +383,6 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
                 <button
                   onClick={handleShare}
                   className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-zinc-800 rounded-xl font-semibold text-zinc-400 hover:border-zinc-700 transition-all"
-                  aria-label="Share product"
                 >
                   <Share2 className="w-5 h-5" />
                   Share
@@ -474,7 +452,7 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl md:text-4xl font-bold">You May Also Like</h2>
               <Link
-                href={`/shop?category=${encodeURIComponent(product.category_name)}`}
+                href={`/shop?category=${product.category_slug}`}
                 className="text-sm font-semibold text-red-500 hover:text-red-400 flex items-center gap-2"
               >
                 View All
@@ -483,10 +461,11 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
+              {relatedProducts.slice(0, 4).map((relatedProduct) => (
                 <RelatedProductCard 
                   key={relatedProduct.id} 
                   product={relatedProduct}
+                  getImageUrl={getImageUrl}
                 />
               ))}
             </div>
@@ -497,26 +476,26 @@ export default function ClientProductDetail({ initialProduct, initialRelatedProd
   );
 }
 
-function RelatedProductCard({ product }: { product: ProductDetail }) {
-  const imageUrl = product.image_url;
-
-  const handleQuickView = () => {
-    // TODO: Implement quick view modal
-    console.log('Quick view for', product.name);
-  };
+function RelatedProductCard({ 
+  product, 
+  getImageUrl 
+}: { 
+  product: Product; 
+  getImageUrl: (path: string | null | undefined) => string | null;
+}) {
+  const imageUrl = getImageUrl(product.image_url);
 
   return (
-    <Link href={`/shop/${product.id}`} className="group block">
+    <Link href={`/shop/${product.slug}`} className="group block">
       <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-red-500/50 transition-all duration-300">
         {/* Fixed aspect ratio image container */}
         <div className="relative aspect-square bg-zinc-800 overflow-hidden">
           {imageUrl ? (
-            <Image
+            <img
               src={imageUrl}
               alt={product.name}
-              fill
-              className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 768px) 50vw, 25vw"
+              loading="lazy"
+              className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -524,14 +503,20 @@ function RelatedProductCard({ product }: { product: ProductDetail }) {
             </div>
           )}
 
+          {/* Quick badges */}
+          {product.is_trending && (
+            <div className="absolute top-2 left-2">
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded-md text-xs font-bold shadow-lg">
+                <Zap className="w-3 h-3 fill-white" />
+                Hot
+              </span>
+            </div>
+          )}
+
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div className="absolute bottom-3 left-3 right-3">
-              <button 
-                onClick={handleQuickView}
-                className="w-full py-2 bg-white text-zinc-900 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition-colors shadow-xl"
-                aria-label={`Quick view for ${product.name}`}
-              >
+              <button className="w-full py-2 bg-white text-zinc-900 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition-colors shadow-xl">
                 Quick View
               </button>
             </div>
