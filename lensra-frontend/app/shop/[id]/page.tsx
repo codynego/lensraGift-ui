@@ -1,4 +1,4 @@
-// app/shop/[id]/page.tsx
+// app/shop/[slug]/page.tsx
 // Note: This is the server component for the product detail page
 
 import { Metadata } from 'next';
@@ -30,6 +30,7 @@ interface ProductImage {
 interface ProductDetail {
   id: number;
   name: string;
+  slug: string;
   description: string;
   base_price: string;
   category_name: string;
@@ -49,9 +50,9 @@ const getFullImageUrl = (imagePath: string | null | undefined, baseUrl: string):
   return `${baseUrl.replace(/\/$/, '')}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}`;
 };
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   try {
-    const response = await fetch(`${BaseUrl}api/products/${params.id}/`, { next: { revalidate: 3600 } });
+    const response = await fetch(`${BaseUrl}api/products/${params.slug}/`, { next: { revalidate: 3600 } });
     if (!response.ok) throw new Error('Product not found');
     const product: ProductDetail = await response.json();
 
@@ -74,7 +75,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       openGraph: {
         title: `${product.name} - Premium Custom Gift by Lensra`,
         description: 'Discover this unique personalized gift with instant digital reveal. Perfect for special occasions.',
-        url: `https://www.lensra.com/shop/${params.id}`,
+        url: `https://www.lensra.com/shop/${params.slug}`,
         images: images.map((img) => ({
           url: img,
           width: 800, // Adjust based on actual image dimensions if known
@@ -90,7 +91,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         images,
       },
       alternates: {
-        canonical: `/shop/${params.id}`,
+        canonical: `/shop/${params.slug}`,
       },
     };
   } catch {
@@ -101,12 +102,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
   let product: ProductDetail | null = null;
   let relatedProducts: ProductDetail[] = [];
 
   try {
-    const response = await fetch(`${BaseUrl}api/products/${params.id}/`, { next: { revalidate: 3600 } });
+    const response = await fetch(`${BaseUrl}api/products/${params.slug}/`, { next: { revalidate: 3600 } });
     if (!response.ok) throw new Error('Product not found');
     product = await response.json();
 
@@ -120,8 +121,8 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         image_url: getFullImageUrl(g.image_url, BaseUrl),
       }));
 
-      const relatedRes = await fetch(`${BaseUrl}api/products/?category__name=${encodeURIComponent(product.category_name)}`, { next: { revalidate: 3600 } });
-      if (relatedRes.ok && product) {
+      const relatedRes = await fetch(`${BaseUrl}api/related/${product.slug}/`, { next: { revalidate: 3600 } });
+      if (relatedRes.ok) {
         const relatedData = await relatedRes.json();
         const productsArray = Array.isArray(relatedData) ? relatedData : (relatedData.results || []);
         relatedProducts = productsArray
@@ -148,21 +149,18 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         id={product.id.toString()}
         name={product.name}
         description={product.description}
-        image={[
-          product.image_url || '',
-          ...product.gallery.map((g) => g.image_url),
-        ].filter(Boolean)}
+        image={product.image_url || product.gallery[0]?.image_url || ''}
         price={parseFloat(product.base_price)}
         currency="NGN"
         availability={product.variants.some((v) => v.stock_quantity > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}
-        url={`https://www.lensra.com/shop/${params.id}`}
+        url={`https://www.lensra.com/shop/${params.slug}`}
         category={product.category_name}
         // Add rating if available: reviewCount, aggregateRating
         breadcrumbs={{
           itemListElement: [
             { position: 1, name: 'Home', item: 'https://www.lensra.com' },
             { position: 2, name: product.category_name, item: `https://www.lensra.com/shop?category=${encodeURIComponent(product.category_name)}` },
-            { position: 3, name: product.name, item: `https://www.lensra.com/shop/${params.id}` },
+            { position: 3, name: product.name, item: `https://www.lensra.com/shop/${params.slug}` },
           ],
         }}
       />
