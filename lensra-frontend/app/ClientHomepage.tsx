@@ -433,58 +433,6 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
         </div>
       </section>
 
-      {/* FOOTER - Trust & Links */}
-      <footer className="bg-zinc-900 text-zinc-300 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="font-bold text-white mb-4">About LensraGift</h4>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                Premium personalized gifts delivered across Nigeria in 72 hours.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-white mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/how-it-works" className="hover:text-red-400 transition-colors">How It Works</a></li>
-                <li><a href="/delivery-info" className="hover:text-red-400 transition-colors">Delivery Info</a></li>
-                <li><a href="/contact" className="hover:text-red-400 transition-colors">WhatsApp Support</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-white mb-4">Shop</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/marketplace" className="hover:text-red-400 transition-colors">All Products</a></li>
-                <li><a href="/gift-finder" className="hover:text-red-400 transition-colors">Gift Finder</a></li>
-                <li><a href="/shop" className="hover:text-red-400 transition-colors">Customize Gift</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-white mb-4">Support</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/faq" className="hover:text-red-400 transition-colors">FAQs</a></li>
-                <li><a href="/payment-methods" className="hover:text-red-400 transition-colors">Payment Methods</a></li>
-                <li><a href="/returns" className="hover:text-red-400 transition-colors">Returns Policy</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-zinc-500">
-              © 2025 LensraGift. All rights reserved.
-            </p>
-            <div className="flex gap-4">
-              <a href="https://instagram.com/lensragift" target="_blank" rel="noopener noreferrer" className="hover:text-red-400 transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
-
       {/* STICKY CTA - Mobile */}
       <div className="fixed bottom-4 right-4 md:hidden z-40">
         <a 
