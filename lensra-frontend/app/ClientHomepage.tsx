@@ -89,12 +89,17 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   ];
 
   const intentOptions = [
-    { label: "Partner", emoji: "❤️", value: "partner" },
-    { label: "Friend", emoji: "🤝", value: "friend" },
-    { label: "Family", emoji: "👨‍👩‍👧", value: "family" },
-    { label: "Kids", emoji: "👶", value: "kids" },
-    { label: "Colleague", emoji: "💼", value: "colleague" }
+    { label: "For Him", emoji: "❤️", value: "for-him" },
+    { label: "For Her", emoji: "💖", value: "for-her" },
+    { label: "Friend", emoji: "🤝", value: "for-friends" },
+    { label: "Family", emoji: "👨‍👩‍👧", value: "for-family" },
+    { label: "Kids", emoji: "👶", value: "for-kids" },
+    { label: "Colleague", emoji: "💼", value: "for-colleagues" },
+    { label: "Couples", emoji: "💑", value: "for-couples" },
+    { label: "Parents", emoji: "👩‍👩‍👦", value: "for-parents" },
+    { label: "Boss", emoji: "🧑‍💼", value: "for-boss" }
   ];
+
 
   return (
     <div className="min-h-screen bg-white selection:bg-red-100 selection:text-red-900">
