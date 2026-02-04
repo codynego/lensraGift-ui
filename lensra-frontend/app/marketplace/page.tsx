@@ -727,16 +727,6 @@ function ProductsContent() {
                         <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                           {product.category_path}
                         </span>
-                        {/* <div className="flex flex-wrap gap-1 mt-1">
-                          {product.tags.map((tag) => (
-                            <span 
-                              key={tag.slug} 
-                              className="text-[8px] bg-zinc-100 px-2 py-0.5 rounded-full text-zinc-600 font-bold uppercase"
-                            >
-                              {tag.name}
-                            </span>
-                          ))}
-                        </div> */}
                       </div>
                     </div>
                   ))}
