@@ -37,6 +37,7 @@ interface ProductDetail {
   variants: ProductVariant[];
   min_order_quantity: number;
   is_customizable: boolean;
+  message: string | null;
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
