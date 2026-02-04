@@ -235,7 +235,7 @@ export default function ClientProductDetail({
             </div>
             {/* Thumbnail Strip - Larger thumbnails for better selection */}
             {allImages.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex flex-wrap gap-4">
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}
