@@ -70,8 +70,23 @@ function ProductsContent() {
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProductsCount, setTotalProductsCount] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const itemsPerPage = 12;
+  
+  // Handle scroll to top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   
   const priceRanges: PriceRange[] = [
     { label: "Any Price", value: "all" },
@@ -369,7 +384,7 @@ function ProductsContent() {
     <div className="min-h-screen bg-white text-zinc-900">
       
       {/* ENHANCED HEADER */}
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-lg border-b border-zinc-200 shadow-sm">
+      <div className="bg-white/95 backdrop-blur-lg border-b border-zinc-200 shadow-sm lg:sticky lg:top-0 lg:z-40">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-6">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="flex items-center gap-6 w-full lg:w-auto">
@@ -803,6 +818,17 @@ function ProductsContent() {
           </div>
         </div>
       </div>
+
+      {/* Floating Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl hover:bg-red-700 transition-all duration-300 flex items-center justify-center group hover:scale-110 active:scale-95"
+          aria-label="Scroll to top"
+        >
+          <ChevronUp className="w-6 h-6 group-hover:translate-y-[-2px] transition-transform" />
+        </button>
+      )}
     </div>
   );
 }
