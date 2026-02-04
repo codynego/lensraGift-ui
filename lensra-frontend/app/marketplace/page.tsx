@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Search, ChevronRight, ArrowUpRight, Filter, Loader2, 
-  ChevronLeft, ChevronDown, ChevronUp, X 
+  ChevronLeft, ChevronDown, ChevronUp, X, Package, Tag as TagIcon,
+  Eye, Heart, TrendingUp, Star
 } from 'lucide-react';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
@@ -173,7 +174,6 @@ function ProductsContent() {
         if (sortOpt && sortOpt.ordering) {
           params.append('ordering', sortOpt.ordering);
         }
-        // params.append('is_customizable', 'false');
         params.append('page', currentPage.toString());
         params.append('page_size', itemsPerPage.toString());
 
@@ -271,10 +271,6 @@ function ProductsContent() {
     return main?.slug === cat.slug;
   };
 
-  const isSubSelected = (sub: Category, main: Category) => {
-    return selectedCategory === sub.slug || (selectedCategory === main.slug && false); // false since 'All in' is separate
-  };
-
   interface CategoryItemProps {
     cat: Category;
     depth?: number;
@@ -293,16 +289,18 @@ function ProductsContent() {
             onSelect(cat.slug);
             if (hasSubs) setExpanded(!expanded);
           }} 
-          className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-            selectedCategory === cat.slug ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:bg-white'
+          className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
+            selectedCategory === cat.slug 
+              ? 'bg-zinc-900 text-white shadow-md' 
+              : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
           }`}
           style={{ paddingLeft: `${depth * 16 + 16}px` }}
         >
-          {cat.name}
+          <span className="text-left">{cat.name}</span>
           {hasSubs ? (
-            expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+            expanded ? <ChevronUp className="w-3.5 h-3.5 flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" />
           ) : (
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
           )}
         </button>
         {expanded && hasSubs && cat.subcategories?.map(sub => (
@@ -329,16 +327,16 @@ function ProductsContent() {
             onSelect(cat.slug);
             if (hasSubs) setExpanded(!expanded);
           }} 
-          className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-            selectedCategory === cat.slug ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
+          className={`flex items-center justify-between w-full py-3.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
+            selectedCategory === cat.slug ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
           }`}
           style={{ paddingLeft: `${depth * 16 + 16}px` }}
         >
-          {cat.name}
+          <span className="text-left">{cat.name}</span>
           {hasSubs ? (
-            expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+            expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />
           ) : (
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-3.5 h-3.5" />
           )}
         </button>
         {expanded && hasSubs && cat.subcategories?.map(sub => (
@@ -355,59 +353,88 @@ function ProductsContent() {
   };
 
   const categoryButtonClass = (isSelected: boolean) => 
-    `px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-      isSelected ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-400'
+    `px-6 py-3 rounded-full text-xs font-black uppercase tracking-wide whitespace-nowrap transition-all shadow-sm ${
+      isSelected 
+        ? 'bg-red-600 text-white shadow-md hover:bg-red-700' 
+        : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700'
     }`;
+
+  // Active filter count
+  const activeFilterCount = 
+    (selectedCategory !== 'all' ? 1 : 0) +
+    (selectedPriceRange !== 'all' ? 1 : 0) +
+    selectedTags.length;
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       
-      {/* HEADER */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-zinc-100">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-4 w-full lg:w-auto">
-            <h1 className="text-xl lg:text-2xl font-black uppercase tracking-tight italic text-zinc-900">
-              Marketplace
-            </h1>
-            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] hidden lg:block">
-              {totalProductsCount} Items
-            </p>
-          </div>
-          <div className="relative w-full lg:w-96">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input 
-              type="text" 
-              placeholder="Search by name, description, or tag..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-50 border-none rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold focus:ring-2 focus:ring-red-600/20"
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden lg:block">
-              <select 
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="appearance-none bg-transparent border-none py-3 pr-8 pl-4 text-[10px] font-black uppercase tracking-widest text-zinc-900 cursor-pointer focus:ring-0"
-              >
-                {sortOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
+      {/* ENHANCED HEADER */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-lg border-b border-zinc-200 shadow-sm">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-6 w-full lg:w-auto">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-black uppercase tracking-tight italic text-zinc-900 leading-none mb-1">
+                  Marketplace
+                </h1>
+                <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  {totalProductsCount} {totalProductsCount === 1 ? 'Item' : 'Items'} Available
+                </p>
+              </div>
             </div>
-            <button 
-              onClick={() => setShowMobileFilters(true)} 
-              className="p-3 bg-zinc-50 rounded-xl flex items-center gap-2 lg:hidden"
-            >
-              <Filter className="w-4 h-4 text-zinc-900" />
-            </button>
+            
+            <div className="relative w-full lg:w-[500px]">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+              <input 
+                type="text" 
+                placeholder="Search by name, description, or tag..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-4 pl-14 pr-5 text-sm font-semibold placeholder:text-zinc-400 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 p-1 hover:bg-zinc-200 rounded-lg transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-4 w-full lg:w-auto">
+              <div className="relative hidden lg:block flex-1 lg:flex-none">
+                <select 
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="appearance-none bg-white border border-zinc-200 rounded-xl py-3 pr-12 pl-5 text-xs font-bold uppercase tracking-wide text-zinc-900 cursor-pointer focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all shadow-sm hover:border-zinc-300"
+                >
+                  {sortOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
+              </div>
+              
+              <button 
+                onClick={() => setShowMobileFilters(true)} 
+                className="flex items-center gap-3 px-5 py-3 bg-zinc-900 text-white rounded-xl lg:hidden shadow-md hover:bg-zinc-800 transition-all relative"
+              >
+                <Filter className="w-4 h-4" />
+                <span className="font-bold text-xs uppercase tracking-wide">Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs font-black flex items-center justify-center shadow-lg">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Mobile Category Bars */}
-        <div className="lg:hidden px-6 pb-4">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+        {/* Enhanced Mobile Category Bars */}
+        <div className="lg:hidden px-6 pb-5 border-t border-zinc-100 pt-4 mt-4">
+          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
             <button 
               onClick={() => handleCategoryChange('all')} 
               className={categoryButtonClass(selectedCategory === 'all')}
@@ -425,7 +452,7 @@ function ProductsContent() {
             ))}
           </div>
           {selectedMainCat && selectedMainCat.subcategories && selectedMainCat.subcategories.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar mt-2">
+            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar mt-3 pb-1">
               <button 
                 onClick={() => handleCategoryChange(selectedMainCat.slug)} 
                 className={categoryButtonClass(selectedCategory === selectedMainCat.slug)}
@@ -446,35 +473,38 @@ function ProductsContent() {
         </div>
       </div>
 
-      {/* MOBILE FILTERS DRAWER */}
+      {/* ENHANCED MOBILE FILTERS DRAWER */}
       {showMobileFilters && (
-        <div className="fixed inset-0 z-50 bg-black/50 lg:hidden" onClick={() => setShowMobileFilters(false)}>
+        <div className="fixed inset-0 z-50 bg-black/60 lg:hidden backdrop-blur-sm" onClick={() => setShowMobileFilters(false)}>
           <div 
-            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 space-y-8 max-h-[80vh] overflow-y-auto"
+            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-7 space-y-8 max-h-[85vh] overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300">Filters & Sort</h3>
-              <button onClick={() => setShowMobileFilters(false)} className="p-2">
-                <X className="w-5 h-5 text-zinc-600" />
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
+              <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900">Filters & Sort</h3>
+              <button onClick={() => setShowMobileFilters(false)} className="p-2 hover:bg-zinc-100 rounded-xl transition-all">
+                <X className="w-6 h-6 text-zinc-600" />
               </button>
             </div>
 
             {/* Sort */}
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Sort By</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-4 flex items-center gap-2">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                Sort By
+              </h4>
               <div className="space-y-2">
                 {sortOptions.map((opt) => (
-                  <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
+                  <label key={opt.value} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer group hover:bg-zinc-50 transition-all">
                     <input 
                       type="radio" 
                       name="sort-mobile" 
                       checked={sortBy === opt.value} 
                       onChange={() => handleSortChange(opt.value)} 
-                      className="w-4 h-4 accent-red-600" 
+                      className="w-5 h-5 accent-red-600" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      sortBy === opt.value ? 'text-zinc-900' : 'text-zinc-400'
+                    <span className={`text-sm font-semibold ${
+                      sortBy === opt.value ? 'text-zinc-900' : 'text-zinc-500'
                     }`}>
                       {opt.label}
                     </span>
@@ -485,18 +515,21 @@ function ProductsContent() {
 
             {/* Categories */}
             <div className="pt-6 border-t border-zinc-100">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Categories</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-4 flex items-center gap-2">
+                <Package className="w-3.5 h-3.5" />
+                Categories
+              </h4>
               <div className="space-y-2">
                 <button 
                   onClick={() => {
                     handleCategoryChange('all');
                     setShowMobileFilters(false);
                   }} 
-                  className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                    selectedCategory === 'all' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'
+                  className={`flex items-center justify-between w-full py-3.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
+                    selectedCategory === 'all' ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
                   }`}
                 >
-                  All Products <ChevronRight className="w-3 h-3" />
+                  All Products <ChevronRight className="w-3.5 h-3.5" />
                 </button>
                 {categories.map((cat) => (
                   <MobileCategoryItem 
@@ -514,10 +547,10 @@ function ProductsContent() {
 
             {/* Price Range */}
             <div className="pt-6 border-t border-zinc-100">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Price Range</h4>
-              <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-4">Price Range</h4>
+              <div className="space-y-2">
                 {priceRanges.map((range) => (
-                  <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
+                  <label key={range.value} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer group hover:bg-zinc-50 transition-all">
                     <input 
                       type="radio" 
                       name="price-mobile" 
@@ -526,10 +559,10 @@ function ProductsContent() {
                         handlePriceChange(range.value);
                         setShowMobileFilters(false);
                       }} 
-                      className="w-4 h-4 accent-red-600" 
+                      className="w-5 h-5 accent-red-600" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'
+                    <span className={`text-sm font-semibold ${
+                      selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-500'
                     }`}>
                       {range.label}
                     </span>
@@ -540,21 +573,21 @@ function ProductsContent() {
 
             {/* Tags */}
             <div className="pt-6 border-t border-zinc-100">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-4">Tags</h4>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
+              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-4 flex items-center gap-2">
+                <TagIcon className="w-3.5 h-3.5" />
+                Tags
+              </h4>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {tags.map((tag) => (
-                  <label key={tag.slug} className="flex items-center gap-3 cursor-pointer group">
+                  <label key={tag.slug} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer group hover:bg-zinc-50 transition-all">
                     <input 
                       type="checkbox" 
                       checked={selectedTags.includes(tag.slug)} 
-                      onChange={() => {
-                        handleTagToggle(tag.slug);
-                        // Don't close drawer to allow multiple selections
-                      }} 
-                      className="w-4 h-4 accent-red-600" 
+                      onChange={() => handleTagToggle(tag.slug)} 
+                      className="w-5 h-5 accent-red-600 rounded" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      selectedTags.includes(tag.slug) ? 'text-zinc-900' : 'text-zinc-400'
+                    <span className={`text-sm font-semibold ${
+                      selectedTags.includes(tag.slug) ? 'text-zinc-900' : 'text-zinc-500'
                     }`}>
                       {tag.name}
                     </span>
@@ -568,7 +601,7 @@ function ProductsContent() {
                 clearAllFilters();
                 setShowMobileFilters(false);
               }} 
-              className="w-full py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+              className="w-full py-4 bg-red-600 text-white rounded-xl text-sm font-black uppercase tracking-wide hover:bg-red-700 transition-all shadow-lg"
             >
               Clear All Filters
             </button>
@@ -576,27 +609,33 @@ function ProductsContent() {
         </div>
       )}
 
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-8 lg:py-12">
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-10 lg:py-12">
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
           
-          {/* DESKTOP SIDEBAR */}
-          <aside className="hidden lg:block lg:w-72 flex-shrink-0 sticky top-24 h-fit space-y-12 bg-zinc-50 p-6 rounded-3xl border border-zinc-100">
+          {/* ENHANCED DESKTOP SIDEBAR */}
+          <aside className="hidden lg:block lg:w-80 flex-shrink-0 sticky top-32 h-fit space-y-10 bg-white border border-zinc-200 p-7 rounded-3xl shadow-sm">
             {/* Categories */}
             <div>
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Categories</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-6 flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                Categories
+              </h3>
               {categoriesLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <button 
                     onClick={() => handleCategoryChange('all')} 
-                    className={`flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                      selectedCategory === 'all' ? 'bg-white text-zinc-900' : 'text-zinc-500 hover:bg-white'
+                    className={`flex items-center justify-between w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
+                      selectedCategory === 'all' 
+                        ? 'bg-zinc-900 text-white shadow-md' 
+                        : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
                     }`}
                   >
-                    All Products <ChevronRight className="w-3 h-3" />
+                    <span>All Products</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                   {categories.map((cat) => (
                     <CategoryItem 
@@ -611,20 +650,20 @@ function ProductsContent() {
             </div>
 
             {/* Price Range */}
-            <div className="pt-10 border-t border-zinc-100">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Price Range</h3>
-              <div className="space-y-4">
+            <div className="pt-8 border-t border-zinc-100">
+              <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-6">Price Range</h3>
+              <div className="space-y-2">
                 {priceRanges.map((range) => (
-                  <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
+                  <label key={range.value} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer group hover:bg-zinc-50 transition-all">
                     <input 
                       type="radio" 
                       name="price" 
                       checked={selectedPriceRange === range.value} 
                       onChange={() => handlePriceChange(range.value)} 
-                      className="w-4 h-4 accent-red-600" 
+                      className="w-5 h-5 accent-red-600" 
                     />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-400'
+                    <span className={`text-sm font-semibold ${
+                      selectedPriceRange === range.value ? 'text-zinc-900' : 'text-zinc-500'
                     }`}>
                       {range.label}
                     </span>
@@ -634,24 +673,27 @@ function ProductsContent() {
             </div>
 
             {/* Tags */}
-            <div className="pt-10 border-t border-zinc-100">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-6">Tags</h3>
+            <div className="pt-8 border-t border-zinc-100">
+              <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-6 flex items-center gap-2">
+                <TagIcon className="w-4 h-4" />
+                Tags
+              </h3>
               {tagsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
                 </div>
               ) : (
-                <div className="space-y-4 max-h-60 overflow-y-auto">
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
                   {tags.map((tag) => (
-                    <label key={tag.slug} className="flex items-center gap-3 cursor-pointer group">
+                    <label key={tag.slug} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer group hover:bg-zinc-50 transition-all">
                       <input 
                         type="checkbox" 
                         checked={selectedTags.includes(tag.slug)} 
                         onChange={() => handleTagToggle(tag.slug)} 
-                        className="w-4 h-4 accent-red-600" 
+                        className="w-5 h-5 accent-red-600 rounded" 
                       />
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                        selectedTags.includes(tag.slug) ? 'text-zinc-900' : 'text-zinc-400'
+                      <span className={`text-sm font-semibold ${
+                        selectedTags.includes(tag.slug) ? 'text-zinc-900' : 'text-zinc-500'
                       }`}>
                         {tag.name}
                       </span>
@@ -661,105 +703,141 @@ function ProductsContent() {
               )}
             </div>
 
-            <button 
-              onClick={clearAllFilters} 
-              className="w-full py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest mt-8"
-            >
-              Clear Filters
-            </button>
+            {activeFilterCount > 0 && (
+              <button 
+                onClick={clearAllFilters} 
+                className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-sm font-bold uppercase tracking-wide mt-8 transition-all shadow-md hover:shadow-lg"
+              >
+                Clear Filters ({activeFilterCount})
+              </button>
+            )}
           </aside>
 
-          {/* MAIN CONTENT */}
+          {/* ENHANCED MAIN CONTENT */}
           <div className="flex-1">
-            {/* Products Grid */}
             {loading ? (
-              <div className="h-96 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300">
-                  Loading Marketplace
-                </span>
+              <div className="h-[500px] flex flex-col items-center justify-center gap-6">
+                <Loader2 className="w-10 h-10 animate-spin text-red-600" />
+                <div className="text-center">
+                  <p className="text-sm font-bold uppercase tracking-wide text-zinc-400">
+                    Loading Marketplace
+                  </p>
+                  <p className="text-xs text-zinc-400 mt-1">Please wait...</p>
+                </div>
               </div>
             ) : products.length === 0 ? (
-              <div className="h-96 flex flex-col items-center justify-center gap-4">
-                <div className="text-5xl">🔍</div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                  No Items Found
-                </span>
-                <p className="text-[9px] text-zinc-400 max-w-xs text-center">
-                  Try different search terms or filters
-                </p>
+              <div className="h-[500px] flex flex-col items-center justify-center gap-6 px-6">
+                <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center">
+                  <div className="text-4xl">🔍</div>
+                </div>
+                <div className="text-center max-w-md">
+                  <h3 className="text-2xl font-black uppercase tracking-tight text-zinc-900 mb-2">
+                    No Items Found
+                  </h3>
+                  <p className="text-sm text-zinc-500 mb-6">
+                    We couldn't find any products matching your criteria. Try adjusting your filters or search query.
+                  </p>
+                  <button
+                    onClick={clearAllFilters}
+                    className="px-8 py-4 bg-red-600 text-white rounded-xl text-sm font-bold uppercase tracking-wide hover:bg-red-700 transition-all shadow-lg hover:shadow-xl"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-                  {products.map((product) => (
-                    <div key={product.id} className="group flex flex-col bg-white border border-zinc-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                      <Link 
-                        href={`/shop/${product.slug}`} 
-                        className="relative aspect-[4/5] overflow-hidden"
-                      >
-                        {product.image_url ? (
-                          <img 
-                            src={product.image_url} 
-                            alt={product.name} 
-                            className="w-full h-full object-cover transition duration-500 group-hover:scale-105" 
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center uppercase font-black text-[8px] text-zinc-300 italic bg-zinc-50">
-                            No Image
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6">
+                  {products.map((product) => {
+                    const [isFavorite, setIsFavorite] = useState(false);
+                    
+                    return (
+                      <div key={product.id} className="group flex flex-col bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-zinc-300 transition-all duration-300">
+                        <Link 
+                          href={`/shop/${product.slug}`} 
+                          className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100"
+                        >
+                          {product.image_url ? (
+                            <img 
+                              src={product.image_url} 
+                              alt={product.name} 
+                              className="w-full h-full object-cover transition duration-700 group-hover:scale-110" 
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center uppercase font-black text-xs text-zinc-300 italic">
+                              No Image
+                            </div>
+                          )}
+                          
+                          {/* Gradient overlay on hover */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          
+                          {/* Quick view button */}
+                          <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            <div className="bg-white text-zinc-900 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl hover:bg-red-500 hover:text-white transition-colors">
+                              <Eye className="w-3.5 h-3.5" />
+                              Quick View
+                            </div>
                           </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-zinc-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex justify-center">
-                          <div className="bg-white text-zinc-900 px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
-                            View <ArrowUpRight className="w-3 h-3" />
+
+                          {/* Favorite button */}
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsFavorite(!isFavorite);
+                            }}
+                            className="absolute top-4 right-4 w-10 h-10 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white transition-all opacity-0 group-hover:opacity-100 shadow-lg hover:scale-110"
+                          >
+                            <Heart className={`w-4 h-4 transition-all ${isFavorite ? 'fill-red-500 text-red-500' : 'text-zinc-400'}`} />
+                          </button>
+                        </Link>
+                        
+                        <div className="p-4 space-y-2">
+                          <div className="mb-1">
+                            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+                              {product.category_path}
+                            </span>
+                            <h3 className="font-bold text-zinc-900 leading-tight line-clamp-2 group-hover:text-red-600 transition-colors text-base min-h-[2.5rem]">
+                              {product.name}
+                            </h3>
                           </div>
-                        </div>
-                      </Link>
-                      <div className="p-4 space-y-1">
-                        <div className="flex justify-between items-baseline gap-2">
-                          <h3 className="text-base font-black uppercase tracking-tight italic text-zinc-900 leading-tight line-clamp-1">
-                            {product.name}
-                          </h3>
-                          <p className="text-base font-black text-red-600 italic flex-shrink-0">
+                          <p className="text-xl font-black text-red-600 italic">
                             ₦{parseFloat(product.base_price).toLocaleString()}
                           </p>
                         </div>
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                          {product.category_path}
-                        </span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                {/* PAGINATION */}
+                {/* ENHANCED PAGINATION */}
                 {totalPages > 1 && (
-                  <div className="mt-12 flex items-center justify-center gap-2">
+                  <div className="mt-16 flex items-center justify-center gap-3">
                     <button 
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(p => p - 1)}
-                      className="px-4 py-2 rounded-full border border-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors text-[10px] font-black uppercase"
+                      className="px-6 py-3 rounded-xl border border-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 hover:border-zinc-300 transition-all text-sm font-bold uppercase flex items-center gap-2 shadow-sm"
                     >
-                      <ChevronLeft className="w-4 h-4 inline" /> Prev
+                      <ChevronLeft className="w-4 h-4" /> Prev
                     </button>
                     
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       {[...Array(totalPages)].map((_, i) => {
                         const pageNum = i + 1;
                         const isCurrent = currentPage === pageNum;
                         if (pageNum > 2 && pageNum < currentPage - 1) return null;
                         if (pageNum < totalPages - 1 && pageNum > currentPage + 1) return null;
                         if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                          return <span key={i} className="px-3 py-2 text-zinc-400">...</span>;
+                          return <span key={i} className="px-4 py-3 text-zinc-400 font-bold">...</span>;
                         }
                         return (
                           <button
                             key={i}
                             onClick={() => setCurrentPage(pageNum)}
-                            className={`px-4 py-2 rounded-full text-[10px] font-black transition-all ${
+                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all ${
                               isCurrent 
-                                ? 'bg-red-600 text-white' 
-                                : 'bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
+                                ? 'bg-red-600 text-white shadow-md hover:bg-red-700' 
+                                : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200'
                             }`}
                           >
                             {pageNum}
@@ -771,9 +849,9 @@ function ProductsContent() {
                     <button 
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage(p => p + 1)}
-                      className="px-4 py-2 rounded-full border border-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors text-[10px] font-black uppercase"
+                      className="px-6 py-3 rounded-xl border border-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 hover:border-zinc-300 transition-all text-sm font-bold uppercase flex items-center gap-2 shadow-sm"
                     >
-                      Next <ChevronRight className="w-4 h-4 inline" />
+                      Next <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 )}
@@ -790,11 +868,14 @@ export default function MarketplacePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-          <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300">
-            Loading Marketplace
-          </span>
+        <div className="flex flex-col items-center gap-6">
+          <Loader2 className="w-10 h-10 animate-spin text-red-600" />
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-400">
+              Loading Marketplace
+            </p>
+            <p className="text-xs text-zinc-400 mt-1">Please wait...</p>
+          </div>
         </div>
       </div>
     }>
