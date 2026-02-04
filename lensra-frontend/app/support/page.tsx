@@ -27,7 +27,7 @@ export default function SupportCenter() {
           {[
             { icon: MessageCircle, label: "Live Chat", value: "Instant Reply", desc: "Available 24/7", color: "bg-red-600" },
             { icon: Mail, label: "Email Us", value: "Lab Support", desc: "support@lensra.com", color: "bg-zinc-900/50" },
-            { icon: Phone, label: "Call Direct", value: "Talk to us", desc: "+234 LAB OPS", color: "bg-zinc-900/50" },
+            { icon: Phone, label: "Call Direct", value: "Talk to us", desc: "+2348051385049", color: "bg-zinc-900/50" },
             { icon: LifeBuoy, label: "Guides", value: "How-To's", desc: "View Tutorials", color: "bg-zinc-900/50" }
           ].map((item, idx) => (
             <div key={idx} className={`${item.color} p-8 rounded-[40px] group hover:-translate-y-2 transition-all duration-500 cursor-pointer border border-transparent hover:border-white/10`}>

@@ -20,7 +20,7 @@ export default function Footer() {
             
             <div className="space-y-3">
               <ContactLink icon={<Phone className="w-4 h-4" />} text="+2348051385049" href="tel:+2348051385049" />
-              <ContactLink icon={<Mail className="w-4 h-4" />} text="lensrahq@gmail.com" href="mailto:lensrahq@gmail.com" />
+              <ContactLink icon={<Mail className="w-4 h-4" />} text="support@lensra.com" href="mailto:support@lensra.com" />
               <div className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-widest text-zinc-500">
                 <div className="w-8 h-8 rounded-xl bg-zinc-900 flex items-center justify-center text-zinc-400">
                   <MapPin className="w-4 h-4" />

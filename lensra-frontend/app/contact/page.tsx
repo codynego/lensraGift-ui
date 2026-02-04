@@ -48,7 +48,7 @@ export default function ContactPage() {
             icon={<Mail className="w-8 h-8" />}
             title="Email"
             actionText="Send Email"
-            link="mailto:lensrahq@gmail.com"
+            link="mailto:support@lensra.com"
             desc="Best for bulk orders & business."
             color="hover:border-red-600"
           />
