@@ -748,66 +748,9 @@ function ProductsContent() {
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6">
-                  {products.map((product) => {
-                    const [isFavorite, setIsFavorite] = useState(false);
-                    
-                    return (
-                      <div key={product.id} className="group flex flex-col bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-zinc-300 transition-all duration-300">
-                        <Link 
-                          href={`/shop/${product.slug}`} 
-                          className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100"
-                        >
-                          {product.image_url ? (
-                            <img 
-                              src={product.image_url} 
-                              alt={product.name} 
-                              className="w-full h-full object-cover transition duration-700 group-hover:scale-110" 
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center uppercase font-black text-xs text-zinc-300 italic">
-                              No Image
-                            </div>
-                          )}
-                          
-                          {/* Gradient overlay on hover */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          
-                          {/* Quick view button */}
-                          <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                            <div className="bg-white text-zinc-900 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl hover:bg-red-500 hover:text-white transition-colors">
-                              <Eye className="w-3.5 h-3.5" />
-                              Quick View
-                            </div>
-                          </div>
-
-                          {/* Favorite button */}
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setIsFavorite(!isFavorite);
-                            }}
-                            className="absolute top-4 right-4 w-10 h-10 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white transition-all opacity-0 group-hover:opacity-100 shadow-lg hover:scale-110"
-                          >
-                            <Heart className={`w-4 h-4 transition-all ${isFavorite ? 'fill-red-500 text-red-500' : 'text-zinc-400'}`} />
-                          </button>
-                        </Link>
-                        
-                        <div className="p-4 space-y-2">
-                          <div className="mb-1">
-                            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-1">
-                              {product.category_path}
-                            </span>
-                            <h3 className="font-bold text-zinc-900 leading-tight line-clamp-2 group-hover:text-red-600 transition-colors text-base min-h-[2.5rem]">
-                              {product.name}
-                            </h3>
-                          </div>
-                          <p className="text-xl font-black text-red-600 italic">
-                            ₦{parseFloat(product.base_price).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
                 </div>
 
                 {/* ENHANCED PAGINATION */}
@@ -859,6 +802,68 @@ function ProductsContent() {
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Product Card Component
+function ProductCard({ product }: { product: Product }) {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  return (
+    <div className="group flex flex-col bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-zinc-300 transition-all duration-300">
+      <Link 
+        href={`/shop/${product.slug}`} 
+        className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100"
+      >
+        {product.image_url ? (
+          <img 
+            src={product.image_url} 
+            alt={product.name} 
+            className="w-full h-full object-cover transition duration-700 group-hover:scale-110" 
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center uppercase font-black text-xs text-zinc-300 italic">
+            No Image
+          </div>
+        )}
+        
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        {/* Quick view button */}
+        <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <div className="bg-white text-zinc-900 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl hover:bg-red-500 hover:text-white transition-colors">
+            <Eye className="w-3.5 h-3.5" />
+            Quick View
+          </div>
+        </div>
+
+        {/* Favorite button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setIsFavorite(!isFavorite);
+          }}
+          className="absolute top-4 right-4 w-10 h-10 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white transition-all opacity-0 group-hover:opacity-100 shadow-lg hover:scale-110"
+        >
+          <Heart className={`w-4 h-4 transition-all ${isFavorite ? 'fill-red-500 text-red-500' : 'text-zinc-400'}`} />
+        </button>
+      </Link>
+      
+      <div className="p-4 space-y-2">
+        <div className="mb-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+            {product.category_path}
+          </span>
+          <h3 className="font-bold text-zinc-900 leading-tight line-clamp-2 group-hover:text-red-600 transition-colors text-base min-h-[2.5rem]">
+            {product.name}
+          </h3>
+        </div>
+        <p className="text-xl font-black text-red-600 italic">
+          ₦{parseFloat(product.base_price).toLocaleString()}
+        </p>
       </div>
     </div>
   );
