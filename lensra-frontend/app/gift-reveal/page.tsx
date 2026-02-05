@@ -394,7 +394,7 @@ function GiftRevealContent() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto">
             <div>
-              <label className="block text-sm font-black uppercase tracking-wide text-zinc-700 mb-3">
+              <label className="block text-sm font-black uppercase tracking-wide text-black mb-3">
                 📱 Your WhatsApp Number
               </label>
               <input
@@ -408,7 +408,7 @@ function GiftRevealContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-black uppercase tracking-wide text-zinc-700 mb-3">
+              <label className="block text-sm font-black uppercase tracking-wide text-black mb-3">
                 👤 Your Name (Optional)
               </label>
               <input
