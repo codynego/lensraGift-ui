@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useCallback, Suspense, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Search, ChevronRight, ArrowUpRight, Filter, Loader2, 
@@ -870,13 +869,21 @@ function ProductsContent() {
 // Product Card Component
 function ProductCard({ product }: { product: Product }) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleNavigate = () => {
+    startTransition(() => {
+      router.push(`/shop/${product.slug}`);
+    });
+  };
 
   return (
-    <div className="group flex flex-col bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-zinc-300 transition-all duration-300">
-      <Link 
-        href={`/shop/${product.slug}`} 
-        className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100"
-      >
+    <div 
+      onClick={handleNavigate} 
+      className="group flex flex-col bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-zinc-300 transition-all duration-300 cursor-pointer"
+    >
+      <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100">
         {product.image_url ? (
           <img 
             src={product.image_url} 
@@ -889,11 +896,20 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         )}
         
+        {isPending && (
+          <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-50">
+            <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+          </div>
+        )}
+        
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Quick view button */}
-        <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+        <div 
+          onClick={(e) => e.stopPropagation()} 
+          className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+        >
           <div className="bg-white text-zinc-900 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl hover:bg-red-500 hover:text-white transition-colors">
             <Eye className="w-3.5 h-3.5" />
             Quick View
@@ -903,6 +919,7 @@ function ProductCard({ product }: { product: Product }) {
         {/* Favorite button */}
         <button
           onClick={(e) => {
+            e.stopPropagation();
             e.preventDefault();
             setIsFavorite(!isFavorite);
           }}
@@ -910,7 +927,7 @@ function ProductCard({ product }: { product: Product }) {
         >
           <Heart className={`w-4 h-4 transition-all ${isFavorite ? 'fill-red-500 text-red-500' : 'text-zinc-400'}`} />
         </button>
-      </Link>
+      </div>
       
       <div className="p-4 space-y-2">
         <div className="mb-1">

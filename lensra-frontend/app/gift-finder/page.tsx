@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 
 interface Answer {
@@ -28,12 +29,14 @@ interface Step {
 
 interface Product {
   id: number;
+  slug: string;
   name: string;
   base_price: number;
   image_url?: string;
 }
 
 const GiftFinder = () => {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answer>({
     recipient: '',
@@ -197,10 +200,13 @@ const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/
         <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-8">Recommended Gifts</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
           {results?.map((product) => (
-            <div key={product.id} className="bg-zinc-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-600/20">
+            <div key={product.id}
+            onClick={() => router.push(`/shop/${product.slug}`)}
+            className="bg-zinc-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-600/20">
               <img 
                 src={product.image_url} 
                 alt={product.name} 
+                
                 className="w-full h-40 md:h-48 object-cover"
               />
               <div className="p-4">

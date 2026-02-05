@@ -36,6 +36,7 @@ interface ProductImage {
 interface ProductDetail {
   id: number;
   name: string;
+  slug: string;
   description: string;
   base_price: string;
   category_name: string;
@@ -549,7 +550,7 @@ export default function ClientProductDetail({
                 <div
                   key={item.id}
                   onClick={() => {
-                    router.push(`/shop/${item.id}`);
+                    router.push(`/shop/${item.slug}`);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className="group cursor-pointer"
