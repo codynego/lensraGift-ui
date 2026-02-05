@@ -232,7 +232,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             {occasions.map((occasion) => (
               <a
                 key={occasion.slug}
-                href={`/gifts/${occasion.slug}`}
+                href={`/category/${occasion.slug}`}
                 className="group relative bg-gradient-to-br from-zinc-50 to-white border-2 border-zinc-100 rounded-2xl p-6 hover:border-red-300 hover:shadow-xl transition-all overflow-hidden"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${occasion.gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />

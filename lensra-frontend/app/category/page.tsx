@@ -1,399 +1,299 @@
-"use client"
-import { useState } from 'react';
-import { Search, TrendingUp, ChevronRight, Star, Sparkles, Package, Zap } from 'lucide-react';
+// app/categories/page.tsx
+// Categories List - Bold exploration layout with creative typography
+
+"use client";
+
+import { useState, useEffect } from 'react';
+import { 
+  Layers, ChevronRight, Search, Grid3x3, LayoutGrid, 
+  Sparkles, TrendingUp, Filter, X, Package, Gift, Heart
+} from 'lucide-react';
+import Link from 'next/link';
+
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parent_id: number | null;
+  parent_name: string | null;
+  subcategories: Category[];
+  full_path: string;
+}
 
 export default function CategoriesPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const categories = [
-    {
-      id: 1,
-      name: 'Mugs & Drinkware',
-      icon: '☕',
-      description: 'Ceramic mugs, travel mugs, water bottles',
-      productCount: 500,
-      startingPrice: 12.99,
-      trending: true,
-      popular: true,
-      gradient: 'from-amber-400 to-orange-600',
-      subcategories: ['Ceramic Mugs', 'Travel Mugs', 'Water Bottles', 'Wine Glasses']
-    },
-    {
-      id: 2,
-      name: 'Apparel',
-      icon: '👕',
-      description: 'T-shirts, hoodies, tank tops, sweatshirts',
-      productCount: 1200,
-      startingPrice: 19.99,
-      trending: true,
-      popular: true,
-      gradient: 'from-blue-400 to-indigo-600',
-      subcategories: ['T-Shirts', 'Hoodies', 'Tank Tops', 'Long Sleeve']
-    },
-    {
-      id: 3,
-      name: 'Home Decor',
-      icon: '🖼️',
-      description: 'Canvas prints, posters, pillows, blankets',
-      productCount: 800,
-      startingPrice: 24.99,
-      trending: false,
-      popular: true,
-      gradient: 'from-purple-400 to-pink-600',
-      subcategories: ['Canvas Prints', 'Posters', 'Throw Pillows', 'Blankets']
-    },
-    {
-      id: 4,
-      name: 'Accessories',
-      icon: '👜',
-      description: 'Tote bags, phone cases, keychains, stickers',
-      productCount: 950,
-      startingPrice: 14.99,
-      trending: true,
-      popular: false,
-      gradient: 'from-pink-400 to-red-600',
-      subcategories: ['Tote Bags', 'Phone Cases', 'Keychains', 'Stickers']
-    },
-    {
-      id: 5,
-      name: 'Office & Stationery',
-      icon: '📓',
-      description: 'Notebooks, planners, mousepads, desk items',
-      productCount: 450,
-      startingPrice: 9.99,
-      trending: false,
-      popular: false,
-      gradient: 'from-green-400 to-teal-600',
-      subcategories: ['Notebooks', 'Planners', 'Mousepads', 'Calendars']
-    },
-    {
-      id: 6,
-      name: 'Kids & Baby',
-      icon: '🧸',
-      description: 'Baby clothes, bibs, toys, nursery decor',
-      productCount: 350,
-      startingPrice: 16.99,
-      trending: false,
-      popular: true,
-      gradient: 'from-yellow-400 to-orange-500',
-      subcategories: ['Baby Onesies', 'Bibs', 'Kids T-Shirts', 'Nursery Art']
-    },
-    {
-      id: 7,
-      name: 'Tech Accessories',
-      icon: '📱',
-      description: 'Phone cases, laptop sleeves, tablet covers',
-      productCount: 600,
-      startingPrice: 15.99,
-      trending: true,
-      popular: false,
-      gradient: 'from-cyan-400 to-blue-600',
-      subcategories: ['Phone Cases', 'Laptop Sleeves', 'AirPod Cases', 'PopSockets']
-    },
-    {
-      id: 8,
-      name: 'Seasonal & Holidays',
-      icon: '🎄',
-      description: 'Christmas, Halloween, birthdays, occasions',
-      productCount: 550,
-      startingPrice: 12.99,
-      trending: false,
-      popular: true,
-      gradient: 'from-red-400 to-green-600',
-      subcategories: ['Christmas', 'Halloween', 'Birthday', 'Valentine\'s']
-    },
-    {
-      id: 9,
-      name: 'Sports & Fitness',
-      icon: '⚽',
-      description: 'Gym bags, sports bottles, workout gear',
-      productCount: 400,
-      startingPrice: 18.99,
-      trending: false,
-      popular: false,
-      gradient: 'from-orange-400 to-red-600',
-      subcategories: ['Gym Bags', 'Sports Bottles', 'Workout Shirts', 'Headbands']
-    },
-    {
-      id: 10,
-      name: 'Pet Products',
-      icon: '🐾',
-      description: 'Pet bowls, bandanas, toys, pet apparel',
-      productCount: 300,
-      startingPrice: 13.99,
-      trending: true,
-      popular: false,
-      gradient: 'from-purple-400 to-indigo-600',
-      subcategories: ['Pet Bowls', 'Bandanas', 'Pet Toys', 'Pet Shirts']
-    },
-    {
-      id: 11,
-      name: 'Kitchen & Dining',
-      icon: '🍽️',
-      description: 'Aprons, cutting boards, coasters, placemats',
-      productCount: 380,
-      startingPrice: 14.99,
-      trending: false,
-      popular: false,
-      gradient: 'from-red-400 to-pink-600',
-      subcategories: ['Aprons', 'Cutting Boards', 'Coasters', 'Placemats']
-    },
-    {
-      id: 12,
-      name: 'Jewelry & Wearables',
-      icon: '💍',
-      description: 'Necklaces, bracelets, rings, watches',
-      productCount: 250,
-      startingPrice: 19.99,
-      trending: false,
-      popular: false,
-      gradient: 'from-yellow-400 to-pink-600',
-      subcategories: ['Necklaces', 'Bracelets', 'Rings', 'Custom Watches']
-    }
-  ];
+  useEffect(() => {
+    fetch(`${BaseUrl}api/products/categories/`)
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data.results || data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching categories:', err);
+        setLoading(false);
+      });
+  }, []);
 
-  const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    cat.description.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter top-level categories
+  const topLevelCategories = categories.filter(cat => !cat.parent_id);
+  
+  // Search filter
+  const filteredCategories = topLevelCategories.filter(cat =>
+    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const trendingCategories = categories.filter(cat => cat.trending);
-  const popularCategories = categories.filter(cat => cat.popular);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full border-4 border-zinc-800 border-t-red-500 animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white py-20 px-4">
-        <div className="max-w-7xl mx-auto text-center space-y-6">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Package className="w-10 h-10" />
-            <h1 className="text-5xl md:text-6xl font-bold">Browse Categories</h1>
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Hero Header - Bold Typography */}
+      <section className="relative border-b border-zinc-800 overflow-hidden">
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" 
+               style={{
+                 backgroundImage: `repeating-linear-gradient(
+                   45deg,
+                   transparent,
+                   transparent 35px,
+                   rgba(255, 255, 255, 0.05) 35px,
+                   rgba(255, 255, 255, 0.05) 70px
+                 )`
+               }} 
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-20 md:py-32 relative z-10">
+          <div className="max-w-4xl">
+            {/* Overline */}
+            <div className="inline-flex items-center gap-2 mb-6">
+              <Layers className="w-5 h-5 text-red-500" />
+              <span className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400">
+                Explore Collections
+              </span>
+            </div>
+
+            {/* Main Title - Dramatic Typography */}
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-6">
+              Browse
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 italic">
+                Categories
+              </span>
+            </h1>
+
+            <p className="text-xl md:text-2xl text-zinc-400 font-light max-w-2xl leading-relaxed">
+              Discover curated gift collections for every personality, occasion, and moment worth celebrating.
+            </p>
           </div>
-          <p className="text-2xl text-blue-100 max-w-3xl mx-auto">
-            Explore our wide range of customizable products. From mugs to apparel, find the perfect item to personalize.
-          </p>
-          
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mt-8">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
+        </div>
+      </section>
+
+      {/* Search & Filter Bar */}
+      <section className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Search */}
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
               <input
                 type="text"
+                placeholder="Search categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search categories... (e.g., 'mugs', 'apparel', 'home')"
-                className="w-full pl-14 pr-4 py-5 rounded-full text-gray-900 text-lg focus:outline-none focus:ring-4 focus:ring-white/50 shadow-2xl"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-12 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
-          </div>
 
-          {/* Stats */}
-          <div className="flex justify-center gap-12 pt-8 flex-wrap">
-            <div>
-              <div className="text-4xl font-bold">{categories.length}</div>
-              <div className="text-blue-100">Categories</div>
+            {/* View Toggle */}
+            <div className="flex items-center gap-2 bg-zinc-800 rounded-xl p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-red-600 text-white'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <Grid3x3 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-red-600 text-white'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
             </div>
-            <div>
-              <div className="text-4xl font-bold">
-                {categories.reduce((sum, cat) => sum + cat.productCount, 0).toLocaleString()}
-              </div>
-              <div className="text-blue-100">Products</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold">1000+</div>
-              <div className="text-blue-100">Templates</div>
+
+            {/* Stats */}
+            <div className="text-sm text-zinc-400">
+              <span className="font-semibold text-white">{filteredCategories.length}</span> categories
             </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      {/* Categories Grid/List */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        {filteredCategories.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-zinc-800 rounded-full mb-6">
+              <Search className="w-10 h-10 text-zinc-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-zinc-300 mb-2">No categories found</h3>
+            <p className="text-zinc-500">Try adjusting your search</p>
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCategories.map((category) => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredCategories.map((category) => (
+              <CategoryListItem key={category.id} category={category} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Footer CTA */}
+      <section className="border-t border-zinc-800 bg-zinc-900/50">
+        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600/10 rounded-2xl mb-6">
+            <Gift className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Can't find what you're looking for?
+          </h2>
+          <p className="text-zinc-400 mb-8 max-w-2xl mx-auto">
+            Use our Gift Finder to discover personalized recommendations based on who you're shopping for.
+          </p>
+          <Link
+            href="/gift-finder"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl font-bold hover:shadow-xl hover:shadow-red-500/30 transition-all group"
+          >
+            Try Gift Finder
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function CategoryCard({ category }: { category: Category }) {
+  const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+
+  return (
+    <Link href={`/gifts/${category.slug}`}>
+      <div className="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-8 hover:border-red-500/50 transition-all duration-300 overflow-hidden h-full">
+        {/* Hover Gradient Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-red-600/0 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Trending Categories */}
-        {!searchQuery && trendingCategories.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-              <h2 className="text-3xl font-bold text-gray-900">Trending Now</h2>
-              <Sparkles className="w-6 h-6 text-yellow-500" />
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {trendingCategories.map((category) => (
-                <div
-                  key={category.id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group cursor-pointer transform hover:-translate-y-1"
-                >
-                  <div className={`bg-gradient-to-br ${category.gradient} h-40 flex items-center justify-center text-8xl relative`}>
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
-                      <Zap className="w-3 h-3 text-orange-500" />
-                      <span className="text-xs font-bold text-gray-900">Hot</span>
-                    </div>
-                    <div className="group-hover:scale-110 transition">{category.icon}</div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{category.name}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{category.description}</p>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">{category.productCount} products</span>
-                      <span className="text-purple-600 font-semibold">From ${category.startingPrice}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Animated Corner Accent */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-transparent rounded-bl-full transform translate-x-16 -translate-y-16 group-hover:translate-x-8 group-hover:-translate-y-8 transition-transform duration-500" />
 
-        {/* Popular Categories */}
-        {!searchQuery && popularCategories.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <Star className="w-8 h-8 text-yellow-500 fill-yellow-500" />
-              <h2 className="text-3xl font-bold text-gray-900">Most Popular</h2>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {popularCategories.slice(0, 3).map((category) => (
-                <div
-                  key={category.id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group cursor-pointer"
-                >
-                  <div className={`bg-gradient-to-br ${category.gradient} h-56 flex items-center justify-center text-9xl`}>
-                    <div className="group-hover:scale-110 transition">{category.icon}</div>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-2xl font-bold text-gray-900">{category.name}</h3>
-                      <span className="bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full">
-                        Popular
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mb-4">{category.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500 text-sm">{category.productCount} products</span>
-                      <span className="text-purple-600 font-bold text-lg">From ${category.startingPrice}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* All Categories */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-gray-900">
-              {searchQuery ? `Search Results (${filteredCategories.length})` : 'All Categories'}
-            </h2>
-            {!searchQuery && (
-              <div className="text-gray-500">
-                {categories.length} categories available
-              </div>
-            )}
+        <div className="relative z-10">
+          {/* Icon */}
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-red-600/10 border border-red-600/20 rounded-xl mb-6 group-hover:bg-red-600/20 group-hover:scale-110 transition-all duration-300">
+            <Package className="w-7 h-7 text-red-500" />
           </div>
 
-          {filteredCategories.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCategories.map((category) => (
-                <div
-                  key={category.id}
-                  onMouseEnter={() => setHoveredCategory(category.id)}
-                  onMouseLeave={() => setHoveredCategory(null)}
-                  className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all group cursor-pointer"
-                >
-                  <div className={`bg-gradient-to-br ${category.gradient} h-48 flex items-center justify-center text-8xl relative overflow-hidden`}>
-                    {category.trending && (
-                      <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        Trending
-                      </div>
-                    )}
-                    {category.popular && (
-                      <div className="absolute top-3 right-3 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                        ★ Popular
-                      </div>
-                    )}
-                    <div className="group-hover:scale-110 transition-transform duration-300">
-                      {category.icon}
-                    </div>
-                    
-                    {/* Hover Overlay with Subcategories */}
-                    {hoveredCategory === category.id && (
-                      <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-6 animate-in fade-in duration-200">
-                        <div className="text-center">
-                          <div className="text-white font-bold mb-3 text-lg">Quick Browse</div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {category.subcategories.map((sub, idx) => (
-                              <button
-                                key={idx}
-                                className="bg-white/20 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-sm hover:bg-white/30 transition"
-                              >
-                                {sub}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+          {/* Category Name */}
+          <h3 className="text-2xl font-bold mb-3 group-hover:text-red-400 transition-colors">
+            {category.name}
+          </h3>
 
-                  <div className="p-5">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center justify-between">
-                      {category.name}
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition" />
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">{category.description}</p>
-                    <div className="flex items-center justify-between pt-3 border-t">
-                      <div>
-                        <div className="text-xs text-gray-500">Starting at</div>
-                        <div className="text-lg font-bold text-purple-600">${category.startingPrice}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-gray-500">Products</div>
-                        <div className="text-lg font-bold text-gray-900">{category.productCount}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <div className="text-8xl mb-6">🔍</div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-4">No Categories Found</h3>
-              <p className="text-gray-600 text-lg mb-8">
-                We couldn't find any categories matching "{searchQuery}"
-              </p>
-              <button
-                onClick={() => setSearchQuery('')}
-                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold hover:shadow-xl transition"
-              >
-                Clear Search
-              </button>
+          {/* Subcategories Preview */}
+          {hasSubcategories && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2">
+                {category.subcategories.slice(0, 3).map((sub) => (
+                  <span
+                    key={sub.id}
+                    className="text-xs px-3 py-1 bg-zinc-800 text-zinc-400 rounded-full border border-zinc-700"
+                  >
+                    {sub.name}
+                  </span>
+                ))}
+                {category.subcategories.length > 3 && (
+                  <span className="text-xs px-3 py-1 bg-zinc-800 text-zinc-400 rounded-full border border-zinc-700">
+                    +{category.subcategories.length - 3} more
+                  </span>
+                )}
+              </div>
             </div>
           )}
-        </section>
 
-        {/* CTA Banner */}
-        {!searchQuery && (
-          <section className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-white text-center">
-            <h2 className="text-4xl font-bold mb-4">Can't Find What You're Looking For?</h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Start designing your custom product from scratch with our easy-to-use design editor
-            </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <button className="px-8 py-4 bg-white text-purple-600 rounded-full font-bold text-lg hover:bg-gray-100 transition shadow-xl">
-                Start Designing
-              </button>
-              <button className="px-8 py-4 bg-white/20 backdrop-blur-sm border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/30 transition">
-                Contact Us
-              </button>
-            </div>
-          </section>
-        )}
+          {/* Action */}
+          <div className="flex items-center gap-2 text-sm font-semibold text-zinc-400 group-hover:text-red-400 transition-colors">
+            Explore Category
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
       </div>
-    </div>
+    </Link>
+  );
+}
+
+function CategoryListItem({ category }: { category: Category }) {
+  const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+
+  return (
+    <Link href={`/gifts/${category.slug}`}>
+      <div className="group bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-red-500/50 transition-all duration-300 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          {/* Icon */}
+          <div className="flex-shrink-0 w-12 h-12 bg-red-600/10 border border-red-600/20 rounded-lg flex items-center justify-center group-hover:bg-red-600/20 transition-all">
+            <Package className="w-6 h-6 text-red-500" />
+          </div>
+
+          <div>
+            {/* Name */}
+            <h3 className="text-xl font-bold mb-1 group-hover:text-red-400 transition-colors">
+              {category.name}
+            </h3>
+
+            {/* Subcategories */}
+            {hasSubcategories && (
+              <p className="text-sm text-zinc-500">
+                {category.subcategories.length} subcategories
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Arrow */}
+        <ChevronRight className="w-6 h-6 text-zinc-600 group-hover:text-red-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+      </div>
+    </Link>
   );
 }
