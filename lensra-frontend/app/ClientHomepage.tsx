@@ -195,21 +195,23 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             Who are you buying for?
           </h2>
           
-          <div className="flex overflow-x-auto gap-3 pb-4 snap-x snap-mandatory scrollbar-hide justify-center">
-            {intentOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => handleIntentSelection(option.value)}
-                className={`flex-shrink-0 snap-center px-6 py-3 rounded-xl font-semibold text-sm transition-all border-2 ${
-                  selectedIntent === option.value
-                    ? 'bg-red-600 text-white border-red-600 shadow-lg'
-                    : 'bg-white text-zinc-700 border-zinc-200 hover:border-red-300 hover:shadow-md'
-                }`}
-              >
-                <span className="mr-2">{option.emoji}</span>
-                {option.label}
-              </button>
-            ))}
+          <div className="w-full overflow-x-auto gap-3 pb-4 scrollbar-hide overscroll-x-contain">
+            <div className="flex gap-3">
+              {intentOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleIntentSelection(option.value)}
+                  className={`flex-shrink-0 px-6 py-3 rounded-xl font-semibold text-sm transition-all border-2 ${
+                    selectedIntent === option.value
+                      ? 'bg-red-600 text-white border-red-600 shadow-lg'
+                      : 'bg-white text-zinc-700 border-zinc-200 hover:border-red-300 hover:shadow-md'
+                  }`}
+                >
+                  <span className="mr-2">{option.emoji}</span>
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>

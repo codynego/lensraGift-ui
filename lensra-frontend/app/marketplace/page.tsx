@@ -380,6 +380,42 @@ function ProductsContent() {
     (selectedPriceRange !== 'all' ? 1 : 0) +
     selectedTags.length;
 
+  // Improved pagination items generation
+  const generatePaginationItems = () => {
+    const pagesToShow: (number | string)[] = [];
+
+    if (totalPages <= 1) return [];
+
+    // Add first page
+    pagesToShow.push(1);
+
+    // Add left ellipsis if needed
+    if (currentPage > 3) {
+      pagesToShow.push('left-ellipsis');
+    }
+
+    // Add pages around current
+    const start = Math.max(2, currentPage - 2);
+    const end = Math.min(totalPages - 1, currentPage + 2);
+    for (let i = start; i <= end; i++) {
+      pagesToShow.push(i);
+    }
+
+    // Add right ellipsis if needed
+    if (currentPage < totalPages - 2) {
+      pagesToShow.push('right-ellipsis');
+    }
+
+    // Add last page if not already included
+    if (totalPages > 1 && !pagesToShow.includes(totalPages)) {
+      pagesToShow.push(totalPages);
+    }
+
+    return pagesToShow;
+  };
+
+  const paginationItems = generatePaginationItems();
+
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       
@@ -770,29 +806,27 @@ function ProductsContent() {
 
                 {/* ENHANCED PAGINATION */}
                 {totalPages > 1 && (
-                  <div className="mt-16 flex items-center justify-center gap-3">
+                  <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button 
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(p => p - 1)}
-                      className="px-6 py-3 rounded-xl border border-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 hover:border-zinc-300 transition-all text-sm font-bold uppercase flex items-center gap-2 shadow-sm"
+                      className="px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 hover:border-zinc-300 transition-all text-sm font-bold uppercase flex items-center gap-2 shadow-sm"
                     >
                       <ChevronLeft className="w-4 h-4" /> Prev
                     </button>
                     
-                    <div className="flex gap-2">
-                      {[...Array(totalPages)].map((_, i) => {
-                        const pageNum = i + 1;
-                        const isCurrent = currentPage === pageNum;
-                        if (pageNum > 2 && pageNum < currentPage - 1) return null;
-                        if (pageNum < totalPages - 1 && pageNum > currentPage + 1) return null;
-                        if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                          return <span key={i} className="px-4 py-3 text-zinc-400 font-bold">...</span>;
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {paginationItems.map((item, index) => {
+                        if (typeof item === 'string') {
+                          return <span key={`ellipsis-${index}`} className="px-3 py-2 sm:px-4 sm:py-3 text-zinc-400 font-bold">...</span>;
                         }
+                        const pageNum = item;
+                        const isCurrent = currentPage === pageNum;
                         return (
                           <button
-                            key={i}
+                            key={pageNum}
                             onClick={() => setCurrentPage(pageNum)}
-                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all ${
+                            className={`px-4 py-2 sm:px-5 sm:py-3 rounded-xl text-sm font-bold transition-all ${
                               isCurrent 
                                 ? 'bg-red-600 text-white shadow-md hover:bg-red-700' 
                                 : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200'
@@ -807,7 +841,7 @@ function ProductsContent() {
                     <button 
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage(p => p + 1)}
-                      className="px-6 py-3 rounded-xl border border-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 hover:border-zinc-300 transition-all text-sm font-bold uppercase flex items-center gap-2 shadow-sm"
+                      className="px-4 py-2 sm:px-6 sm:py-3 rounded-xl border border-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50 hover:border-zinc-300 transition-all text-sm font-bold uppercase flex items-center gap-2 shadow-sm"
                     >
                       Next <ChevronRight className="w-4 h-4" />
                     </button>

@@ -384,7 +384,7 @@ export default function BlogPostList() {
 
           {/* Shop CTA */}
           <button
-            onClick={() => router.push('/shop')}
+            onClick={() => router.push('/marketplace')}
             className="px-10 py-5 bg-transparent border-2 border-white/20 hover:border-white/40 text-white rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all hover:bg-white/5"
           >
             Explore Collection
