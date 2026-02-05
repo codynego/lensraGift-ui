@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Gift, Heart, Sparkles, ArrowRight, Loader2, Check, MessageCircle } from 'lucide-react';
 
@@ -11,7 +11,7 @@ interface InviteInfo {
   inviter_code?: string;
 }
 
-export default function GiftRevealPage() {
+function GiftRevealContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get('ref') || searchParams.get('invite');
@@ -408,5 +408,25 @@ export default function GiftRevealPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function GiftRevealPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping" />
+            <div className="relative w-24 h-24 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center shadow-2xl">
+              <Gift className="w-12 h-12 text-white animate-bounce" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-zinc-600">Loading your surprise...</p>
+        </div>
+      </div>
+    }>
+      <GiftRevealContent />
+    </Suspense>
   );
 }
