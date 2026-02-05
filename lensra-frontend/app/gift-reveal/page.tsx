@@ -24,6 +24,7 @@ function GiftRevealContent() {
   const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
   const [leadId, setLeadId] = useState<string>('');
   const [userInviteCode, setUserInviteCode] = useState('');
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
 
   // Fetch invite info if there's a referral code
   useEffect(() => {
@@ -41,6 +42,24 @@ function GiftRevealContent() {
       return '234' + cleaned;
     }
     return cleaned;
+  };
+
+  const fetchRandomProducts = async () => {
+    try {
+      // Fetch 3 random products
+      const products = [];
+      for (let i = 0; i < 3; i++) {
+        const response = await fetch(`${BaseUrl}api/leads/recommend/`);
+        if (response.ok) {
+          const product = await response.json();
+          products.push(product);
+        }
+      }
+      setRecommendedProducts(products);
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+      // Keep empty array, will show placeholders
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,6 +99,9 @@ function GiftRevealContent() {
 
       // Move to processing step
       setStep('processing');
+
+      // Fetch random products while processing
+      fetchRandomProducts();
 
       // After 2 seconds, move to preview
       setTimeout(() => {
@@ -159,34 +181,85 @@ function GiftRevealContent() {
             </p>
           </div>
 
-          {/* Blurred Gift Previews */}
+          {/* Blurred Gift Previews - Real Products */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {[
-              { icon: '☕', title: 'Personalized Mug', desc: 'With your photo & message' },
-              { icon: '🖼️', title: 'Custom Frame', desc: 'Your best memory, framed' },
-              { icon: '🎁', title: 'Surprise Box', desc: 'Multiple gifts in one' }
-            ].map((item, idx) => (
-              <div key={idx} className="relative group">
-                <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-zinc-200 hover:border-red-500 transition-all overflow-hidden">
-                  {/* Blur overlay */}
-                  <div className="absolute inset-0 backdrop-blur-md bg-white/60 flex items-center justify-center z-10">
-                    <div className="text-center">
-                      <div className="text-6xl mb-3 opacity-50 group-hover:scale-110 transition-transform">
-                        {item.icon}
+            {recommendedProducts.length > 0 ? (
+              recommendedProducts.map((product, idx) => (
+                <div key={idx} className="relative group">
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-xl border-2 border-zinc-200 hover:border-red-500 transition-all">
+                    {/* Product Image with Blur */}
+                    <div className="relative aspect-square">
+                      {product.image_url ? (
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-red-100 to-pink-100" />
+                      )}
+                      
+                      {/* Blur overlay */}
+                      <div className="absolute inset-0 backdrop-blur-lg bg-white/40 flex items-center justify-center">
+                        <div className="text-center p-6">
+                          <div className="text-5xl mb-3 opacity-70 group-hover:scale-110 transition-transform">
+                            🎁
+                          </div>
+                          <p className="text-xs font-black uppercase text-zinc-600 mb-1">Preview Only</p>
+                          <p className="text-xs text-zinc-500 font-semibold">
+                            ₦{parseFloat(product.base_price).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-xs font-black uppercase text-zinc-400">Preview Only</p>
+                    </div>
+                    
+                    {/* Product Info */}
+                    <div className="p-5 bg-gradient-to-b from-white to-zinc-50">
+                      <h3 className="font-black uppercase text-base text-zinc-900 mb-2 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-xs text-zinc-600 font-semibold line-clamp-2">
+                        {product.description || product.category_path}
+                      </p>
+                      {product.is_featured && (
+                        <div className="mt-3 inline-flex items-center gap-1.5 bg-red-100 text-red-700 px-3 py-1 rounded-full">
+                          <Sparkles className="w-3 h-3" />
+                          <span className="text-xs font-black uppercase">Featured</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  
-                  {/* Content behind blur */}
-                  <div className="relative z-0">
-                    <div className="aspect-square bg-gradient-to-br from-red-100 to-pink-100 rounded-xl mb-4" />
-                    <h3 className="font-black uppercase text-lg text-zinc-900 mb-2">{item.title}</h3>
-                    <p className="text-sm text-zinc-600 font-semibold">{item.desc}</p>
+                </div>
+              ))
+            ) : (
+              // Fallback placeholders while loading
+              [
+                { icon: '☕', title: 'Personalized Mug', desc: 'With your photo & message' },
+                { icon: '🖼️', title: 'Custom Frame', desc: 'Your best memory, framed' },
+                { icon: '🎁', title: 'Surprise Box', desc: 'Multiple gifts in one' }
+              ].map((item, idx) => (
+                <div key={idx} className="relative group">
+                  <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-zinc-200 hover:border-red-500 transition-all overflow-hidden">
+                    {/* Blur overlay */}
+                    <div className="absolute inset-0 backdrop-blur-md bg-white/60 flex items-center justify-center z-10">
+                      <div className="text-center">
+                        <div className="text-6xl mb-3 opacity-50 group-hover:scale-110 transition-transform">
+                          {item.icon}
+                        </div>
+                        <p className="text-xs font-black uppercase text-zinc-400">Preview Only</p>
+                      </div>
+                    </div>
+                    
+                    {/* Content behind blur */}
+                    <div className="relative z-0">
+                      <div className="aspect-square bg-gradient-to-br from-red-100 to-pink-100 rounded-xl mb-4" />
+                      <h3 className="font-black uppercase text-lg text-zinc-900 mb-2">{item.title}</h3>
+                      <p className="text-sm text-zinc-600 font-semibold">{item.desc}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Mystery Message */}
