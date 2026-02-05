@@ -29,6 +29,7 @@ interface ProductImage {
 interface ProductDetail {
   id: number;
   name: string;
+  slug: string;
   description: string;
   base_price: string;
   category_name: string;
