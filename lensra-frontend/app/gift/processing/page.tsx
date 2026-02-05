@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Gift, ArrowRight, Share2 } from 'lucide-react';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
-export default function ProcessingPage() {
+function ProcessingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -30,14 +30,14 @@ export default function ProcessingPage() {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Fetch Invite Link (assuming backend creates it automatically or fetch existing)
-        const inviteResponse = await fetch(`${BaseUrl}api/leads/invites/?owner=${leadId}`);
+        const inviteResponse = await fetch(`${BaseUrl}api/invites/?owner=${leadId}`);
         const inviteData = await inviteResponse.json();
         if (inviteData.length > 0) {
           setInviteLink(`${window.location.origin}/invite/${inviteData[0].code}`);
         }
 
         // Fetch Gift Preview
-        const previewResponse = await fetch(`${BaseUrl}api/leads/previews/${leadId}/`);
+        const previewResponse = await fetch(`${BaseUrl}api/previews/${leadId}/`);
         if (!previewResponse.ok) {
           throw new Error('Failed to fetch preview');
         }
@@ -137,5 +137,23 @@ export default function ProcessingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProcessingPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center space-y-6">
+          <Loader2 className="w-16 h-16 text-red-500 mx-auto animate-spin" />
+          <h1 className="text-2xl font-bold text-zinc-900">
+            We’re preparing your personalized gift preview...
+          </h1>
+          <p className="text-zinc-600">This will only take a moment 🎁</p>
+        </div>
+      </div>
+    }>
+      <ProcessingPage />
+    </Suspense>
   );
 }
