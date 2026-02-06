@@ -227,10 +227,10 @@ function SubcategoryCard({ category, parentSlug }: { category: Category; parentS
         {/* Category Image */}
         <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
           {category.image_url ? (
-            <Image
+            <img
               src={category.image_url}
               alt={category.name}
-              fill
+              loading='lazy'
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
