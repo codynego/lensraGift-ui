@@ -220,7 +220,7 @@ function ProductsContent() {
     if (sortBy !== 'featured') params.set('sort', sortBy);
     if (currentPage > 1) params.set('page', currentPage.toString());
 
-    const newUrl = params.toString() ? `/marketplace?${params.toString()}` : '/marketplace';
+    const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
     router.push(newUrl, { scroll: false });
   }, [searchQuery, selectedCategory, selectedPriceRange, selectedTags, sortBy, currentPage, router]);
 
