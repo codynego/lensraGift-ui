@@ -281,7 +281,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                 {/* Category Image */}
                 <div className="relative aspect-square overflow-hidden">
                   <img
-                    src={occasion.image_url}
+                    src={occasion.image}
                     alt={occasion.name}
                     loading="lazy"
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
