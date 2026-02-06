@@ -9,6 +9,7 @@ import {
   ShieldCheck, Sparkles, Clock, MapPin, Heart, Upload, Gift, Star, Instagram, Users, Home, Coffee, Shirt, ChevronRight, Package, TrendingUp, Palette, Search, Filter, X, Cake, PartyPopper, GraduationCap, Banknote
 } from 'lucide-react';
 import LensraSubscribe from '@/components/LensraSubscribe';
+import Image from 'next/image';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
@@ -73,12 +74,54 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   };
 
   const occasions = [
-    { name: "Birthday", emoji: "🎂", icon: Cake, gradient: "from-pink-500 to-rose-500", slug: "birthday" },
-    { name: "Anniversary", emoji: "❤️", icon: Heart, gradient: "from-red-500 to-pink-500", slug: "anniversary" },
-    { name: "Valentine", emoji: "💝", icon: Heart, gradient: "from-rose-500 to-red-500", slug: "valentine" },
-    { name: "Graduation", emoji: "🎓", icon: GraduationCap, gradient: "from-blue-500 to-indigo-500", slug: "graduation" },
-    { name: "Wedding", emoji: "👰", icon: PartyPopper, gradient: "from-purple-500 to-pink-500", slug: "wedding" },
-    { name: "Just Because", emoji: "🎁", icon: Gift, gradient: "from-amber-500 to-orange-500", slug: "just-because" }
+    { 
+      name: "Birthday", 
+      emoji: "🎂", 
+      icon: Cake, 
+      gradient: "from-pink-500 to-rose-500", 
+      slug: "birthday",
+      image: "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=400&q=80"
+    },
+    { 
+      name: "Anniversary", 
+      emoji: "❤️", 
+      icon: Heart, 
+      gradient: "from-red-500 to-pink-500", 
+      slug: "anniversary",
+      image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80"
+    },
+    { 
+      name: "Valentine", 
+      emoji: "💝", 
+      icon: Heart, 
+      gradient: "from-rose-500 to-red-500", 
+      slug: "valentine",
+      image: "https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?w=400&q=80"
+    },
+    { 
+      name: "Graduation", 
+      emoji: "🎓", 
+      icon: GraduationCap, 
+      gradient: "from-blue-500 to-indigo-500", 
+      slug: "graduation",
+      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=80"
+    },
+    { 
+      name: "Wedding", 
+      emoji: "👰", 
+      icon: PartyPopper, 
+      gradient: "from-purple-500 to-pink-500", 
+      slug: "wedding",
+      image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=80"
+    },
+    { 
+      name: "Just Because", 
+      emoji: "🎁", 
+      icon: Gift, 
+      gradient: "from-amber-500 to-orange-500", 
+      slug: "just-because",
+      image: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=400&q=80"
+    }
   ];
 
   const budgetRanges = [
@@ -216,7 +259,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
         </div>
       </section>
 
-      {/* 3. SHOP BY OCCASION - Main Discovery */}
+      {/* 3. SHOP BY OCCASION - Main Discovery with Images */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
@@ -232,22 +275,39 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             {occasions.map((occasion) => (
               <a
                 key={occasion.slug}
-                href={`/category/${occasion.slug}`}
-                className="group relative bg-gradient-to-br from-zinc-50 to-white border-2 border-zinc-100 rounded-2xl p-6 hover:border-red-300 hover:shadow-xl transition-all overflow-hidden"
+                href={`/shop?tag=${occasion.slug}`}
+                className="group relative bg-white border-2 border-zinc-200 rounded-2xl overflow-hidden hover:border-red-300 hover:shadow-xl transition-all"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${occasion.gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />
+                {/* Category Image */}
+                <div className="relative aspect-square overflow-hidden">
+                  <img
+                    src={occasion.image_url}
+                    alt={occasion.name}
+                    loading="lazy"
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  {/* Gradient Overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${occasion.gradient} opacity-20 group-hover:opacity-30 transition-opacity`} />
+                  
+                  {/* Dark overlay on hover for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
                 
-                <div className="relative text-center">
-                  <div className="text-4xl mb-3">{occasion.emoji}</div>
-                  <h3 className="font-bold text-sm text-zinc-900 mb-1">
+                {/* Content Overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-end p-4 text-center">
+                  <div className="text-3xl mb-2 transform group-hover:scale-110 transition-transform">
+                    {occasion.emoji}
+                  </div>
+                  <h3 className="font-bold text-sm text-white mb-1 drop-shadow-lg">
                     {occasion.name}
                   </h3>
-                  <ChevronRight className="w-4 h-4 text-red-500 mx-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ChevronRight className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
                 </div>
               </a>
             ))}
           </div>
-          <div className="text-center">
+          
+          <div className="text-center mt-8">
             <a 
               href="/categories" 
               className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all group"
@@ -316,7 +376,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               return (
                 <a
                   key={budget.range}
-                  href={`/marketplace?${params.toString()}`}
+                  href={`/shop?${params.toString()}`}
                   className="group relative bg-gradient-to-br from-zinc-50 to-white border-2 border-zinc-100 rounded-2xl p-8 hover:border-red-300 hover:shadow-xl transition-all text-center overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-rose-50 opacity-0 group-hover:opacity-100 transition-opacity" />
