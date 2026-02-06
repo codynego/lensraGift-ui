@@ -19,6 +19,7 @@ function GiftRevealContent() {
   const [error, setError] = useState('');
   const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
   const [leadId, setLeadId] = useState<string>('');
+  const [leadData, setLeadData] = useState<any>(null);
   const [userInviteCode, setUserInviteCode] = useState('');
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
@@ -84,6 +85,7 @@ function GiftRevealContent() {
         throw new Error('Failed to submit. Please try again.');
       }
       const data = await response.json();
+      setLeadData(data);
       setLeadId(data.id);
       // Move to processing step
       setStep('processing');
@@ -96,24 +98,29 @@ function GiftRevealContent() {
   useEffect(() => {
     if (step === 'processing' && leadId) {
       const processLead = async () => {
-        try {
-          // Create invite link
-          const inviteResponse = await fetch(`${BaseUrl}api/leads/invites/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ owner: leadId }),
-          });
-          if (!inviteResponse.ok) {
-            throw new Error('Failed to create invite link');
+        // Check for existing invite link
+        if (leadData?.invite_links?.length > 0) {
+          setUserInviteCode(leadData.invite_links[0].code);
+        } else {
+          try {
+            // Create invite link
+            const inviteResponse = await fetch(`${BaseUrl}api/leads/invites/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ owner: leadId }),
+            });
+            if (!inviteResponse.ok) {
+              throw new Error('Failed to create invite link');
+            }
+            const inviteData = await inviteResponse.json();
+            setUserInviteCode(inviteData.code);
+          } catch (err) {
+            console.error('Invite creation error:', err);
+            // Fallback
+            setUserInviteCode(Math.random().toString(36).slice(2, 10).toUpperCase());
           }
-          const inviteData = await inviteResponse.json();
-          setUserInviteCode(inviteData.code);
-        } catch (err) {
-          console.error('Invite creation error:', err);
-          // Fallback
-          setUserInviteCode(Math.random().toString(36).slice(2, 10).toUpperCase());
         }
 
         // Fetch products
@@ -127,7 +134,7 @@ function GiftRevealContent() {
 
       processLead();
     }
-  }, [step, leadId]);
+  }, [step, leadId, leadData]);
   const shareLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/gift-reveal?ref=${userInviteCode}`;
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareLink);
