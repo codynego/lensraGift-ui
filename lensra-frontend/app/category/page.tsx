@@ -1,14 +1,15 @@
 // app/categories/page.tsx
-// Categories List - Bold exploration layout with creative typography
+// Categories List - Clean, Redbubble-inspired layout with category images
 
 "use client";
 
 import { useState, useEffect } from 'react';
 import { 
-  Layers, ChevronRight, Search, Grid3x3, LayoutGrid, 
-  Sparkles, TrendingUp, Filter, X, Package, Gift, Heart
+  Search, X, ChevronRight, Tag, TrendingUp, Star, 
+  Heart, Sparkles, Gift, Camera, Palette, Coffee
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
@@ -20,13 +21,25 @@ interface Category {
   parent_name: string | null;
   subcategories: Category[];
   full_path: string;
+  image_url?: string;
 }
+
+// Popular themes/tags for the "Shop by Theme" section
+const popularThemes = [
+  { name: 'Birthday', icon: Gift, color: 'from-pink-500 to-rose-500', tag: 'birthday' },
+  { name: 'Anniversary', icon: Heart, color: 'from-red-500 to-pink-500', tag: 'anniversary' },
+  { name: 'Wedding', icon: Sparkles, color: 'from-purple-500 to-pink-500', tag: 'wedding' },
+  { name: 'Christmas', icon: Star, color: 'from-green-600 to-red-600', tag: 'christmas' },
+  { name: 'Graduation', icon: TrendingUp, color: 'from-blue-500 to-indigo-500', tag: 'graduation' },
+  { name: 'Photography', icon: Camera, color: 'from-slate-600 to-slate-800', tag: 'photography' },
+  { name: 'Art & Design', icon: Palette, color: 'from-orange-500 to-pink-500', tag: 'art' },
+  { name: 'Coffee Lovers', icon: Coffee, color: 'from-amber-700 to-amber-900', tag: 'coffee' },
+];
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     fetch(`${BaseUrl}api/products/categories/`)
@@ -51,154 +64,135 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="relative">
-          <div className="w-16 h-16 rounded-full border-4 border-zinc-800 border-t-red-500 animate-spin" />
+          <div className="w-16 h-16 rounded-full border-4 border-gray-200 border-t-red-600 animate-spin" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Hero Header - Bold Typography */}
-      <section className="relative border-b border-zinc-800 overflow-hidden">
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" 
-               style={{
-                 backgroundImage: `repeating-linear-gradient(
-                   45deg,
-                   transparent,
-                   transparent 35px,
-                   rgba(255, 255, 255, 0.05) 35px,
-                   rgba(255, 255, 255, 0.05) 70px
-                 )`
-               }} 
-          />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 py-20 md:py-32 relative z-10">
-          <div className="max-w-4xl">
-            {/* Overline */}
-            <div className="inline-flex items-center gap-2 mb-6">
-              <Layers className="w-5 h-5 text-red-500" />
-              <span className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400">
-                Explore Collections
+    <div className="min-h-screen bg-white">
+      {/* Hero Header - Clean and Bold */}
+      <section className="bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+          <div className="text-center max-w-3xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-100 rounded-full mb-6">
+              <Tag className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-semibold text-red-600 uppercase tracking-wide">
+                Shop by Category
               </span>
             </div>
 
-            {/* Main Title - Dramatic Typography */}
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-6">
-              Browse
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 italic">
-                Categories
-              </span>
+            {/* Main Title */}
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 tracking-tight">
+              Find the Perfect
+              <span className="block text-red-600 mt-2">Gift Category</span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-zinc-400 font-light max-w-2xl leading-relaxed">
-              Discover curated gift collections for every personality, occasion, and moment worth celebrating.
+            <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+              Browse our curated collections of unique gifts for every occasion, personality, and celebration.
             </p>
           </div>
-        </div>
-      </section>
 
-      {/* Search & Filter Bar */}
-      <section className="sticky top-0 z-40 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            {/* Search */}
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mt-10">
+            <div className="relative">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-12 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+                className="w-full bg-white border-2 border-gray-200 rounded-full pl-14 pr-14 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all shadow-sm"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               )}
-            </div>
-
-            {/* View Toggle */}
-            <div className="flex items-center gap-2 bg-zinc-800 rounded-xl p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  viewMode === 'grid'
-                    ? 'bg-red-600 text-white'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Grid3x3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  viewMode === 'list'
-                    ? 'bg-red-600 text-white'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Stats */}
-            <div className="text-sm text-zinc-400">
-              <span className="font-semibold text-white">{filteredCategories.length}</span> categories
             </div>
           </div>
         </div>
       </section>
 
-      {/* Categories Grid/List */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
+      {/* Categories Grid */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Section Header */}
+        <div className="mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+            All Categories
+          </h2>
+          <p className="text-gray-600">
+            <span className="font-semibold text-gray-900">{filteredCategories.length}</span> categories to explore
+          </p>
+        </div>
+
         {filteredCategories.length === 0 ? (
           <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-zinc-800 rounded-full mb-6">
-              <Search className="w-10 h-10 text-zinc-600" />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+              <Search className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-2xl font-bold text-zinc-300 mb-2">No categories found</h3>
-            <p className="text-zinc-500">Try adjusting your search</p>
-          </div>
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCategories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
-            ))}
+            <h3 className="text-2xl font-bold text-gray-700 mb-2">No categories found</h3>
+            <p className="text-gray-500">Try adjusting your search</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCategories.map((category) => (
-              <CategoryListItem key={category.id} category={category} />
+              <CategoryCard key={category.id} category={category} />
             ))}
           </div>
         )}
       </section>
 
-      {/* Footer CTA */}
-      <section className="border-t border-zinc-800 bg-zinc-900/50">
-        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600/10 rounded-2xl mb-6">
-            <Gift className="w-8 h-8 text-red-500" />
+      {/* Shop by Theme Section */}
+      <section className="bg-gray-50 border-y border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          {/* Section Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full mb-6 shadow-sm">
+              <Sparkles className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                Popular Themes
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              Shop by Theme
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Discover gifts organized by occasion, interest, and celebration
+            </p>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Can't find what you're looking for?
+
+          {/* Themes Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {popularThemes.map((theme) => (
+              <ThemeCard key={theme.name} theme={theme} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <section className="bg-gradient-to-br from-red-600 to-red-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
+            <Gift className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Need Help Finding Something?
           </h2>
-          <p className="text-zinc-400 mb-8 max-w-2xl mx-auto">
-            Use our Gift Finder to discover personalized recommendations based on who you're shopping for.
+          <p className="text-red-100 mb-8 max-w-2xl mx-auto text-lg">
+            Use our smart Gift Finder to get personalized recommendations based on who you're shopping for.
           </p>
           <Link
             href="/gift-finder"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl font-bold hover:shadow-xl hover:shadow-red-500/30 transition-all group"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-red-600 rounded-full font-bold hover:bg-gray-50 hover:shadow-2xl transition-all group"
           >
             Try Gift Finder
             <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -213,39 +207,55 @@ function CategoryCard({ category }: { category: Category }) {
   const hasSubcategories = category.subcategories && category.subcategories.length > 0;
 
   return (
-    <Link href={`/gifts/${category.slug}`}>
-      <div className="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-8 hover:border-red-500/50 transition-all duration-300 overflow-hidden h-full">
-        {/* Hover Gradient Effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-red-600/0 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Animated Corner Accent */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-transparent rounded-bl-full transform translate-x-16 -translate-y-16 group-hover:translate-x-8 group-hover:-translate-y-8 transition-transform duration-500" />
+    <Link href={`/marketplace?category=${category.slug}`}>
+      <div className="group bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-red-500 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+        {/* Category Image */}
+        <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
+          {category.image_url ? (
+            <Image
+              src={category.image_url}
+              alt={category.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+              <Tag className="w-16 h-16 text-gray-300" />
+            </div>
+          )}
+          
+          {/* Overlay gradient on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Subcategory count badge */}
+          {hasSubcategories && (
+            <div className="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-700 shadow-sm">
+              {category.subcategories.length} types
+            </div>
+          )}
+        </div>
 
-        <div className="relative z-10">
-          {/* Icon */}
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-red-600/10 border border-red-600/20 rounded-xl mb-6 group-hover:bg-red-600/20 group-hover:scale-110 transition-all duration-300">
-            <Package className="w-7 h-7 text-red-500" />
-          </div>
-
+        {/* Category Info */}
+        <div className="p-5 flex-1 flex flex-col">
           {/* Category Name */}
-          <h3 className="text-2xl font-bold mb-3 group-hover:text-red-400 transition-colors">
+          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
             {category.name}
           </h3>
 
           {/* Subcategories Preview */}
           {hasSubcategories && (
-            <div className="mb-4">
+            <div className="mb-4 flex-1">
               <div className="flex flex-wrap gap-2">
                 {category.subcategories.slice(0, 3).map((sub) => (
                   <span
                     key={sub.id}
-                    className="text-xs px-3 py-1 bg-zinc-800 text-zinc-400 rounded-full border border-zinc-700"
+                    className="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full border border-gray-200 hover:bg-gray-200 transition-colors"
                   >
                     {sub.name}
                   </span>
                 ))}
                 {category.subcategories.length > 3 && (
-                  <span className="text-xs px-3 py-1 bg-zinc-800 text-zinc-400 rounded-full border border-zinc-700">
+                  <span className="text-xs px-3 py-1 bg-red-50 text-red-600 rounded-full border border-red-100 font-medium">
                     +{category.subcategories.length - 3} more
                   </span>
                 )}
@@ -253,10 +263,12 @@ function CategoryCard({ category }: { category: Category }) {
             </div>
           )}
 
-          {/* Action */}
-          <div className="flex items-center gap-2 text-sm font-semibold text-zinc-400 group-hover:text-red-400 transition-colors">
-            Explore Category
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          {/* Action Button */}
+          <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+            <span className="text-sm font-semibold text-gray-600 group-hover:text-red-600 transition-colors">
+              Browse
+            </span>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </div>
         </div>
       </div>
@@ -264,35 +276,32 @@ function CategoryCard({ category }: { category: Category }) {
   );
 }
 
-function CategoryListItem({ category }: { category: Category }) {
-  const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+function ThemeCard({ theme }: { theme: typeof popularThemes[0] }) {
+  const Icon = theme.icon;
 
   return (
-    <Link href={`/gifts/${category.slug}`}>
-      <div className="group bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-red-500/50 transition-all duration-300 flex items-center justify-between">
-        <div className="flex items-center gap-6">
+    <Link href={`/marketplace?tag=${theme.tag}`}>
+      <div className="group relative bg-white border-2 border-gray-200 rounded-2xl p-6 hover:border-red-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
+        {/* Background Gradient (subtle on default, vibrant on hover) */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${theme.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+        
+        {/* Content */}
+        <div className="relative z-10 text-center">
           {/* Icon */}
-          <div className="flex-shrink-0 w-12 h-12 bg-red-600/10 border border-red-600/20 rounded-lg flex items-center justify-center group-hover:bg-red-600/20 transition-all">
-            <Package className="w-6 h-6 text-red-500" />
+          <div className={`inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br ${theme.color} rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+            <Icon className="w-7 h-7 text-white" />
           </div>
 
-          <div>
-            {/* Name */}
-            <h3 className="text-xl font-bold mb-1 group-hover:text-red-400 transition-colors">
-              {category.name}
-            </h3>
-
-            {/* Subcategories */}
-            {hasSubcategories && (
-              <p className="text-sm text-zinc-500">
-                {category.subcategories.length} subcategories
-              </p>
-            )}
-          </div>
+          {/* Theme Name */}
+          <h3 className="text-base font-bold text-gray-900 group-hover:text-red-600 transition-colors">
+            {theme.name}
+          </h3>
         </div>
 
-        {/* Arrow */}
-        <ChevronRight className="w-6 h-6 text-zinc-600 group-hover:text-red-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+        {/* Arrow indicator */}
+        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ChevronRight className="w-4 h-4 text-red-600" />
+        </div>
       </div>
     </Link>
   );
