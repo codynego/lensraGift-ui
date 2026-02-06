@@ -82,6 +82,8 @@ function GiftRevealContent() {
         }),
       });
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Lead creation error:', errorData);
         throw new Error('Failed to submit. Please try again.');
       }
       const data = await response.json();
@@ -112,6 +114,8 @@ function GiftRevealContent() {
               body: JSON.stringify({ owner: leadId }),
             });
             if (!inviteResponse.ok) {
+              const errorData = await inviteResponse.json();
+              console.error('Invite creation error data:', errorData);
               throw new Error('Failed to create invite link');
             }
             const inviteData = await inviteResponse.json();
