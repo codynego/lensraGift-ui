@@ -1,15 +1,15 @@
 // app/categories/[slug]/page.tsx
-// Category Detail - Immersive product exploration with creative layout
+// Subcategory Page - Shows subcategories of a parent category
 
 "use client";
 
 import { useState, useEffect } from 'react';
 import { 
-  ChevronRight, ArrowLeft, Grid3x3, LayoutGrid, Filter, 
-  SlidersHorizontal, X, TrendingUp, Star, ShoppingBag,
-  Sparkles, Package, Heart, Search, ChevronDown
+  Search, X, ChevronRight, Tag, Home, ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
@@ -21,83 +21,40 @@ interface Category {
   parent_name: string | null;
   subcategories: Category[];
   full_path: string;
+  image_url?: string;
 }
 
-interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  base_price: string;
-  image_url: string;
-  is_featured: boolean;
-  is_trending: boolean;
-  is_customizable: boolean;
-}
-
-export default function CategoryDetailPage({ params }: { params: { slug: string } }) {
+export default function SubcategoryPage() {
+  const params = useParams();
+  const slug = params?.slug as string;
+  
   const [category, setCategory] = useState<Category | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid');
-  const [sortBy, setSortBy] = useState<'popular' | 'price_low' | 'price_high' | 'newest'>('popular');
-  const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Fetch category details
-    fetch(`${BaseUrl}api/products/categories/${params.slug}/`)
+    if (!slug) return;
+
+    // Fetch all categories and find the one with matching slug
+    fetch(`${BaseUrl}api/products/categories/`)
       .then(res => res.json())
       .then(data => {
-        setCategory(data);
+        const categories = data.results || data;
+        const foundCategory = categories.find((cat: Category) => cat.slug === slug);
+        setCategory(foundCategory || null);
         setLoading(false);
       })
       .catch(err => {
         console.error('Error fetching category:', err);
         setLoading(false);
       });
-
-    // Fetch products in this category
-    fetch(`${BaseUrl}api/products/?category=${params.slug}`)
-      .then(res => res.json())
-      .then(data => {
-        setProducts(data.results || data);
-      })
-      .catch(err => console.error('Error fetching products:', err));
-  }, [params.slug]);
-
-  const getImageUrl = (imagePath: string | null | undefined): string | null => {
-    if (!imagePath) return null;
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    return `${BaseUrl.replace(/\/$/, '')}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}`;
-  };
-
-  // Sort products
-  const sortedProducts = [...products].sort((a, b) => {
-    switch (sortBy) {
-      case 'price_low':
-        return parseFloat(a.base_price) - parseFloat(b.base_price);
-      case 'price_high':
-        return parseFloat(b.base_price) - parseFloat(a.base_price);
-      case 'newest':
-        return b.id - a.id;
-      default: // popular
-        return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
-    }
-  });
-
-  // Filter products by price
-  const filteredProducts = sortedProducts.filter(
-    product => parseFloat(product.base_price) >= priceRange[0] && parseFloat(product.base_price) <= priceRange[1]
-  );
+  }, [slug]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="relative">
-          <div className="w-16 h-16 rounded-full border-4 border-zinc-800 border-t-red-500 animate-spin" />
+          <div className="w-16 h-16 rounded-full border-4 border-gray-200 border-t-red-600 animate-spin" />
         </div>
       </div>
     );
@@ -105,342 +62,207 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
 
   if (!category) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-zinc-800 rounded-full mb-6">
-            <Package className="w-10 h-10 text-zinc-600" />
+      <div className="min-h-screen bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Category Not Found</h1>
+            <p className="text-gray-600 mb-8">The category you're looking for doesn't exist.</p>
+            <Link
+              href="/categories"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Categories
+            </Link>
           </div>
-          <h2 className="text-2xl font-bold mb-4">Category not found</h2>
-          <Link href="/gifts" className="text-red-500 hover:text-red-400">
-            ← Back to categories
-          </Link>
         </div>
       </div>
     );
   }
 
+  const subcategories = category.subcategories || [];
+  
+  // Search filter for subcategories
+  const filteredSubcategories = subcategories.filter(cat =>
+    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Breadcrumb & Header */}
-      <section className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-xl sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm mb-4">
-            <Link href="/gifts" className="text-zinc-500 hover:text-red-500 transition-colors">
+    <div className="min-h-screen bg-white">
+      {/* Breadcrumb */}
+      <section className="border-b border-gray-200 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <nav className="flex items-center gap-2 text-sm">
+            <Link href="/" className="text-gray-500 hover:text-red-600 transition-colors">
+              <Home className="w-4 h-4" />
+            </Link>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <Link href="/categories" className="text-gray-500 hover:text-red-600 transition-colors">
               Categories
             </Link>
-            {category.full_path.split(' > ').map((part, idx, arr) => (
-              <div key={idx} className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-zinc-700" />
-                <span className={idx === arr.length - 1 ? 'text-white font-semibold' : 'text-zinc-500'}>
-                  {part}
-                </span>
-              </div>
-            ))}
-          </div>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-900 font-semibold">{category.name}</span>
+          </nav>
+        </div>
+      </section>
 
-          <div className="flex items-center justify-between">
-            {/* Title */}
-            <div>
-              <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-2">
-                {category.name}
-              </h1>
-              <p className="text-zinc-400">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-              </p>
+      {/* Hero Header */}
+      <section className="bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+          <div className="max-w-3xl">
+            {/* Back Button */}
+            <Link
+              href="/categories"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-red-600 mb-6 transition-colors group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="font-medium">Back to All Categories</span>
+            </Link>
+
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-100 rounded-full mb-6">
+              <Tag className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-semibold text-red-600 uppercase tracking-wide">
+                {subcategories.length} Subcategories
+              </span>
             </div>
 
-            {/* Back Button - Desktop */}
+            {/* Main Title */}
+            <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">
+              {category.name}
+            </h1>
+
+            <p className="text-lg text-gray-600 leading-relaxed">
+              Explore all subcategories within {category.name} to find the perfect gift.
+            </p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="max-w-2xl mt-8">
+            <div className="relative">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search subcategories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white border-2 border-gray-200 rounded-full pl-14 pr-14 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all shadow-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Subcategories Grid */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {filteredSubcategories.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+              <Search className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-700 mb-2">No subcategories found</h3>
+            <p className="text-gray-500 mb-6">Try adjusting your search</p>
             <Link
-              href="/gifts"
-              className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-red-500 transition-all text-sm font-semibold"
+              href={`/marketplace?category=${category.slug}`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
-              All Categories
+              Browse All {category.name} Products
+              <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Subcategories - Horizontal Scroll */}
-      {category.subcategories && category.subcategories.length > 0 && (
-        <section className="border-b border-zinc-800 bg-zinc-900/30">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-              <span className="text-sm font-semibold text-zinc-500 flex-shrink-0">
-                Subcategories:
-              </span>
-              {category.subcategories.map((sub) => (
-                <Link
-                  key={sub.id}
-                  href={`/gifts/${sub.slug}`}
-                  className="flex-shrink-0 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:border-red-500 hover:bg-zinc-750 transition-all text-sm font-medium whitespace-nowrap"
-                >
-                  {sub.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Toolbar - Sort & Filters */}
-      <section className="border-b border-zinc-800 sticky top-[120px] z-30 bg-zinc-900/95 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            {/* Sort Dropdown */}
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 pr-10 text-sm font-medium cursor-pointer hover:border-red-500 focus:outline-none focus:border-red-500 transition-all"
-              >
-                <option value="popular">Most Popular</option>
-                <option value="newest">Newest</option>
-                <option value="price_low">Price: Low to High</option>
-                <option value="price_high">Price: High to Low</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Filters Toggle */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  showFilters
-                    ? 'bg-red-600 text-white'
-                    : 'bg-zinc-800 border border-zinc-700 hover:border-red-500'
-                }`}
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-                Filters
-              </button>
-
-              {/* View Mode Toggle */}
-              <div className="hidden md:flex items-center gap-1 bg-zinc-800 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded transition-all ${
-                    viewMode === 'grid'
-                      ? 'bg-red-600 text-white'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('masonry')}
-                  className={`p-2 rounded transition-all ${
-                    viewMode === 'masonry'
-                      ? 'bg-red-600 text-white'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Panel */}
-          {showFilters && (
-            <div className="mt-4 pt-4 border-t border-zinc-800 animate-in slide-in-from-top duration-200">
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Price Range */}
-                <div>
-                  <label className="text-sm font-semibold mb-3 block">
-                    Price Range
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="number"
-                      value={priceRange[0]}
-                      onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500"
-                      placeholder="Min"
-                    />
-                    <span className="text-zinc-600">—</span>
-                    <input
-                      type="number"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500"
-                      placeholder="Max"
-                    />
-                  </div>
-                </div>
-
-                {/* Quick Filters */}
-                <div>
-                  <label className="text-sm font-semibold mb-3 block">
-                    Quick Filters
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Featured', 'Trending', 'Customizable'].map((tag) => (
-                      <button
-                        key={tag}
-                        onClick={() => {
-                          setSelectedTags(prev =>
-                            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-                          );
-                        }}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          selectedTags.includes(tag)
-                            ? 'bg-red-600 text-white'
-                            : 'bg-zinc-800 border border-zinc-700 hover:border-red-500'
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Reset Button */}
-              <button
-                onClick={() => {
-                  setPriceRange([0, 50000]);
-                  setSelectedTags([]);
-                }}
-                className="mt-4 text-sm text-red-500 hover:text-red-400 font-semibold"
-              >
-                Reset all filters
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Products Grid */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-zinc-800 rounded-full mb-6">
-              <ShoppingBag className="w-10 h-10 text-zinc-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-zinc-300 mb-2">No products found</h3>
-            <p className="text-zinc-500 mb-6">Try adjusting your filters</p>
-            <button
-              onClick={() => {
-                setPriceRange([0, 50000]);
-                setSelectedTags([]);
-              }}
-              className="text-red-500 hover:text-red-400 font-semibold"
-            >
-              Reset filters
-            </button>
-          </div>
         ) : (
-          <div className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
-              : 'columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6'
-          }>
-            {filteredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                getImageUrl={getImageUrl}
-                isMasonry={viewMode === 'masonry'}
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {filteredSubcategories.map((subcategory) => (
+              <SubcategoryCard 
+                key={subcategory.id} 
+                category={subcategory} 
+                parentSlug={category.slug}
               />
             ))}
           </div>
         )}
       </section>
 
-      {/* Related Categories CTA */}
-      {category.parent_name && (
-        <section className="border-t border-zinc-800 bg-zinc-900/50">
-          <div className="max-w-7xl mx-auto px-4 py-16">
-            <h3 className="text-2xl font-bold mb-6">
-              More in {category.parent_name}
-            </h3>
-            <Link
-              href={`/gifts`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-red-500 transition-all font-semibold"
-            >
-              Browse All Categories
-              <ChevronRight className="w-5 h-5" />
-            </Link>
-          </div>
-        </section>
-      )}
+      {/* View All Products CTA */}
+      <section className="border-t border-gray-200 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            Want to see all {category.name} products?
+          </h2>
+          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            Browse the entire collection without filtering by subcategory
+          </p>
+          <Link
+            href={`/marketplace?category=${category.slug}`}
+            className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 text-white rounded-full font-bold hover:bg-red-700 hover:shadow-xl transition-all group"
+          >
+            View All {category.name}
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
 
-function ProductCard({ 
-  product, 
-  getImageUrl,
-  isMasonry 
-}: { 
-  product: Product; 
-  getImageUrl: (path: string | null | undefined) => string | null;
-  isMasonry: boolean;
-}) {
-  const imageUrl = getImageUrl(product.image_url);
+function SubcategoryCard({ category, parentSlug }: { category: Category; parentSlug: string }) {
+  const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+  
+  // If has nested subcategories, go to another subcategory page, otherwise go to marketplace
+  const href = hasSubcategories 
+    ? `/categories/${category.slug}` 
+    : `/marketplace?category=${category.slug}`;
 
   return (
-    <Link 
-      href={`/shop/${product.slug}`} 
-      className={`group block ${isMasonry ? 'break-inside-avoid' : ''}`}
-    >
-      <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-red-500/50 transition-all duration-300">
-        {/* Image Container */}
-        <div className={`relative bg-zinc-800 overflow-hidden ${isMasonry ? 'aspect-auto' : 'aspect-square'}`}>
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={product.name}
-              loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+    <Link href={href}>
+      <div className="group bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-red-500 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+        {/* Category Image */}
+        <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
+          {category.image_url ? (
+            <Image
+              src={category.image_url}
+              alt={category.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Package className="w-16 h-16 text-zinc-700" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+              <Tag className="w-16 h-16 text-gray-300" />
             </div>
           )}
-
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.is_trending && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded-md text-xs font-bold shadow-lg">
-                <TrendingUp className="w-3 h-3" />
-                Trending
-              </span>
-            )}
-            {product.is_customizable && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-600 text-white rounded-md text-xs font-bold shadow-lg">
-                <Sparkles className="w-3 h-3" />
-                Custom
-              </span>
-            )}
-          </div>
-
-          {/* Hover Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="absolute bottom-4 left-4 right-4">
-              <button className="w-full py-2.5 bg-white text-zinc-900 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition-colors shadow-xl">
-                Quick View
-              </button>
+          
+          {/* Overlay gradient on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Nested subcategory count badge */}
+          {hasSubcategories && (
+            <div className="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-700 shadow-sm">
+              {category.subcategories.length} types
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Product Info */}
-        <div className="p-4">
-          <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-red-400 transition-colors leading-tight">
-            {product.name}
+        {/* Category Info */}
+        <div className="p-5 flex-1 flex flex-col">
+          {/* Category Name */}
+          <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
+            {category.name}
           </h3>
-          <div className="flex items-center justify-between">
-            <p className="text-lg font-bold text-red-500">
-              ₦{parseFloat(product.base_price).toLocaleString()}
-            </p>
-            {product.is_featured && (
-              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            )}
+
+          {/* Action Button */}
+          <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+            <span className="text-sm font-semibold text-gray-600 group-hover:text-red-600 transition-colors">
+              {hasSubcategories ? 'View Types' : 'Browse'}
+            </span>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </div>
         </div>
       </div>

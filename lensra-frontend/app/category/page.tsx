@@ -142,7 +142,7 @@ export default function CategoriesPage() {
             <p className="text-gray-500">Try adjusting your search</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredCategories.map((category) => (
               <CategoryCard key={category.id} category={category} />
             ))}
@@ -205,9 +205,14 @@ export default function CategoriesPage() {
 
 function CategoryCard({ category }: { category: Category }) {
   const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+  
+  // If has subcategories, go to the subcategory page, otherwise go to marketplace
+  const href = hasSubcategories 
+    ? `/categories/${category.slug}` 
+    : `/marketplace?category=${category.slug}`;
 
   return (
-    <Link href={`/marketplace?category=${category.slug}`}>
+    <Link href={href}>
       <div className="group bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-red-500 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
         {/* Category Image */}
         <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
@@ -266,7 +271,7 @@ function CategoryCard({ category }: { category: Category }) {
           {/* Action Button */}
           <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
             <span className="text-sm font-semibold text-gray-600 group-hover:text-red-600 transition-colors">
-              Browse
+              {hasSubcategories ? 'View Subcategories' : 'Browse Products'}
             </span>
             <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </div>
