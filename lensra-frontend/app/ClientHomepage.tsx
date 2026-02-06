@@ -295,9 +295,9 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
                 
                 {/* Content Overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-end p-4 text-center">
-                  <div className="text-3xl mb-2 transform group-hover:scale-110 transition-transform">
+                  {/* <div className="text-3xl mb-2 transform group-hover:scale-110 transition-transform">
                     {occasion.emoji}
-                  </div>
+                  </div> */}
                   <h3 className="font-bold text-sm text-white mb-1 drop-shadow-lg">
                     {occasion.name}
                   </h3>
