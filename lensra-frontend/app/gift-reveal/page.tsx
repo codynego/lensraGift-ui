@@ -140,15 +140,14 @@ function GiftRevealContent() {
     }
   }, [step, leadId, leadData]);
   const shareLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/gift-reveal?ref=${userInviteCode}`;
+  const shareMessage = `🎁 Someone might be sending you a surprise gift!\n\nCheck what it could be: ${shareLink}\n\n(Psst... you can also send someone a gift here 😉)`;
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareLink);
+    navigator.clipboard.writeText(shareMessage);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
   const shareOnWhatsApp = () => {
-    const message = encodeURIComponent(
-      `🎁 Someone might be sending you a surprise gift!\n\nCheck what it could be: ${shareLink}\n\n(Psst... you can also send someone a gift here 😉)`
-    );
+    const message = encodeURIComponent(shareMessage);
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
   if (step === 'processing') {
