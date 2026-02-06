@@ -209,7 +209,7 @@ function CategoryCard({ category }: { category: Category }) {
   // If has subcategories, go to the subcategory page, otherwise go to marketplace
   const href = hasSubcategories 
     ? `/categories/${category.slug}` 
-    : `/marketplace?category=${category.slug}`;
+    : `/shop?category=${category.slug}`;
 
   return (
     <Link href={href}>
@@ -285,7 +285,7 @@ function ThemeCard({ theme }: { theme: typeof popularThemes[0] }) {
   const Icon = theme.icon;
 
   return (
-    <Link href={`/marketplace?tag=${theme.tag}`}>
+    <Link href={`/shop?tag=${theme.tag}`}>
       <div className="group relative bg-white border-2 border-gray-200 rounded-2xl p-6 hover:border-red-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
         {/* Background Gradient (subtle on default, vibrant on hover) */}
         <div className={`absolute inset-0 bg-gradient-to-br ${theme.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />

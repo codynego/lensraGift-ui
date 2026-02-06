@@ -171,7 +171,7 @@ export default function SubcategoryPage() {
             <h3 className="text-2xl font-bold text-gray-700 mb-2">No subcategories found</h3>
             <p className="text-gray-500 mb-6">Try adjusting your search</p>
             <Link
-              href={`/marketplace?category=${category.slug}`}
+              href={`/shop?category=${category.slug}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
             >
               Browse All {category.name} Products
@@ -201,7 +201,7 @@ export default function SubcategoryPage() {
             Browse the entire collection without filtering by subcategory
           </p>
           <Link
-            href={`/marketplace?category=${category.slug}`}
+            href={`/shop?category=${category.slug}`}
             className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 text-white rounded-full font-bold hover:bg-red-700 hover:shadow-xl transition-all group"
           >
             View All {category.name}
@@ -219,7 +219,7 @@ function SubcategoryCard({ category, parentSlug }: { category: Category; parentS
   // If has nested subcategories, go to another subcategory page, otherwise go to marketplace
   const href = hasSubcategories 
     ? `/categories/${category.slug}` 
-    : `/marketplace?category=${category.slug}`;
+    : `/shop?category=${category.slug}`;
 
   return (
     <Link href={href}>

@@ -152,7 +152,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             {/* Primary CTAs - Clear Split */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto">
               <a 
-                href="/marketplace" 
+                href="/shop" 
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl font-bold text-sm uppercase tracking-wide hover:shadow-xl hover:shadow-red-500/30 transition-all group"
               >
                 <Gift className="w-5 h-5" />
@@ -161,7 +161,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               </a>
               
               <a 
-                href="/shop" 
+                href="/editor" 
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 border-2 border-white/20 text-white rounded-xl font-bold text-sm uppercase tracking-wide hover:bg-white/20 transition-all backdrop-blur-sm"
               >
                 <Palette className="w-5 h-5" />
@@ -247,6 +247,15 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               </a>
             ))}
           </div>
+          <div className="text-center">
+            <a 
+              href="/categories" 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all group"
+            >
+              Browse All Categories
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
         </div>
       </section>
 
@@ -276,7 +285,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
 
           <div className="text-center">
             <a 
-              href="/marketplace" 
+              href="/shop" 
               className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all group"
             >
               View All Gifts
