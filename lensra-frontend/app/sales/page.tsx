@@ -50,12 +50,8 @@ const TESTIMONIALS = [
     rating: 5,
   },
 ];
-
-export default function LimitedDeals({
-  baseUrl,
-}: {
-  baseUrl: string;
-}) {
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+export default function LimitedDeals() {
   const router = useRouter();
   const { token } = useAuth();
 
