@@ -29,6 +29,8 @@ interface SaleProduct {
   original_price: string;
   display_price: string;
   sale_label: string;
+  sale_start_in?: number | null; // Seconds until sale starts (positive if future, negative if past)
+  sale_ends_in?: number | null; // Seconds until sale ends (positive if future)
   is_best_seller?: boolean;
   description?: string;
 }
@@ -50,7 +52,10 @@ const TESTIMONIALS = [
     rating: 5,
   },
 ];
+
+
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
 export default function LimitedDeals() {
   const router = useRouter();
   const { token } = useAuth();
@@ -59,13 +64,14 @@ export default function LimitedDeals() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState<number | null>(null);
-  const [remainingTime, setRemainingTime] = useState(48 * 60 * 60); // 48 hours in seconds
+  const [globalRemainingTime, setGlobalRemainingTime] = useState(48 * 60 * 60); // Fallback global timer
+  const [productTimers, setProductTimers] = useState<Record<number, { start: number; end: number }>>({}); // Per-product {start_in, ends_in}
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${baseUrl}api/products/deals/`, {
+        const res = await fetch(`${baseUrl}api/deals/`, {
           headers: {
             ...(token && { 'Authorization': `Bearer ${token}` }),
           },
@@ -76,7 +82,20 @@ export default function LimitedDeals() {
         }
 
         const data = await res.json();
-        setProducts(data.results || data.slice(0, 5)); // Limit to 5, assuming paginated or array
+        const fetchedProducts = (data.results || data).slice(0, 5); // Limit to 5
+
+        // Initialize per-product timers from API data
+        const initialTimers: Record<number, { start: number; end: number }> = {};
+        fetchedProducts.forEach((p: SaleProduct) => {
+          const startTime = Math.max(0, (p.sale_start_in || 0)); // Clamp to 0 if negative (past)
+          const endTime = Math.max(0, (p.sale_ends_in || 0)); // Clamp to 0 if negative (past)
+          if (startTime > 0 || endTime > 0) {
+            initialTimers[p.id] = { start: startTime, end: endTime };
+          }
+        });
+
+        setProducts(fetchedProducts);
+        setProductTimers(initialTimers);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -87,14 +106,35 @@ export default function LimitedDeals() {
     fetchProducts();
   }, [baseUrl, token]);
 
+  // Shared interval to decrement all timers (global + per-product)
   useEffect(() => {
     const interval = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
+      // Update global timer (fallback)
+      setGlobalRemainingTime((prev) => {
+        if (prev <= 1) return 0;
         return prev - 1;
+      });
+
+      // Update per-product timers
+      setProductTimers((prevTimers) => {
+        const updated = { ...prevTimers };
+        Object.keys(updated).forEach((key) => {
+          const id = parseInt(key);
+          const timer = updated[id];
+          if (timer.start > 0) {
+            updated[id].start -= 1;
+            if (updated[id].start <= 0) updated[id].start = 0;
+          }
+          if (timer.end > 0) {
+            updated[id].end -= 1;
+            if (updated[id].end <= 0) updated[id].end = 0;
+          }
+          // Remove if both timers are 0
+          if (updated[id].start === 0 && updated[id].end === 0) {
+            delete updated[id];
+          }
+        });
+        return updated;
       });
     }, 1000);
 
@@ -102,13 +142,32 @@ export default function LimitedDeals() {
   }, []);
 
   const formatTime = (seconds: number) => {
+    if (seconds <= 0) return '00:00:00';
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const getProductTimerStatus = (productId: number) => {
+    const timer = productTimers[productId];
+    if (!timer) return { type: 'inactive' as const, seconds: 0, label: 'Inactive' };
+
+    if (timer.start > 0) {
+      return { type: 'upcoming' as const, seconds: timer.start, label: 'Starts in' };
+    } else if (timer.end > 0) {
+      return { type: 'active' as const, seconds: timer.end, label: 'Ends in' };
+    } else {
+      return { type: 'ended' as const, seconds: 0, label: 'Ended' };
+    }
+  };
+
+  const hasActiveProductTimers = Object.values(productTimers).some(t => t.end > 0);
+
   const addItemToCartAndCheckout = async (product: SaleProduct) => {
+    const status = getProductTimerStatus(product.id);
+    if (status.type !== 'active') return; // Only allow buy if active
+
     setIsAdding(product.id);
     let sessionId = localStorage.getItem('guest_session_id');
     if (!sessionId) {
@@ -174,7 +233,7 @@ export default function LimitedDeals() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 text-zinc-900 font-sans">
-      {/* Top Section */}
+      {/* Top Section - Uses first active product's end time as example, or global fallback */}
       <section className="relative overflow-hidden bg-gradient-to-r from-rose-500 to-pink-600 text-white py-20 px-4">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.h1 
@@ -199,9 +258,9 @@ export default function LimitedDeals() {
             className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full text-lg font-bold"
           >
             <Clock className="w-5 h-5" />
-            <span>Offer ends in</span>
+            <span>Next deal {hasActiveProductTimers ? 'ends' : 'starts'} in</span>
             <span className="bg-white text-rose-600 px-4 py-2 rounded-full font-black">
-              {formatTime(remainingTime)}
+              {formatTime(hasActiveProductTimers ? getProductTimerStatus(products[0].id).seconds : globalRemainingTime)}
             </span>
           </motion.div>
         </div>
@@ -211,79 +270,93 @@ export default function LimitedDeals() {
       {/* Product Grid */}
       <section className="py-16 px-4 max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
-              className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-rose-100"
-            >
-              <div className="relative h-64 bg-gradient-to-br from-rose-50 to-pink-50">
-                <Image
-                  src={product.image_url}
-                  alt={product.name}
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-500"
-                />
-                {product.is_best_seller && (
-                  <div className="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    <Star className="w-3 h-3 inline mr-1 fill-white" />
-                    Best Seller
-                  </div>
-                )}
-                <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {product.sale_label}
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-zinc-900 mb-2 line-clamp-2">{product.name}</h3>
-                {product.description && (
-                  <p className="text-sm text-zinc-600 mb-4 line-clamp-2">{product.description}</p>
-                )}
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-zinc-900">
-                      ₦{parseFloat(product.display_price).toLocaleString()}
-                    </span>
-                    <span className="text-lg text-zinc-500 line-through">
-                      ₦{parseFloat(product.original_price).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-rose-600 font-semibold">
-                    <Zap className="w-4 h-4" />
-                    <span>Limited Offer</span>
+          {products.map((product, index) => {
+            const status = getProductTimerStatus(product.id);
+            const isActive = status.type === 'active';
+            return (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className={`rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border ${
+                  isActive ? 'border-rose-100 bg-rose-50/50' : 'border-gray-200 bg-gray-50/50'
+                }`}
+              >
+                <div className={`relative h-64 ${isActive ? 'bg-gradient-to-br from-rose-50 to-pink-50' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+                  <Image
+                    src={product.image_url}
+                    alt={product.name}
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                  {product.is_best_seller && (
+                    <div className="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                      <Star className="w-3 h-3 inline mr-1 fill-white" />
+                      Best Seller
+                    </div>
+                  )}
+                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                    isActive ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' : 'bg-gray-500 text-white'
+                  }`}>
+                    {status.label}
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => addItemToCartAndCheckout(product)}
-                    disabled={isAdding === product.id}
-                    className="flex-1 py-4 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-xl font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isAdding === product.id ? (
-                      <>
-                        <Clock className="w-4 h-4 animate-spin" />
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-4 h-4" />
-                        Buy Now
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleViewDetails(product.slug)}
-                    className="flex-1 py-4 border-2 border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:text-zinc-900 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
-                  >
-                    <Heart className="w-4 h-4" />
-                    View Details
-                  </button>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-zinc-900 mb-2 line-clamp-2">{product.name}</h3>
+                  {product.description && (
+                    <p className="text-sm text-zinc-600 mb-4 line-clamp-2">{product.description}</p>
+                  )}
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-black text-zinc-900">
+                        ₦{parseFloat(product.display_price).toLocaleString()}
+                      </span>
+                      <span className="text-lg text-zinc-500 line-through">
+                        ₦{parseFloat(product.original_price).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className={`flex items-center gap-2 text-sm font-semibold ${
+                      status.type === 'active' ? 'text-rose-600' : status.type === 'upcoming' ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
+                      <Clock className={`w-4 h-4 ${status.type === 'active' ? 'animate-pulse' : ''}`} />
+                      <span>{status.label} {formatTime(status.seconds)}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => addItemToCartAndCheckout(product)}
+                      disabled={isAdding === product.id || !isActive}
+                      className={`flex-1 py-4 rounded-xl font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all ${
+                        isActive 
+                          ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white hover:shadow-xl' 
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {isAdding === product.id ? (
+                        <>
+                          <Clock className="w-4 h-4 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4" />
+                          Buy Now
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleViewDetails(product.slug)}
+                      className="flex-1 py-4 border-2 border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:text-zinc-900 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Heart className="w-4 h-4" />
+                      View Details
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
@@ -368,7 +441,7 @@ export default function LimitedDeals() {
           <p className="text-rose-100 mb-6">Limited time only – grab yours before prices rise!</p>
           <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full text-lg font-bold mb-6">
             <Clock className="w-5 h-5" />
-            Ends in {formatTime(remainingTime)}
+            {hasActiveProductTimers ? 'Active deals end' : 'Next deals start'} in {formatTime(hasActiveProductTimers ? getProductTimerStatus(products[0].id).seconds : globalRemainingTime)}
           </div>
           <button
             onClick={() => router.push('/shop')}
