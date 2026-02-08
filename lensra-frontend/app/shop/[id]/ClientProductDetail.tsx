@@ -361,7 +361,7 @@ export default function ClientProductDetail({
               <div className="flex flex-wrap items-center gap-6">
                 {product.is_on_sale && product.original_price && (
                   <span className="text-2xl font-normal text-zinc-500 line-through">
-                    ₦{parseFloat(product.display_price || "0").toLocaleString()}
+                    ₦{parseFloat(product.original_price).toLocaleString()}
                   </span>
                 )}
                 <span className="text-5xl font-black text-zinc-900 tracking-tight">
