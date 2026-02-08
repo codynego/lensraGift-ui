@@ -4,13 +4,16 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, ShieldCheck, MapPin, Phone, User, 
-  CreditCard, Mail, Loader2, Globe, Plus, CheckCircle2, X, Star 
+  CreditCard, Mail, Loader2, Globe, Plus, CheckCircle2, X, Star,
+  MessageCircle 
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
-// --- CONFIG ---
+// ── CONFIG ─────────────────────────────────────
+const WHATSAPP_NUMBER = "2348051385049"; // LensraGift official WhatsApp number
+
 const EMOTIONS = [
   { id: 'loved', label: 'Loved', emoji: '❤️' },
   { id: 'joyful', label: 'Joyful', emoji: '🎉' },
@@ -27,6 +30,7 @@ const NIGERIAN_STATES = [
   "Taraba", "Yobe", "Zamfara"
 ].sort();
 
+// ── INTERFACES ─────────────────────────────────
 interface ShippingLocation {
   id: number;
   city_name: string;
@@ -78,6 +82,7 @@ interface CartItem {
   emotion?: string;
 }
 
+// ── HELPERS ────────────────────────────────────
 const formatCurrency = (amount: number): string => {
   return `₦${amount.toLocaleString('en-US', {
     minimumFractionDigits: 0,
@@ -85,6 +90,16 @@ const formatCurrency = (amount: number): string => {
   })}`;
 };
 
+const parseSafe = (val: number | string | undefined): number => {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/,/g, '');
+    return parseFloat(cleaned) || 0;
+  }
+  return 0;
+};
+
+// ── MAIN COMPONENT ─────────────────────────────
 export default function CheckoutPage() {
   const { token, user } = useAuth();
   const router = useRouter();
@@ -115,10 +130,12 @@ export default function CheckoutPage() {
     state: ""
   });
 
+  // Load checkout data
   useEffect(() => {
     const loadCheckoutData = async () => {
       setIsLoading(true);
       setErrorMessage(null);
+
       let sessionId = localStorage.getItem('guest_session_id');
       if (!token) {
         if (!sessionId) {
@@ -127,20 +144,21 @@ export default function CheckoutPage() {
         }
       }
 
+      // Sync guest cart if user logs in
       if (token) {
         const localGuestCart = localStorage.getItem('guest_cart');
         if (localGuestCart) {
           try {
             const guestItems = JSON.parse(localGuestCart);
             await Promise.all(guestItems.map(async (item: any) => {
-              const formData = new FormData();
-              formData.append('product', item.product_id || item.product);
-              if (item.placement) formData.append('placement', item.placement);
-              formData.append('quantity', item.quantity.toString());
+              const fd = new FormData();
+              fd.append('product', item.product_id || item.product);
+              if (item.placement) fd.append('placement', item.placement);
+              fd.append('quantity', item.quantity.toString());
               await fetch(`${BaseUrl}api/orders/cart/`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
+                body: fd
               });
             }));
             localStorage.removeItem('guest_cart');
@@ -152,6 +170,7 @@ export default function CheckoutPage() {
         }
       }
 
+      // Fetch cart
       try {
         const cartUrl = token 
           ? `${BaseUrl}api/orders/cart/` 
@@ -178,6 +197,7 @@ export default function CheckoutPage() {
         if (localData) setCartItems(JSON.parse(localData));
       }
 
+      // Fetch addresses
       if (token) {
         try {
           const res = await fetch(`${BaseUrl}api/users/addresses/`, {
@@ -201,6 +221,7 @@ export default function CheckoutPage() {
         setShowManualForm(true);
       }
 
+      // Fetch shipping zones & options
       try {
         const zonesRes = await fetch(`${BaseUrl}api/orders/shipping/zones/`, {
           headers: { ...(token && { 'Authorization': `Bearer ${token}` }) }
@@ -233,6 +254,7 @@ export default function CheckoutPage() {
     loadCheckoutData();
   }, [token]);
 
+  // Extend locations
   useEffect(() => {
     const extendedLocations = zones
       .flatMap((z: ShippingZone) =>
@@ -244,6 +266,7 @@ export default function CheckoutPage() {
     setLocations(extendedLocations);
   }, [zones]);
 
+  // Auto-match city to location
   useEffect(() => {
     if (formData.city && locations.length > 0) {
       const matchedLoc = locations.find((l) => l.city_name.toLowerCase() === formData.city.toLowerCase());
@@ -263,15 +286,6 @@ export default function CheckoutPage() {
       state: addr.state
     });
     setShowManualForm(false);
-  };
-
-  const parseSafe = (val: number | string | undefined): number => {
-    if (typeof val === 'number') return val;
-    if (typeof val === 'string') {
-      const cleaned = val.replace(/,/g, '');
-      return parseFloat(cleaned) || 0;
-    }
-    return 0;
   };
 
   const subtotal = useMemo(() => {
@@ -334,10 +348,7 @@ export default function CheckoutPage() {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }) 
         },
-        body: JSON.stringify({
-          code: couponCode,
-          subtotal: subtotal
-        })
+        body: JSON.stringify({ code: couponCode, subtotal })
       });
 
       const data = await res.json();
@@ -429,6 +440,42 @@ export default function CheckoutPage() {
     }
   };
 
+  // ── PAY VIA WHATSAPP ───────────────────────────
+  const handleWhatsApp = () => {
+    if (!validateForm()) return;
+
+    const orderSummary = cartItems.map((item) => {
+      const name = item.placement_details?.product_name ||
+                   item.product_details?.name ||
+                   item.product_name ||
+                   item.name || "Item";
+
+      const price = parseSafe(item.placement_details?.product_price ??
+                             item.product_details?.base_price ??
+                             item.price);
+
+      const itemTotal = price * (item.quantity || 1);
+      let line = `• ${item.quantity}x ${name} — ${formatCurrency(itemTotal)}`;
+      if (item.secret_message) line += " (with secret message)";
+      return line;
+    }).join('\n');
+
+    const message = `Hi LensraGift 👋\n\n` +
+      `I want to order:\n` +
+      `${orderSummary}\n\n` +
+      `Delivery Details:\n` +
+      `Name: ${formData.full_name}\n` +
+      `Phone: ${formData.phone}\n` +
+      `Address: ${formData.address}, ${formData.city}, ${formData.state}\n` +
+      `${formData.email ? `Email: ${formData.email}\n` : ''}\n` +
+      `Shipping: ${shipping === 0 ? "To be confirmed" : formatCurrency(shipping)}\n` +
+      `Total: ${formatCurrency(total)}\n\n` +
+      `Please help me complete payment. Thank you! 🙏`;
+
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   const isGuest = !token;
 
   if (isLoading) {
@@ -494,24 +541,13 @@ export default function CheckoutPage() {
             />
           )}
 
-          <ShippingLocationSelector
-            zones={zones}
-            selectedId={selectedLocationId}
-            onSelect={setSelectedLocationId}
-          />
-
-          <ShippingOptionSelector
-            options={options}
-            selectedId={selectedOptionId}
-            onSelect={setSelectedOptionId}
-          />
+          <ShippingLocationSelector zones={zones} selectedId={selectedLocationId} onSelect={setSelectedLocationId} />
+          <ShippingOptionSelector options={options} selectedId={selectedOptionId} onSelect={setSelectedOptionId} />
         </div>
 
         <div className="mt-6 lg:mt-0">
           <div className="bg-zinc-900 text-white p-6 rounded-2xl sticky top-20 shadow-md border border-zinc-800">
-            <h2 className="text-xl font-bold mb-4 text-red-500">
-              Summary
-            </h2>
+            <h2 className="text-xl font-bold mb-4 text-red-500">Summary</h2>
 
             <div className="space-y-3 mb-6 max-h-64 overflow-y-auto pr-2">
               {cartItems.length === 0 ? (
@@ -522,11 +558,9 @@ export default function CheckoutPage() {
                                item.product_details?.name ||
                                item.product_name ||
                                item.name || "Item";
-                  const priceRaw = item.placement_details?.product_price ??
-                                   item.product_details?.base_price ??
-                                   item.price ??
-                                   0;
-                  const price = parseSafe(priceRaw);
+                  const price = parseSafe(item.placement_details?.product_price ??
+                                         item.product_details?.base_price ??
+                                         item.price);
                   const itemTotal = price * (item.quantity || 1);
 
                   return (
@@ -567,6 +601,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Totals */}
             <div className="space-y-2 text-sm border-t border-zinc-800 pt-3">
               <div className="flex justify-between text-zinc-400">
                 <span>Subtotal</span>
@@ -588,19 +623,40 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleOrder}
-              disabled={isProcessing || cartItems.length === 0 || !selectedLocationId || !selectedOptionId}
-              className="w-full mt-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium uppercase tracking-wide disabled:opacity-50 flex items-center justify-center gap-1 shadow-sm"
-            >
-              {isProcessing ? (
-                <Loader2 className="animate-spin w-4 h-4" />
-              ) : (
-                <>
-                  <CreditCard className="w-4 h-4" /> Pay
-                </>
-              )}
-            </button>
+            {/* Payment Options */}
+            <div className="mt-8 space-y-4">
+              <button
+                onClick={handleOrder}
+                disabled={isProcessing || cartItems.length === 0 || !selectedLocationId || !selectedOptionId}
+                className="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl text-base font-semibold flex items-center justify-center gap-3 shadow-sm transition-all active:scale-[0.985]"
+              >
+                {isProcessing ? (
+                  <Loader2 className="animate-spin w-5 h-5" />
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5" /> Pay Now (Card / Transfer)
+                  </>
+                )}
+              </button>
+
+              <div className="relative flex items-center justify-center">
+                <div className="absolute w-full border-t border-zinc-700" />
+                <span className="bg-zinc-900 px-4 text-xs uppercase tracking-widest text-zinc-500 z-10">or</span>
+              </div>
+
+              <button
+                onClick={handleWhatsApp}
+                disabled={cartItems.length === 0}
+                className="w-full py-4 bg-[#25D366] hover:bg-[#22C55E] text-white rounded-2xl text-base font-semibold flex items-center justify-center gap-3 shadow-sm transition-all active:scale-[0.985]"
+              >
+                <MessageCircle className="w-5 h-5" fill="currentColor" />
+                Pay via WhatsApp
+              </button>
+
+              <p className="text-center text-[10px] text-zinc-500">
+                Our team will reply instantly to confirm and guide you through payment
+              </p>
+            </div>
           </div>
         </div>
       </main>
@@ -608,8 +664,7 @@ export default function CheckoutPage() {
   );
 }
 
-// Reusable sub-components remain the same as previous version, with minor tweaks for consistency
-
+// ── SUB COMPONENTS ─────────────────────────────
 function AddressSelector({ addresses, selectedId, onSelect, onAddNew }: {
   addresses: Address[];
   selectedId: number | null;
@@ -787,15 +842,6 @@ function ShippingLocationSelector({
   selectedId: number | null;
   onSelect: (id: number | null) => void;
 }) {
-  const parseSafe = (val: number | string | undefined): number => {
-    if (typeof val === 'number') return val;
-    if (typeof val === 'string') {
-      const cleaned = val.replace(/,/g, '');
-      return parseFloat(cleaned) || 0;
-    }
-    return 0;
-  };
-
   return (
     <div className="space-y-4">
       <h3 className="text-[10px] font-medium uppercase tracking-widest text-zinc-500">Location *</h3>
@@ -828,15 +874,6 @@ function ShippingOptionSelector({
   selectedId: number | null;
   onSelect: (id: number) => void;
 }) {
-  const parseSafe = (val: number | string | undefined): number => {
-    if (typeof val === 'number') return val;
-    if (typeof val === 'string') {
-      const cleaned = val.replace(/,/g, '');
-      return parseFloat(cleaned) || 0;
-    }
-    return 0;
-  };
-
   return (
     <div className="space-y-4">
       <h3 className="text-[10px] font-medium uppercase tracking-widest text-zinc-500">Method *</h3>
