@@ -71,7 +71,7 @@ export default function LimitedDeals() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${baseUrl}api/deals/`, {
+        const res = await fetch(`${baseUrl}api/products/deals/`, {
           headers: {
             ...(token && { 'Authorization': `Bearer ${token}` }),
           },
@@ -284,10 +284,10 @@ export default function LimitedDeals() {
                 }`}
               >
                 <div className={`relative h-64 ${isActive ? 'bg-gradient-to-br from-rose-50 to-pink-50' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
-                  <Image
+                  <img
                     src={product.image_url}
                     alt={product.name}
-                    fill
+                    loading='lazy'
                     className="object-cover hover:scale-105 transition-transform duration-500"
                   />
                   {product.is_best_seller && (
