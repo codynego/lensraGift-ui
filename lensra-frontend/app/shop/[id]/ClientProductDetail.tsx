@@ -1,5 +1,4 @@
 // app/shop/[id]/ClientProductDetail.tsx
-// This is the client component for interactivity
 
 "use client";
 
@@ -7,9 +6,25 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
-  Heart, Palette, Loader2, ShoppingBag, Plus, Minus,
-  Sparkles, Check, ChevronDown, ChevronUp, Star,
-  ChevronLeft, ChevronRight, X, Share2, Truck, Shield, RotateCcw
+  Heart,
+  Palette,
+  Loader2,
+  ShoppingBag,
+  Plus,
+  Minus,
+  Sparkles,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Share2,
+  Truck,
+  Shield,
+  RotateCcw,
+  Zap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -59,7 +74,7 @@ const EMOTIONS = [
 export default function ClientProductDetail({
   initialProduct,
   initialRelatedProducts,
-  baseUrl
+  baseUrl,
 }: {
   initialProduct: ProductDetail;
   initialRelatedProducts: ProductDetail[];
@@ -106,17 +121,56 @@ export default function ClientProductDetail({
   const maxMessageLength = 300;
   const isSurpriseValid = !showSurprise || (selectedEmotion && secretMessage.length >= minMessageLength && secretMessage.length <= maxMessageLength);
 
-  const handleImageChange = (index: number) => {
-    setSelectedImageIndex(index);
+  // Shared function for both Add to Cart and Buy Now
+  const addItemToCart = async (redirectToCheckout: boolean = false) => {
+    if (!product || !isSurpriseValid) return;
+
+    setIsAdding(true);
+    let sessionId = localStorage.getItem('guest_session_id');
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem('guest_session_id', sessionId);
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}api/orders/cart/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          product: product.id,
+          variant: activeVariant?.id || null,
+          quantity: quantity,
+          secret_message: showSurprise ? secretMessage : null,
+          emotion: showSurprise ? selectedEmotion : null,
+          ...(!token && { session_id: sessionId }),
+        }),
+      });
+
+      if (res.ok) {
+        window.dispatchEvent(new Event('storage'));
+
+        if (redirectToCheckout) {
+          router.push('/checkout');
+        } else {
+          setShowSuccessModal(true);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
-  const handlePrevImage = () => {
-    setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-  };
+  const handleAddToCart = () => addItemToCart(false);
+  const handleBuyNow = () => addItemToCart(true);
 
-  const handleNextImage = () => {
-    setSelectedImageIndex((prev) => (prev + 1) % allImages.length);
-  };
+  const handleImageChange = (index: number) => setSelectedImageIndex(index);
+  const handlePrevImage = () => setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  const handleNextImage = () => setSelectedImageIndex((prev) => (prev + 1) % allImages.length);
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = Math.max(product.min_order_quantity || 1, quantity + delta);
@@ -125,34 +179,6 @@ export default function ClientProductDetail({
 
   const handleCustomize = () => {
     router.push(`/editor?product=${product.id}`);
-  };
-
-  const handleAddToCart = async () => {
-    if (!product || !isSurpriseValid) return;
-    setIsAdding(true);
-    let sessionId = localStorage.getItem('guest_session_id');
-    if (!sessionId) {
-      sessionId = crypto.randomUUID();
-      localStorage.setItem('guest_session_id', sessionId);
-    }
-    try {
-      const res = await fetch(`${baseUrl}api/orders/cart/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) },
-        body: JSON.stringify({
-          product: product.id,
-          variant: activeVariant?.id || null,
-          quantity: quantity,
-          secret_message: showSurprise ? secretMessage : null,
-          emotion: showSurprise ? selectedEmotion : null,
-          ...(!token && { session_id: sessionId })
-        })
-      });
-      if (res.ok) {
-        setShowSuccessModal(true);
-        window.dispatchEvent(new Event('storage'));
-      }
-    } catch (err) { console.error(err); } finally { setIsAdding(false); }
   };
 
   const emotionColorMap: Record<string, string> = {
@@ -167,7 +193,7 @@ export default function ClientProductDetail({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-50 text-zinc-900 font-sans">
-      {/* Sticky Header with Breadcrumb */}
+      {/* Sticky Header */}
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-zinc-100">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 py-4">
           <div className="flex items-center justify-between">
@@ -195,8 +221,7 @@ export default function ClientProductDetail({
 
       <main className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 py-8 lg:py-12">
         <div className="grid lg:grid-cols-[1fr,1fr] gap-12 lg:gap-20 mb-20">
-          
-          {/* IMAGE GALLERY - Enhanced layout with larger previews and smoother transitions */}
+          {/* IMAGE GALLERY */}
           <div className="space-y-6 lg:sticky lg:top-24 self-start order-1 lg:order-none">
             <div
               className="relative bg-white rounded-3xl overflow-hidden aspect-[4/5] shadow-2xl shadow-zinc-900/5 cursor-zoom-in group border border-zinc-100"
@@ -211,8 +236,7 @@ export default function ClientProductDetail({
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               )}
-              
-              {/* Navigation Arrows - Improved visibility and positioning */}
+
               {allImages.length > 1 && (
                 <>
                   <button
@@ -229,26 +253,30 @@ export default function ClientProductDetail({
                   </button>
                 </>
               )}
-              {/* Image Counter - Cleaner design */}
+
               <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold">
                 {selectedImageIndex + 1} / {allImages.length}
               </div>
             </div>
-            {/* Thumbnail Strip - Larger thumbnails for better selection */}
+
             {allImages.length > 1 && (
               <div className="flex flex-wrap gap-4">
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleImageChange(idx)}
-                    className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === idx ? 'border-zinc-900 shadow-lg ring-2 ring-zinc-900 ring-offset-2' : 'border-zinc-200 opacity-70 hover:opacity-100 hover:border-zinc-400'}`}
+                    className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all ${
+                      selectedImageIndex === idx
+                        ? 'border-zinc-900 shadow-lg ring-2 ring-zinc-900 ring-offset-2'
+                        : 'border-zinc-200 opacity-70 hover:opacity-100 hover:border-zinc-400'
+                    }`}
                   >
                     <img src={img} alt={`View ${idx + 1}`} loading="lazy" className="object-cover" />
                   </button>
                 ))}
               </div>
             )}
-            {/* Trust Badges - Moved to bottom for cleaner flow, larger icons */}
+
             <div className="grid grid-cols-3 gap-6 mt-10 pt-10 border-t border-zinc-100">
               <div className="flex flex-col items-center text-center gap-3">
                 <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center">
@@ -274,7 +302,7 @@ export default function ClientProductDetail({
             </div>
           </div>
 
-          {/* PRODUCT INFO - Improved hierarchy, spacing, and readability */}
+          {/* PRODUCT INFO */}
           <div className="flex flex-col order-2 lg:order-none">
             <div className="space-y-8 pb-10 border-b border-zinc-100">
               <div className="flex items-start justify-between gap-4">
@@ -288,11 +316,11 @@ export default function ClientProductDetail({
                   </span>
                 )}
               </div>
-              
+
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-zinc-900 leading-[1.05] tracking-tight">
                 {product.name}
               </h1>
-              
+
               <div className="flex flex-wrap items-center gap-6">
                 <span className="text-5xl font-black text-zinc-900 tracking-tight">
                   ₦{parseFloat(currentPrice).toLocaleString()}
@@ -304,11 +332,11 @@ export default function ClientProductDetail({
                   </div>
                 )}
               </div>
-              {/* Quick Product Description - Better truncation and styling */}
+
               <p className="text-zinc-600 leading-relaxed text-lg font-medium">
                 {product.description.split('\n')[0].substring(0, 200)}...
               </p>
-              {/* Message Field - Display if exists, with elegant styling */}
+
               {product.message && (
                 <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200 shadow-sm">
                   <h3 className="text-lg font-bold text-zinc-900 mb-3">Special Message</h3>
@@ -317,15 +345,26 @@ export default function ClientProductDetail({
               )}
             </div>
 
-            {/* SURPRISE REVEAL - Enhanced animations and cleaner UI */}
+            {/* Surprise Reveal */}
             {!product.is_customizable && (
               <div className="py-10 space-y-6 border-b border-zinc-100">
+                {/* ... surprise section unchanged ... */}
                 <button
                   onClick={() => setShowSurprise(!showSurprise)}
-                  className={`w-full flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 shadow-md ${showSurprise ? 'border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg' : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-xl'}`}
+                  className={`w-full flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 shadow-md ${
+                    showSurprise
+                      ? 'border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg'
+                      : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-xl'
+                  }`}
                 >
                   <div className="flex items-center gap-4 text-left">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all ${showSurprise ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30' : 'bg-zinc-100 text-zinc-400'}`}>
+                    <div
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all ${
+                        showSurprise
+                          ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
+                          : 'bg-zinc-100 text-zinc-400'
+                      }`}
+                    >
                       <Sparkles className="w-8 h-8" />
                     </div>
                     <div>
@@ -337,6 +376,7 @@ export default function ClientProductDetail({
                     <ChevronDown className="w-6 h-6 text-zinc-400" />
                   </div>
                 </button>
+
                 <AnimatePresence>
                   {showSurprise && (
                     <motion.div
@@ -347,6 +387,7 @@ export default function ClientProductDetail({
                       className="overflow-hidden"
                     >
                       <div className="p-6 bg-white rounded-2xl border-2 border-zinc-100 space-y-8 shadow-md">
+                        {/* emotion and message fields unchanged */}
                         <div className="space-y-4">
                           <label className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
                             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 text-sm font-black">1</span>
@@ -360,7 +401,9 @@ export default function ClientProductDetail({
                                 <button
                                   key={e.id}
                                   onClick={() => setSelectedEmotion(e.id)}
-                                  className={`px-5 py-3 rounded-xl border-2 text-sm font-bold transition-all ${isSelected ? `${colorClass} shadow-md scale-105` : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'}`}
+                                  className={`px-5 py-3 rounded-xl border-2 text-sm font-bold transition-all ${
+                                    isSelected ? `${colorClass} shadow-md scale-105` : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
+                                  }`}
                                 >
                                   <span className="mr-2">{e.emoji}</span>
                                   {e.label}
@@ -369,6 +412,7 @@ export default function ClientProductDetail({
                             })}
                           </div>
                         </div>
+
                         <div className="space-y-4">
                           <label className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
                             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 text-sm font-black">2</span>
@@ -386,7 +430,9 @@ export default function ClientProductDetail({
                             </div>
                           </div>
                           {secretMessage.length > 0 && secretMessage.length < minMessageLength && (
-                            <p className="text-sm text-amber-600 font-medium">✨ Add {minMessageLength - secretMessage.length} more characters</p>
+                            <p className="text-sm text-amber-600 font-medium">
+                              ✨ Add {minMessageLength - secretMessage.length} more characters
+                            </p>
                           )}
                         </div>
                       </div>
@@ -396,27 +442,36 @@ export default function ClientProductDetail({
               </div>
             )}
 
-            {/* VARIANT SELECTORS - Larger buttons, better spacing */}
+            {/* Variants & Quantity */}
             <div className="py-10 space-y-10 border-b border-zinc-100">
-              {attributeTypes.map(type => {
-                const values = Array.from(new Set(
-                  product.variants.flatMap((v) => v.attributes).filter((a) => a.attribute_name === type).map((a) => a.value)
-                ));
-                
+              {attributeTypes.map((type) => {
+                const values = Array.from(
+                  new Set(
+                    product.variants
+                      .flatMap((v) => v.attributes)
+                      .filter((a) => a.attribute_name === type)
+                      .map((a) => a.value)
+                  )
+                );
+
                 return (
                   <div key={type}>
                     <label className="text-sm font-bold text-zinc-900 uppercase tracking-wider mb-4 block">
                       {type}: <span className="text-zinc-500 normal-case">{selectedAttributes[type] || 'Select'}</span>
                     </label>
                     <div className="flex flex-wrap gap-4">
-                      {values.map(val => {
+                      {values.map((val) => {
                         const isSelected = selectedAttributes[type] === val;
                         if (isColorAttribute(type)) {
                           return (
                             <button
                               key={val}
-                              onClick={() => setSelectedAttributes(prev => ({ ...prev, [type]: val }))}
-                              className={`w-12 h-12 rounded-full border-2 transition-all shadow-md ${isSelected ? 'border-zinc-900 scale-110 ring-2 ring-zinc-900 ring-offset-2' : 'border-zinc-200 hover:border-zinc-400'} flex items-center justify-center`}
+                              onClick={() => setSelectedAttributes((prev) => ({ ...prev, [type]: val }))}
+                              className={`w-12 h-12 rounded-full border-2 transition-all shadow-md ${
+                                isSelected
+                                  ? 'border-zinc-900 scale-110 ring-2 ring-zinc-900 ring-offset-2'
+                                  : 'border-zinc-200 hover:border-zinc-400'
+                              } flex items-center justify-center`}
                               style={{ backgroundColor: val }}
                               title={val}
                             >
@@ -427,8 +482,12 @@ export default function ClientProductDetail({
                         return (
                           <button
                             key={val}
-                            onClick={() => setSelectedAttributes(prev => ({ ...prev, [type]: val }))}
-                            className={`px-8 py-4 rounded-xl border-2 text-base font-bold transition-all ${isSelected ? 'border-zinc-900 bg-zinc-900 text-white shadow-xl shadow-zinc-900/20' : 'border-zinc-200 text-zinc-700 hover:border-zinc-400 bg-white'}`}
+                            onClick={() => setSelectedAttributes((prev) => ({ ...prev, [type]: val }))}
+                            className={`px-8 py-4 rounded-xl border-2 text-base font-bold transition-all ${
+                              isSelected
+                                ? 'border-zinc-900 bg-zinc-900 text-white shadow-xl shadow-zinc-900/20'
+                                : 'border-zinc-200 text-zinc-700 hover:border-zinc-400 bg-white'
+                            }`}
                           >
                             {val}
                           </button>
@@ -438,7 +497,7 @@ export default function ClientProductDetail({
                   </div>
                 );
               })}
-              {/* QUANTITY SELECTOR - Larger and more prominent */}
+
               <div>
                 <label className="text-sm font-bold text-zinc-900 uppercase tracking-wider mb-4 block">Quantity</label>
                 <div className="inline-flex items-center bg-white border-2 border-zinc-200 rounded-xl overflow-hidden shadow-sm">
@@ -463,9 +522,9 @@ export default function ClientProductDetail({
               </div>
             </div>
 
-            {/* ACTION BUTTONS - Show both if customizable, else only add to cart; Better layout with flex */}
+            {/* ACTION BUTTONS - BUY NOW PRIMARY */}
             <div className="sticky bottom-0 bg-white pt-6 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 border-t border-zinc-100 mt-10 lg:static lg:border-0 lg:p-0 lg:mt-12">
-              <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex flex-col gap-4">
                 {product.is_customizable && (
                   <button
                     onClick={handleCustomize}
@@ -478,34 +537,54 @@ export default function ClientProductDetail({
                     </span>
                   </button>
                 )}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAdding || (product.variants.length > 0 && !activeVariant) || quantity > currentStock || currentStock === 0 || !isSurpriseValid}
-                  className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-bold text-sm uppercase tracking-wider hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-zinc-900/20 active:scale-98"
-                >
-                  {isAdding ? (
-                    <Loader2 className="animate-spin w-5 h-5" />
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-5 h-5" />
-                      Add to Cart - ₦{(parseFloat(currentPrice) * quantity).toLocaleString()}
-                    </>
-                  )}
-                </button>
+
+                <div className="flex flex-col lg:flex-row gap-4">
+                  {/* Buy Now - Primary Button */}
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={isAdding || (product.variants.length > 0 && !activeVariant) || quantity > currentStock || currentStock === 0 || !isSurpriseValid}
+                    className="flex-1 py-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-base uppercase tracking-wider flex items-center justify-center gap-3 shadow-xl shadow-red-500/30 active:scale-98 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAdding ? (
+                      <Loader2 className="animate-spin w-6 h-6" />
+                    ) : (
+                      <>
+                        <Zap className="w-6 h-6" />
+                        Buy Now - ₦{(parseFloat(currentPrice) * quantity).toLocaleString()}
+                      </>
+                    )}
+                  </button>
+
+                  {/* Add to Cart - Secondary Button */}
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAdding || (product.variants.length > 0 && !activeVariant) || quantity > currentStock || currentStock === 0 || !isSurpriseValid}
+                    className="flex-1 py-6 border-2 border-zinc-900 hover:bg-zinc-50 text-zinc-900 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAdding ? (
+                      <Loader2 className="animate-spin w-5 h-5" />
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-5 h-5" />
+                        Add to Cart
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* TABS - Larger text, smoother animations */}
+            {/* TABS */}
             <div className="mt-12 space-y-4">
               {[
                 { key: 'details', label: 'Product Details', content: product.description },
-                { key: 'shipping', label: 'Shipping & Returns', content: 'Standard shipping: 3-5 business days. Express shipping available at checkout. Free returns within 30 days.' }
+                { key: 'shipping', label: 'Shipping & Returns', content: 'Standard shipping: 3-5 business days. Express shipping available at checkout. Free returns within 30 days.' },
               ].map((tab) => {
                 const isActive = activeTab === tab.key;
                 return (
                   <div key={tab.key} className="border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
                     <button
-                      onClick={() => setActiveTab(isActive ? '' as any : tab.key as any)}
+                      onClick={() => setActiveTab(isActive ? ('' as any) : (tab.key as any))}
                       className="w-full flex items-center justify-between p-6 hover:bg-zinc-50 transition-colors"
                     >
                       <span className="font-bold text-base text-zinc-900">{tab.label}</span>
@@ -532,7 +611,7 @@ export default function ClientProductDetail({
           </div>
         </div>
 
-        {/* RELATED PRODUCTS - Larger cards, better hover effects */}
+        {/* RELATED PRODUCTS */}
         {relatedProducts.length > 0 && (
           <section className="border-t border-zinc-100 pt-16">
             <div className="flex justify-between items-center mb-10">
@@ -579,7 +658,7 @@ export default function ClientProductDetail({
         )}
       </main>
 
-      {/* FULLSCREEN IMAGE MODAL - Improved scaling and controls */}
+      {/* Image Modal */}
       <AnimatePresence>
         {isImageModalOpen && (
           <div
@@ -598,7 +677,7 @@ export default function ClientProductDetail({
                 <img
                   src={allImages[selectedImageIndex]}
                   alt={product.name}
-                  loading='lazy'
+                  loading="lazy"
                   className="object-contain"
                   sizes="100vw"
                 />
@@ -633,11 +712,11 @@ export default function ClientProductDetail({
         )}
       </AnimatePresence>
 
-      {/* SUCCESS MODAL - Larger text, better spacing */}
+      {/* Success Modal */}
       <AnimatePresence>
         {showSuccessModal && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[100] p-6">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -648,16 +727,21 @@ export default function ClientProductDetail({
                 <Check className="w-12 h-12" />
               </div>
               <h2 className="text-3xl sm:text-4xl font-black uppercase italic mb-6 text-zinc-900">Added to Cart!</h2>
-              <p className="text-zinc-600 mb-10 font-bold text-base uppercase tracking-widest leading-relaxed">Your custom experience has been saved to your bag.</p>
+              <p className="text-zinc-600 mb-10 font-bold text-base uppercase tracking-widest leading-relaxed">
+                Your custom experience has been saved to your bag.
+              </p>
               <div className="flex flex-col gap-4">
-                <button 
-                  onClick={() => { setShowSuccessModal(false); router.push('/cart'); }} 
+                <button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    router.push('/cart');
+                  }}
                   className="w-full py-6 bg-zinc-900 text-white rounded-full font-black text-base uppercase tracking-[0.2em] hover:bg-red-600 transition-all active:scale-95 shadow-md"
                 >
                   View Cart & Checkout
                 </button>
-                <button 
-                  onClick={() => setShowSuccessModal(false)} 
+                <button
+                  onClick={() => setShowSuccessModal(false)}
                   className="w-full py-6 border-2 border-zinc-200 text-zinc-600 rounded-full font-black text-base uppercase tracking-[0.2em] hover:border-zinc-900 hover:text-zinc-900 transition-all"
                 >
                   Continue Shopping
