@@ -52,18 +52,44 @@ const TESTIMONIALS = [
 ];
 
 export default function LimitedDeals({
-  initialProducts,
   baseUrl,
 }: {
-  initialProducts: SaleProduct[];
   baseUrl: string;
 }) {
   const router = useRouter();
   const { token } = useAuth();
 
-  const [products] = useState<SaleProduct[]>(initialProducts.slice(0, 5)); // Limit to 5 max
+  const [products, setProducts] = useState<SaleProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState(48 * 60 * 60); // 48 hours in seconds
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${baseUrl}api/products/deals/`, {
+          headers: {
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to fetch deals');
+        }
+
+        const data = await res.json();
+        setProducts(data.results || data.slice(0, 5)); // Limit to 5, assuming paginated or array
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [baseUrl, token]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -123,6 +149,33 @@ export default function LimitedDeals({
     router.push(`/shop/${slug}`);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-50">
+        <div className="text-center">
+          <Clock className="w-8 h-8 animate-spin mx-auto mb-4 text-rose-600" />
+          <p className="text-lg text-zinc-600">Loading deals...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-50">
+        <div className="text-center">
+          <p className="text-lg text-zinc-600 mb-4">{error || "No deals available right now."}</p>
+          <button
+            onClick={() => router.push('/shop')}
+            className="bg-rose-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-rose-700 transition-colors"
+          >
+            Browse All Gifts
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 text-zinc-900 font-sans">
       {/* Top Section */}
@@ -162,12 +215,12 @@ export default function LimitedDeals({
       {/* Product Grid */}
       <section className="py-16 px-4 max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => (
+          {products.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * products.indexOf(product) }}
+              transition={{ delay: 0.1 * index }}
               className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-rose-100"
             >
               <div className="relative h-64 bg-gradient-to-br from-rose-50 to-pink-50">
