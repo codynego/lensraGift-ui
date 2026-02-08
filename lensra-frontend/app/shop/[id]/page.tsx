@@ -33,6 +33,9 @@ interface ProductDetail {
   description: string;
   base_price: string;
   category_name: string;
+  display_price: string;
+  is_on_sale: boolean;
+  original_price: string | null;
   image_url: string | null;
   gallery: ProductImage[];
   variants: ProductVariant[];
