@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -54,6 +54,11 @@ interface ProductDetail {
   slug: string;
   description: string;
   base_price: string;
+  display_price?: string;
+  original_price?: string | null;
+  is_on_sale?: boolean;
+  sale_label?: string | null;
+  sale_ends_in?: number | null;
   category_name: string;
   image_url: string | null;
   gallery: ProductImage[];
@@ -105,6 +110,7 @@ export default function ClientProductDetail({
   const [showSurprise, setShowSurprise] = useState(false);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [secretMessage, setSecretMessage] = useState("");
+  const [remainingTime, setRemainingTime] = useState(initialProduct.sale_ends_in || 0);
 
   const activeVariant = useMemo(() => {
     if (!product?.variants || product.variants.length === 0) return null;
@@ -113,13 +119,39 @@ export default function ClientProductDetail({
     ) || null;
   }, [selectedAttributes, product]);
 
-  const currentPrice = activeVariant?.price_override || product?.base_price || "0";
+  const currentPrice = useMemo(() => {
+    return activeVariant?.price_override || product.display_price || product.base_price || "0";
+  }, [activeVariant, product]);
+
   const attributeTypes = Array.from(new Set(product?.variants?.flatMap((v) => v.attributes.map((a) => a.attribute_name)) || []));
   const allImages = [product.image_url, ...product.gallery.map((g) => g.image_url)].filter(Boolean) as string[];
   const currentStock = activeVariant?.stock_quantity ?? Infinity;
   const minMessageLength = 50;
   const maxMessageLength = 300;
   const isSurpriseValid = !showSurprise || (selectedEmotion && secretMessage.length >= minMessageLength && secretMessage.length <= maxMessageLength);
+
+  useEffect(() => {
+    if (!product.is_on_sale || remainingTime <= 0) return;
+
+    const interval = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [remainingTime, product.is_on_sale]);
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   // Shared function for both Add to Cart and Buy Now
   const addItemToCart = async (redirectToCheckout: boolean = false) => {
@@ -310,6 +342,11 @@ export default function ClientProductDetail({
                   <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
                   {product.category_name}
                 </span>
+                {product.is_on_sale && product.sale_label && (
+                  <span className="inline-flex items-center gap-1 bg-gradient-to-r from-red-50 to-pink-50 text-red-700 px-4 py-2 rounded-full text-sm font-bold border border-red-200">
+                    {product.sale_label}
+                  </span>
+                )}
                 {currentStock < 10 && currentStock > 0 && (
                   <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-4 py-2 rounded-full text-sm font-bold">
                     🔥 Only {currentStock} left
@@ -322,6 +359,11 @@ export default function ClientProductDetail({
               </h1>
 
               <div className="flex flex-wrap items-center gap-6">
+                {product.is_on_sale && product.original_price && (
+                  <span className="text-2xl font-normal text-zinc-500 line-through">
+                    ₦{parseFloat(product.original_price).toLocaleString()}
+                  </span>
+                )}
                 <span className="text-5xl font-black text-zinc-900 tracking-tight">
                   ₦{parseFloat(currentPrice).toLocaleString()}
                 </span>
@@ -332,6 +374,16 @@ export default function ClientProductDetail({
                   </div>
                 )}
               </div>
+
+              {product.is_on_sale && remainingTime > 0 && (
+                <div className="flex items-center gap-2 mt-2 px-1">
+                  <Zap className="w-4 h-4 text-red-500 animate-pulse" />
+                  <span className="text-sm font-bold text-red-600">Sale ends in</span>
+                  <span className="text-sm font-bold text-red-800 bg-red-50 px-3 py-1 rounded-full">
+                    {formatTime(remainingTime)}
+                  </span>
+                </div>
+              )}
 
               <p className="text-zinc-600 leading-relaxed text-lg font-medium">
                 {product.description.split('\n')[0].substring(0, 200)}...
@@ -348,7 +400,6 @@ export default function ClientProductDetail({
             {/* Surprise Reveal */}
             {!product.is_customizable && (
               <div className="py-10 space-y-6 border-b border-zinc-100">
-                {/* ... surprise section unchanged ... */}
                 <button
                   onClick={() => setShowSurprise(!showSurprise)}
                   className={`w-full flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 shadow-md ${
@@ -387,7 +438,6 @@ export default function ClientProductDetail({
                       className="overflow-hidden"
                     >
                       <div className="p-6 bg-white rounded-2xl border-2 border-zinc-100 space-y-8 shadow-md">
-                        {/* emotion and message fields unchanged */}
                         <div className="space-y-4">
                           <label className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
                             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 text-sm font-black">1</span>
@@ -649,7 +699,7 @@ export default function ClientProductDetail({
                     {item.name}
                   </h3>
                   <p className="text-base font-bold text-zinc-500">
-                    ₦{parseFloat(item.base_price).toLocaleString()}
+                    ₦{parseFloat((item.display_price || item.base_price) || '0').toLocaleString()}
                   </p>
                 </div>
               ))}

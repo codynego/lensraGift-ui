@@ -1,92 +1,92 @@
-// app/sale/page.tsx
+// app/sales/LimitedDeals.tsx
+
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import Image from 'next/image';
 import {
-  Zap, Clock, ShoppingBag, Loader2, Check, ArrowRight,
-  Truck, Shield, RotateCcw
+  Clock,
+  Zap,
+  Star,
+  Heart,
+  ShoppingBag,
+  Truck,
+  Shield,
+  CreditCard,
+  Gift,
+  ChevronRight,
+  Quote,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
-interface DealProduct {
+interface SaleProduct {
   id: number;
   name: string;
   slug: string;
   image_url: string;
-  base_price: string;        // This will be the sale price
-  old_price: string;         // Crossed out price
-  category_name: string;
+  original_price: string;
+  display_price: string;
+  sale_label: string;
   is_best_seller?: boolean;
+  description?: string;
 }
 
-const SAMPLE_DEALS: DealProduct[] = [
+const TESTIMONIALS = [
   {
-    id: 101,
-    name: "Personalized Luxury Mug",
-    slug: "personalized-luxury-mug",
-    image_url: "https://picsum.photos/id/669/600/800",
-    base_price: "6999",
-    old_price: "8500",
-    category_name: "Mugs",
-    is_best_seller: true,
+    quote: "Absolutely loved the surprise element! Made gifting so special.",
+    author: "Aisha O.",
+    rating: 5,
   },
   {
-    id: 102,
-    name: "Custom Scented Candle Set",
-    slug: "custom-scented-candle-set",
-    image_url: "https://picsum.photos/id/870/600/800",
-    base_price: "9500",
-    old_price: "12000",
-    category_name: "Home & Living",
+    quote: "Fast delivery and beautiful quality. Will order again!",
+    author: "Chinedu M.",
+    rating: 5,
   },
   {
-    id: 103,
-    name: "Elegant Photo Frame Gift",
-    slug: "elegant-photo-frame-gift",
-    image_url: "https://picsum.photos/id/201/600/800",
-    base_price: "5800",
-    old_price: "7200",
-    category_name: "Frames",
-    is_best_seller: true,
-  },
-  {
-    id: 104,
-    name: "Premium Notebook & Pen Set",
-    slug: "premium-notebook-pen-set",
-    image_url: "https://picsum.photos/id/367/600/800",
-    base_price: "4200",
-    old_price: "5500",
-    category_name: "Stationery",
+    quote: "The emotions feature is genius. Touched my heart.",
+    author: "Fatima K.",
+    rating: 5,
   },
 ];
 
-export default function SalePage() {
+export default function LimitedDeals({
+  initialProducts,
+  baseUrl,
+}: {
+  initialProducts: SaleProduct[];
+  baseUrl: string;
+}) {
   const router = useRouter();
   const { token } = useAuth();
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://your-api.com/'; // ← Change to your real baseUrl
 
+  const [products] = useState<SaleProduct[]>(initialProducts.slice(0, 5)); // Limit to 5 max
   const [isAdding, setIsAdding] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState({ hours: 48, minutes: 12, seconds: 45 });
+  const [remainingTime, setRemainingTime] = useState(48 * 60 * 60); // 48 hours in seconds
 
-  // Live countdown (48 hours from page load for demo)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        let { hours, minutes, seconds } = prev;
-        if (seconds > 0) seconds--;
-        else if (minutes > 0) { minutes--; seconds = 59; }
-        else if (hours > 0) { hours--; minutes = 59; seconds = 59; }
-        return { hours, minutes, seconds };
+    const interval = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, []);
 
-  // Shared Buy Now logic (same as product detail)
-  const handleBuyNow = async (product: DealProduct) => {
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const addItemToCartAndCheckout = async (product: SaleProduct) => {
     setIsAdding(product.id);
     let sessionId = localStorage.getItem('guest_session_id');
     if (!sessionId) {
@@ -103,7 +103,7 @@ export default function SalePage() {
         },
         body: JSON.stringify({
           product: product.id,
-          quantity: 1,
+          quantity: 1, // Default quantity for quick buy
           ...(!token && { session_id: sessionId }),
         }),
       });
@@ -119,191 +119,217 @@ export default function SalePage() {
     }
   };
 
-  const formatPrice = (price: string) => parseFloat(price).toLocaleString();
+  const handleViewDetails = (slug: string) => {
+    router.push(`/shop/${slug}`);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-50 font-sans">
-      {/* HERO / ABOVE THE FOLD */}
-      <div className="bg-gradient-to-br from-red-600 to-rose-600 text-white py-16 lg:py-24 relative overflow-hidden">
-        <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold mb-6">
-                <Clock className="w-5 h-5" />
-                LIMITED-TIME LAUNCH OFFERS
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 text-zinc-900 font-sans">
+      {/* Top Section */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-rose-500 to-pink-600 text-white py-20 px-4">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-7xl font-black tracking-tight mb-6"
+          >
+            Limited-Time Gift Deals 🎁
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-xl md:text-2xl text-rose-100 max-w-3xl mx-auto mb-8 leading-relaxed"
+          >
+            Thoughtful gifts at special launch prices. Once the timer ends, prices go back up.
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+            className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full text-lg font-bold"
+          >
+            <Clock className="w-5 h-5" />
+            <span>Offer ends in</span>
+            <span className="bg-white text-rose-600 px-4 py-2 rounded-full font-black">
+              {formatTime(remainingTime)}
+            </span>
+          </motion.div>
+        </div>
+        <div className="absolute inset-0 bg-black/10" />
+      </section>
 
-              <h1 className="text-5xl lg:text-6xl font-black leading-[1.05] tracking-tighter mb-4">
-                Limited-Time Gift Deals 🎁
-              </h1>
-
-              <p className="text-xl text-white/90 max-w-lg mb-8">
-                Thoughtful gifts at special launch prices.<br />
-                Once the timer ends, prices return to normal.
-              </p>
-
-              {/* Countdown Timer */}
-              <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-6 inline-block">
-                <p className="uppercase text-xs tracking-[3px] font-bold text-white/70 mb-3">Offer ends in</p>
-                <div className="flex gap-6 text-4xl font-black tabular-nums">
-                  <div>{timeLeft.hours.toString().padStart(2, '0')}<span className="text-sm font-normal opacity-70 block text-xs">HRS</span></div>
-                  <div>{timeLeft.minutes.toString().padStart(2, '0')}<span className="text-sm font-normal opacity-70 block text-xs">MIN</span></div>
-                  <div>{timeLeft.seconds.toString().padStart(2, '0')}<span className="text-sm font-normal opacity-70 block text-xs">SEC</span></div>
+      {/* Product Grid */}
+      <section className="py-16 px-4 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {products.map((product) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * products.indexOf(product) }}
+              className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-rose-100"
+            >
+              <div className="relative h-64 bg-gradient-to-br from-rose-50 to-pink-50">
+                <Image
+                  src={product.image_url}
+                  alt={product.name}
+                  fill
+                  className="object-cover hover:scale-105 transition-transform duration-500"
+                />
+                {product.is_best_seller && (
+                  <div className="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <Star className="w-3 h-3 inline mr-1 fill-white" />
+                    Best Seller
+                  </div>
+                )}
+                <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                  {product.sale_label}
                 </div>
               </div>
-            </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-zinc-900 mb-2 line-clamp-2">{product.name}</h3>
+                {product.description && (
+                  <p className="text-sm text-zinc-600 mb-4 line-clamp-2">{product.description}</p>
+                )}
+                <div className="space-y-2 mb-6">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-black text-zinc-900">
+                      ₦{parseFloat(product.display_price).toLocaleString()}
+                    </span>
+                    <span className="text-lg text-zinc-500 line-through">
+                      ₦{parseFloat(product.original_price).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-rose-600 font-semibold">
+                    <Zap className="w-4 h-4" />
+                    <span>Limited Offer</span>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => addItemToCartAndCheckout(product)}
+                    disabled={isAdding === product.id}
+                    className="flex-1 py-4 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-xl font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAdding === product.id ? (
+                      <>
+                        <Clock className="w-4 h-4 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4" />
+                        Buy Now
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleViewDetails(product.slug)}
+                    className="flex-1 py-4 border-2 border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:text-zinc-900 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Heart className="w-4 h-4" />
+                    View Details
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
-            {/* Featured product images (decorative) */}
-            <div className="hidden lg:grid grid-cols-2 gap-6">
-              <img src="https://picsum.photos/id/669/600/800" className="rounded-3xl shadow-2xl" alt="deal" />
-              <img src="https://picsum.photos/id/870/600/800" className="rounded-3xl shadow-2xl mt-12" alt="deal" />
+      {/* Trust Section */}
+      <section className="py-16 px-4 bg-gradient-to-br from-white to-rose-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-3xl font-black text-zinc-900 mb-8"
+          >
+            Why Buy from LensraGift?
+          </motion.h2>
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            <div className="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-md">
+              <Gift className="w-8 h-8 text-rose-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-zinc-900 mb-1">Printed on Quality Materials</h3>
+                <p className="text-sm text-zinc-600">Premium paper and inks for lasting memories.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-md">
+              <Truck className="w-8 h-8 text-emerald-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-zinc-900 mb-1">Fast Delivery Across Nigeria</h3>
+                <p className="text-sm text-zinc-600">3-5 business days, free over ₦50,000.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-md">
+              <CreditCard className="w-8 h-8 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-zinc-900 mb-1">Pay with Card or WhatsApp</h3>
+                <p className="text-sm text-zinc-600">Secure and flexible payment options.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-md">
+              <Heart className="w-8 h-8 text-pink-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-zinc-900 mb-1">Perfect for Gifting</h3>
+                <p className="text-sm text-zinc-600">Personalized touches that wow every time.</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* DEALS GRID */}
-      <div className="max-w-[1800px] mx-auto px-6 lg:px-12 py-16">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <h2 className="text-4xl font-black text-zinc-900">Today’s Limited Deals</h2>
-            <p className="text-zinc-600 mt-2">Handpicked gifts at launch prices</p>
+      {/* Testimonials */}
+      <section className="py-16 px-4 max-w-6xl mx-auto">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="text-3xl font-black text-zinc-900 text-center mb-12"
+        >
+          What Our Customers Say
+        </motion.h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {TESTIMONIALS.map((testimonial, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 * (index + 1) }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 * index }}
+              className="bg-white p-6 rounded-2xl shadow-lg border border-zinc-100"
+            >
+              <div className="flex mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-amber-500 fill-amber-500" />
+                ))}
+              </div>
+              <Quote className="w-8 h-8 text-zinc-300 mb-4 -ml-2" />
+              <p className="text-zinc-700 italic mb-4">"{testimonial.quote}"</p>
+              <p className="font-bold text-zinc-900">— {testimonial.author}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Footer */}
+      <section className="bg-gradient-to-r from-rose-600 to-pink-600 text-white py-12 px-4 text-center">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl font-bold mb-4">Don't Miss Out on These Deals</h3>
+          <p className="text-rose-100 mb-6">Limited time only – grab yours before prices rise!</p>
+          <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full text-lg font-bold mb-6">
+            <Clock className="w-5 h-5" />
+            Ends in {formatTime(remainingTime)}
           </div>
           <button
             onClick={() => router.push('/shop')}
-            className="flex items-center gap-2 text-sm font-semibold text-zinc-500 hover:text-zinc-900"
+            className="bg-white text-rose-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-rose-50 transition-all shadow-lg"
           >
-            View all gifts <ArrowRight className="w-4 h-4" />
+            Shop All Gifts
+            <ChevronRight className="w-5 h-5 inline ml-2" />
           </button>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {SAMPLE_DEALS.map((product) => {
-            const saving = Math.round(((parseFloat(product.old_price) - parseFloat(product.base_price)) / parseFloat(product.old_price)) * 100);
-            return (
-              <motion.div
-                key={product.id}
-                whileHover={{ y: -8 }}
-                className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-zinc-100"
-              >
-                <div className="relative">
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
-                    className="w-full aspect-[4/4.5] object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-
-                  {product.is_best_seller && (
-                    <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1">
-                      ⭐ Best Seller
-                    </div>
-                  )}
-
-                  <div className="absolute top-4 right-4 bg-white text-red-600 text-xs font-bold px-4 py-1.5 rounded-full shadow">
-                    -{saving}%
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <p className="text-xs uppercase tracking-widest text-zinc-500 font-semibold mb-1">{product.category_name}</p>
-                  <h3 className="font-bold text-lg leading-tight line-clamp-2 mb-4 min-h-[3.2em]">{product.name}</h3>
-
-                  <div className="flex items-baseline gap-3 mb-6">
-                    <span className="text-3xl font-black text-zinc-900">
-                      ₦{formatPrice(product.base_price)}
-                    </span>
-                    <span className="text-zinc-400 line-through text-lg">
-                      ₦{formatPrice(product.old_price)}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-3">
-                    {/* Buy Now - Primary */}
-                    <button
-                      onClick={() => handleBuyNow(product)}
-                      disabled={isAdding === product.id}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-70"
-                    >
-                      {isAdding === product.id ? (
-                        <Loader2 className="animate-spin w-5 h-5" />
-                      ) : (
-                        <>
-                          <Zap className="w-5 h-5" />
-                          Buy Now
-                        </>
-                      )}
-                    </button>
-
-                    {/* View Details */}
-                    <button
-                      onClick={() => router.push(`/shop/${product.slug}`)}
-                      className="flex-1 border-2 border-zinc-900 font-semibold py-4 rounded-2xl hover:bg-zinc-50 transition-all"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* TRUST SECTION */}
-      <div className="bg-white py-16 border-t border-b border-zinc-100">
-        <div className="max-w-[1800px] mx-auto px-6 lg:px-12">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-zinc-900 mb-2">Why buy from LensraGift?</h3>
-            <p className="text-zinc-600">We make gifting meaningful and stress-free</p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-10">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4">
-                <Truck className="w-8 h-8 text-emerald-600" />
-              </div>
-              <p className="font-semibold">Fast Delivery Across Nigeria</p>
-              <p className="text-sm text-zinc-500 mt-1">3–5 business days</p>
-            </div>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
-                <Shield className="w-8 h-8 text-blue-600" />
-              </div>
-              <p className="font-semibold">Secure Payment</p>
-              <p className="text-sm text-zinc-500 mt-1">Card or WhatsApp Pay</p>
-            </div>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
-                <RotateCcw className="w-8 h-8 text-purple-600" />
-              </div>
-              <p className="font-semibold">Easy Returns</p>
-              <p className="text-sm text-zinc-500 mt-1">30-day guarantee</p>
-            </div>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-rose-100 rounded-2xl flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-rose-600" />
-              </div>
-              <p className="font-semibold">Premium Quality</p>
-              <p className="text-sm text-zinc-500 mt-1">Materials that last</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* FINAL CTA */}
-      <div className="py-20 text-center">
-        <p className="text-zinc-500 mb-4">Not sure which gift to choose?</p>
-        <button
-          onClick={() => router.push('/shop')}
-          className="bg-zinc-900 text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-black transition-all inline-flex items-center gap-3"
-        >
-          Browse All Gifts
-          <ArrowRight className="w-5 h-5" />
-        </button>
-      </div>
+      </section>
     </div>
   );
 }
