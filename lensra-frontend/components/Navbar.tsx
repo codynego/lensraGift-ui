@@ -134,8 +134,8 @@ export default function Navbar() {
 
           <nav className="hidden lg:block border-t border-zinc-800">
             <ul className="flex items-center justify-center gap-8 py-4">
-              <NavItem href="/marketplace" label="Marketplace" />
-              <NavItem href="/shop" label="Customize" />
+              <NavItem href="/shop" label="Shop" />
+              <NavItem href="/editor" label="Customize" />
               <NavItem href="/digital-gifts" label="Digital Gifts" isHighlight />
               <NavItem href="/business" label="Business" />
               <NavItem href="/about" label="About" />
