@@ -4,10 +4,9 @@ import { useState, useEffect, useRef, Suspense, useMemo, Dispatch, SetStateActio
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   X, Type, MessageSquare, Plus, Check, 
-  Loader2, ArrowLeft, Image as ImageIcon, RefreshCw, ShoppingBag,
-  Palette, Ruler, Grid3x3, Sparkles, ChevronDown, ChevronUp
+  Loader2, ArrowLeft, Image as ImageIcon, ShoppingBag,
+  Palette, Ruler, Grid3x3, Sparkles, ChevronDown, ChevronUp, Zap
 } from 'lucide-react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
@@ -45,10 +44,10 @@ interface UploadedImage {
 
 const EMOTIONS = [
   { id: 'loved', label: 'Loved', emoji: '❤️' },
-  { id: 'joyful', label: 'Joyful', emoji: '🎉' },
+  { id: 'joyful', label: 'Joyful', emoji: '😊' },
   { id: 'emotional', label: 'Emotional', emoji: '🥹' },
   { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
-  { id: 'remembered', label: 'Remembered', emoji: '🕊' },
+  { id: 'remembered', label: 'Remembered', emoji: '💭' },
 ];
 
 // --- UTILITIES ---
@@ -79,10 +78,10 @@ export default function ProductEditor() {
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-zinc-50">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center space-y-4">
-        <Loader2 className="w-12 h-12 animate-spin text-red-600 mx-auto" />
-        <p className="text-xs font-black uppercase tracking-widest text-zinc-400">Loading Editor</p>
+        <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-sm font-bold uppercase tracking-wider text-gray-600">Loading Editor</p>
       </div>
     </div>
   );
@@ -124,38 +123,37 @@ function EditorContent() {
   const [secretMessage, setSecretMessage] = useState<string>("");
 
   // --- LOAD MORE PRODUCTS ---
-const loadMoreProducts = async () => {
-  if (!nextPageUrl || loadingMore) return;
-  setLoadingMore(true);
-  try {
-    const res = await fetch(nextPageUrl);
-    const data = await res.json();
-    const rawList = Array.isArray(data) ? data : (data.results || []);
-    const newList = rawList.filter((p: any) => p.is_customizable === true);
-    setProducts(prev => [...prev, ...newList]);
+  const loadMoreProducts = async () => {
+    if (!nextPageUrl || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(nextPageUrl);
+      const data = await res.json();
+      const rawList = Array.isArray(data) ? data : (data.results || []);
+      const newList = rawList.filter((p: any) => p.is_customizable === true);
+      setProducts(prev => [...prev, ...newList]);
 
-    // Fix next URL host for the next page
-    let correctedNext = data.next;
-    if (correctedNext) {
-      try {
-        const url = new URL(correctedNext);
-        const baseUrlObj = new URL(BaseUrl);
-        url.protocol = baseUrlObj.protocol;
-        url.hostname = baseUrlObj.hostname;
-        url.port = baseUrlObj.port;
-        correctedNext = url.toString();
-      } catch (e) {
-        console.error("Failed to correct next URL:", e);
+      let correctedNext = data.next;
+      if (correctedNext) {
+        try {
+          const url = new URL(correctedNext);
+          const baseUrlObj = new URL(BaseUrl);
+          url.protocol = baseUrlObj.protocol;
+          url.hostname = baseUrlObj.hostname;
+          url.port = baseUrlObj.port;
+          correctedNext = url.toString();
+        } catch (e) {
+          console.error("Failed to correct next URL:", e);
+        }
       }
+      setNextPageUrl(correctedNext || null);
+      setHasMore(!!correctedNext);
+    } catch (err) {
+      console.error("Failed to load more products", err);
+    } finally {
+      setLoadingMore(false);
     }
-    setNextPageUrl(correctedNext || null);
-    setHasMore(!!correctedNext);
-  } catch (err) {
-    console.error("Failed to load more products", err);
-  } finally {
-    setLoadingMore(false);
-  }
-};
+  };
 
   // --- FETCH DATA ---
   useEffect(() => {
@@ -163,7 +161,6 @@ const loadMoreProducts = async () => {
       try {
         setLoading(true);
 
-        // Fetch template if provided
         if (templateId) {
           const designRes = await fetch(`${BaseUrl}api/designs/${templateId}/`);
           if (designRes.ok) {
@@ -176,7 +173,6 @@ const loadMoreProducts = async () => {
         }
 
         if (productId) {
-          // Fetch single product if productId is provided
           const productRes = await fetch(`${BaseUrl}api/products/id/${productId}/`);
           if (productRes.ok) {
             const found = await productRes.json();
@@ -191,19 +187,14 @@ const loadMoreProducts = async () => {
               });
               setSelectedAttributes(initialAttrs);
             }
-          } else {
-            console.error("Failed to fetch product details");
-            // Optionally handle error, e.g., redirect or show message
           }
         } else {
-          // Fetch paginated list if no productId
           const productsRes = await fetch(`${BaseUrl}api/products/`);
           const productsData = await productsRes.json();
           const rawList = Array.isArray(productsData) ? productsData : (productsData.results || []);
           const productList = rawList.filter((p: any) => p.is_customizable === true);
           setProducts(productList);
 
-          // Fix next URL host to match production API
           let correctedNext = productsData.next;
           if (correctedNext) {
             try {
@@ -257,7 +248,7 @@ const loadMoreProducts = async () => {
     return groups;
   }, [selectedProduct]);
 
-  // --- DISPLAY IMAGES (GALLERY OR MAIN IMAGE) ---
+  // --- DISPLAY IMAGES ---
   const displayImages = useMemo(() => {
     const gallery = selectedProduct?.gallery || [];
     const mainImage = selectedProduct?.image_url;
@@ -275,7 +266,6 @@ const loadMoreProducts = async () => {
     const lower = attrName.toLowerCase();
     if (lower.includes('color') || lower.includes('colour')) return <Palette className="w-4 h-4" />;
     if (lower.includes('size')) return <Ruler className="w-4 h-4" />;
-    if (lower.includes('type') || lower.includes('style')) return <Grid3x3 className="w-4 h-4" />;
     return <Grid3x3 className="w-4 h-4" />;
   };
 
@@ -313,7 +303,6 @@ const loadMoreProducts = async () => {
         effectiveOverallNote = `Based on template ID: ${templateDesign.id} - ${templateDesign.name}\n${overallNote}`;
       }
 
-      // Create design
       const designFormData = new FormData();
       designFormData.append('name', effectiveName);
       designFormData.append('custom_text', effectiveCustomText);
@@ -334,7 +323,6 @@ const loadMoreProducts = async () => {
       if (!designRes.ok) throw new Error("Design creation failed");
       designId = designData.id;
 
-      // Create placement using FormData to avoid explicit Content-Type
       const placementFormData = new FormData();
       placementFormData.append('design', designId.toString());
       placementFormData.append('product', selectedProduct.id.toString());
@@ -376,7 +364,6 @@ const loadMoreProducts = async () => {
     const sessionId = getGuestSessionId();
 
     try {
-      // Similarly, use FormData for order cart to avoid Content-Type issue if needed
       const cartFormData = new FormData();
       cartFormData.append('placement', placementId.toString());
       cartFormData.append('product', selectedProduct.id.toString());
@@ -448,7 +435,7 @@ const loadMoreProducts = async () => {
 
   // --- MAIN EDITOR SCREEN ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-zinc-50 to-white text-black font-sans pb-24">
+    <div className="min-h-screen bg-white text-black pb-24">
       {/* Navigation */}
       <Navigation 
         router={router}
@@ -459,8 +446,8 @@ const loadMoreProducts = async () => {
         onOrderNow={handleOrderNow}
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-12 gap-12 xl:gap-16">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
           {/* Product Preview */}
           <ProductPreview 
             templateDesign={templateDesign}
@@ -472,13 +459,13 @@ const loadMoreProducts = async () => {
           />
 
           {/* Customization Panel */}
-          <div className="lg:col-span-7 xl:col-span-8 space-y-10">
+          <div className="space-y-8">
             {/* Header */}
             <div className="space-y-3">
-              <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none bg-gradient-to-r from-black to-zinc-600 bg-clip-text text-transparent">
-                Customize
+              <h2 className="text-4xl sm:text-5xl font-black text-black">
+                Customize Your Gift
               </h2>
-              <p className="text-zinc-400 font-bold uppercase text-xs tracking-[0.2em]">
+              <p className="text-gray-600 font-medium">
                 {selectedProduct?.name}
               </p>
             </div>
@@ -567,42 +554,42 @@ function ProductSelectionScreen({ products, hasMore, loadingMore, onLoadMore, te
   onSelectProduct: (p: Product) => void 
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-zinc-50 to-white p-6 md:p-12">
-      <div className="max-w-7xl mx-auto space-y-16">
+    <div className="min-h-screen bg-white p-4 sm:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center space-y-6">
+        <div className="text-center mb-12">
           {templateDesign && (
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full shadow-xl shadow-red-600/30 mb-4">
-              <Sparkles className="w-5 h-5" />
-              <span className="text-xs font-black uppercase tracking-[0.3em]">Template Selected</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2 bg-red-600 text-white rounded-full mb-6">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Template Selected</span>
             </div>
           )}
           
-          <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter bg-gradient-to-r from-black to-zinc-600 bg-clip-text text-transparent">
-            {templateDesign ? 'Choose Product' : 'Select a Base'}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-black mb-4">
+            {templateDesign ? 'Choose Your Product' : 'Select Product to Customize'}
           </h1>
-          <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+          <p className="text-lg text-gray-600">
             {templateDesign 
-              ? `Apply "${templateDesign.name}" to your product` 
-              : 'Choose your product to customize'}
+              ? `Apply "${templateDesign.name}" to your chosen product` 
+              : 'Pick a product and make it uniquely yours'}
           </p>
         </div>
 
         {/* Template Preview */}
         {templateDesign && (
-          <div className="max-w-md mx-auto">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-zinc-950 border-2 border-zinc-800 shadow-2xl">
+          <div className="max-w-sm mx-auto mb-12">
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-100 border-2 border-gray-200 shadow-xl">
               {templateDesign.preview_image_url && (
                 <img
                   src={getImageUrl(templateDesign.preview_image_url)} 
                   alt={templateDesign.name}
                   loading="lazy"
-                  className="object-cover w-full h-full"
+                  className="w-full h-full object-cover"
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
-                <p className="text-white font-black uppercase text-lg italic">
+                <p className="text-white font-black text-xl">
                   {templateDesign.name}
                 </p>
               </div>
@@ -610,61 +597,61 @@ function ProductSelectionScreen({ products, hasMore, loadingMore, onLoadMore, te
           </div>
         )}
         
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((p: Product) => (
-            <button 
+        {/* Products Grid - 2 COLUMNS ON MOBILE */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {products.map((p: Product, index: number) => (
+            <motion.button 
               key={p.id} 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
               onClick={() => onSelectProduct(p)}
-              className="group relative p-6 bg-white border border-zinc-100 rounded-3xl hover:shadow-2xl hover:shadow-zinc-200/50 hover:-translate-y-1 transition-all duration-300 text-left overflow-hidden"
+              className="group relative bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-red-600 hover:shadow-2xl transition-all"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-50 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
-              
-              <div className="aspect-square relative rounded-2xl overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100 mb-4 ring-1 ring-zinc-200/50 group-hover:ring-red-200 transition-all">
+              <div className="aspect-square relative overflow-hidden bg-gray-50">
                 {p.image_url && (
                   <img
                     src={getImageUrl(p.image_url)} 
                     alt={p.name} 
                     loading="lazy"
-                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
                 )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all" />
               </div>
               
-              <div className="space-y-2">
-                <h3 className="font-black italic uppercase text-sm truncate text-zinc-900">
+              <div className="p-4">
+                <h3 className="font-bold text-sm text-black mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
                   {p.name}
                 </h3>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-black text-red-600">
+                  <p className="text-base font-black text-black">
                     ₦{parseFloat(p.base_price || "0").toLocaleString()}
                   </p>
-                  <div className="w-8 h-8 rounded-full bg-black/5 group-hover:bg-red-600 flex items-center justify-center transition-colors">
-                    <Plus className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors" />
+                  <div className="w-8 h-8 rounded-full bg-red-600 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                    <Plus className="w-4 h-4 text-white" />
                   </div>
                 </div>
               </div>
-            </button>
+            </motion.button>
           ))}
         </div>
 
-        {/* Pagination Load More */}
+        {/* Load More */}
         {hasMore && (
           <div className="text-center mt-12">
             <button 
               onClick={onLoadMore}
               disabled={loadingMore}
-              className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full text-sm font-black uppercase tracking-widest shadow-lg shadow-red-600/30 hover:shadow-xl hover:shadow-red-600/40 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+              className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold uppercase tracking-wider shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
               {loadingMore ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Loading...</span>
                 </>
               ) : (
-                <>
-                  <span>Load More Products</span>
-                </>
+                <span>Load More Products</span>
               )}
             </button>
           </div>
@@ -676,23 +663,23 @@ function ProductSelectionScreen({ products, hasMore, loadingMore, onLoadMore, te
 
 function Navigation({ router, templateDesign, placementId, isSaving, onFinishDesign, onOrderNow }: { router: ReturnType<typeof useRouter>; templateDesign: Design | null; placementId: number | null; isSaving: boolean; onFinishDesign: () => Promise<void>; onOrderNow: () => Promise<void> }) {
   return (
-    <nav className="border-b border-zinc-200/50 py-5 px-6 sticky top-0 bg-white/90 backdrop-blur-xl z-50 shadow-sm">
+    <nav className="sticky top-0 bg-white border-b-2 border-gray-200 py-4 px-4 sm:px-6 lg:px-8 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <button 
           onClick={() => router.back()} 
-          className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest hover:gap-4 transition-all group"
+          className="flex items-center gap-2 text-sm font-bold text-black hover:text-red-600 transition-colors group"
         >
-          <div className="w-8 h-8 rounded-full bg-zinc-100 group-hover:bg-black flex items-center justify-center transition-colors">
-            <ArrowLeft className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors" />
+          <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-red-600 flex items-center justify-center transition-all">
+            <ArrowLeft className="w-5 h-5 text-black group-hover:text-white transition-colors" />
           </div>
           <span className="hidden sm:inline">Exit Editor</span>
         </button>
         
         {templateDesign && (
-          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-full">
+          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 px-4 py-2 bg-red-50 border-2 border-red-600 rounded-full">
             <Sparkles className="w-4 h-4 text-red-600" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-red-600">
-              Using: {templateDesign.name}
+            <span className="text-xs font-bold uppercase text-red-600">
+              {templateDesign.name}
             </span>
           </div>
         )}
@@ -702,24 +689,24 @@ function Navigation({ router, templateDesign, placementId, isSaving, onFinishDes
             <button 
               onClick={onFinishDesign} 
               disabled={isSaving} 
-              className="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-600/30 hover:shadow-xl hover:shadow-red-600/40 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 sm:px-8 py-3 rounded-2xl text-sm font-bold uppercase tracking-wider shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Saving...</span>
+                  <span className="hidden sm:inline">Saving...</span>
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>Finish Design</span>
+                  <span className="hidden sm:inline">Finish Design</span>
                 </>
               )}
             </button>
           ) : (
             <button 
               onClick={onOrderNow} 
-              className="bg-black text-white px-10 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 hover:scale-105 transition-all flex items-center gap-2"
+              className="bg-black hover:bg-red-600 text-white px-6 sm:px-10 py-3 rounded-2xl text-sm font-bold uppercase tracking-wider shadow-xl transition-all flex items-center gap-2"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Order Now</span>
@@ -737,12 +724,12 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
   const price = selectedVariant?.price_override || selectedProduct?.base_price || "0";
 
   return (
-    <div className="lg:col-span-5 xl:col-span-4">
-      <div className="sticky top-32 space-y-6">
+    <div className="lg:sticky lg:top-24 self-start">
+      <div className="space-y-6">
         {templateDesign && (
-          <div className="p-6 bg-gradient-to-br from-red-50 to-white rounded-3xl border border-red-200 shadow-lg">
-            <div className="flex gap-4">
-              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-zinc-950 flex-shrink-0">
+          <div className="p-6 bg-red-50 rounded-2xl border-2 border-red-200">
+            <div className="flex gap-4 items-center">
+              <div className="w-16 h-16 rounded-xl overflow-hidden bg-black flex-shrink-0">
                 {templateDesign.preview_image_url && (
                   <img 
                     src={getImageUrl(templateDesign.preview_image_url)} 
@@ -752,10 +739,10 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
                 )}
               </div>
               <div className="flex-1">
-                <p className="text-[9px] font-black text-red-600 uppercase tracking-widest mb-1">
+                <p className="text-xs font-bold text-red-600 uppercase mb-1">
                   Template Design
                 </p>
-                <p className="text-sm font-black uppercase italic text-zinc-900">
+                <p className="text-base font-black text-black">
                   {templateDesign.name}
                 </p>
               </div>
@@ -764,27 +751,27 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
         )}
 
         {/* Image Gallery */}
-        <div className="relative aspect-[4/5] bg-gradient-to-br from-zinc-100 to-zinc-50 rounded-[40px] overflow-hidden border border-zinc-200/50 shadow-2xl shadow-zinc-200/50">
+        <div className="relative aspect-square bg-gray-100 rounded-3xl overflow-hidden border-2 border-gray-200">
           {displayImages.length > 0 && (
             <>
               <img
                 src={displayImages[currentGalleryIndex]} 
                 alt="Product preview"
                 loading="lazy"
-                className="object-cover w-full h-full" 
+                className="w-full h-full object-cover" 
               />
               
               {displayImages.length > 1 && (
                 <>
                   <button
                     onClick={() => setCurrentGalleryIndex((prev: number) => (prev - 1 + displayImages.length) % displayImages.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white hover:bg-black text-black hover:text-white shadow-xl flex items-center justify-center transition-all"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setCurrentGalleryIndex((prev: number) => (prev + 1) % displayImages.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white hover:bg-black text-black hover:text-white shadow-xl flex items-center justify-center transition-all"
                   >
                     <ArrowLeft className="w-5 h-5 rotate-180" />
                   </button>
@@ -794,10 +781,10 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
                       <button
                         key={idx}
                         onClick={() => setCurrentGalleryIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-all ${
+                        className={`h-2 rounded-full transition-all ${
                           idx === currentGalleryIndex 
-                            ? 'bg-white w-8' 
-                            : 'bg-white/50 hover:bg-white/75'
+                            ? 'bg-red-600 w-8' 
+                            : 'bg-white/60 w-2'
                         }`}
                       />
                     ))}
@@ -809,27 +796,27 @@ function ProductPreview({ templateDesign, displayImages, currentGalleryIndex, se
         </div>
 
         {/* Price Card */}
-        <div className="p-6 bg-white rounded-3xl border border-zinc-200/50 shadow-lg">
+        <div className="p-6 bg-white rounded-2xl border-2 border-gray-200">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">
-                Estimated Price
+              <p className="text-xs font-bold text-gray-500 uppercase mb-2">
+                Price
               </p>
               {hasVariants && !selectedVariant ? (
-                <p className="text-4xl font-black italic text-zinc-400">Select options</p>
+                <p className="text-2xl font-black text-gray-400">Select options</p>
               ) : isOutOfStock ? (
-                <p className="text-4xl font-black italic text-red-600">Out of stock</p>
+                <p className="text-2xl font-black text-red-600">Out of stock</p>
               ) : (
-                <p className="text-4xl font-black italic bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+                <p className="text-4xl font-black text-black">
                   ₦{parseFloat(price).toLocaleString()}
                 </p>
               )}
             </div>
             {selectedVariant && (
               <div className="text-right">
-                <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Variant</p>
-                <p className="text-xs font-bold text-zinc-600">
-                  {(selectedVariant.attributes || []).map((av: { value: string }) => av.value).join(' · ')}
+                <p className="text-xs font-bold text-gray-500 uppercase mb-1">Variant</p>
+                <p className="text-sm font-bold text-black">
+                  {(selectedVariant.attributes || []).map((av: { value: string }) => av.value).join(' • ')}
                 </p>
               </div>
             )}
@@ -844,10 +831,10 @@ function VariantSelector({ attrName, values, selectedAttributes, setSelectedAttr
   const isColor = attrName.toLowerCase().includes('color') || attrName.toLowerCase().includes('colour');
 
   return (
-    <div className="space-y-5">
-      <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
+    <div className="space-y-4 pb-6 border-b-2 border-gray-200">
+      <label className="flex items-center gap-2 text-sm font-black uppercase text-black">
         {getAttributeIcon(attrName)}
-        <span>Select {attrName}</span>
+        <span>{attrName}</span>
       </label>
       
       <div className="flex flex-wrap gap-3">
@@ -857,16 +844,14 @@ function VariantSelector({ attrName, values, selectedAttributes, setSelectedAttr
           if (isColor) {
             const color = val.toLowerCase();
             const bgColor = color === 'white' ? '#ffffff' : color === 'black' ? '#000000' : color;
-            const borderColor = color === 'white' ? 'border-zinc-300' : '';
 
             return (
               <button
                 key={val}
                 onClick={() => setSelectedAttributes((prev: { [key: string]: string }) => ({ ...prev, [attrName]: val }))}
-                className={`relative w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all shadow-md hover:shadow-xl hover:scale-105
-                  ${borderColor}
-                  ${isSelected ? 'border-black ring-4 ring-black/10 scale-105' : 'border-zinc-200'}
-                `}
+                className={`w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all shadow-md ${
+                  isSelected ? 'border-black ring-4 ring-red-600 ring-offset-2 scale-110' : 'border-gray-300 hover:border-black'
+                }`}
                 style={{ backgroundColor: bgColor }}
                 title={val}
               >
@@ -878,17 +863,13 @@ function VariantSelector({ attrName, values, selectedAttributes, setSelectedAttr
               <button
                 key={val}
                 onClick={() => setSelectedAttributes((prev: { [key: string]: string }) => ({ ...prev, [attrName]: val }))}
-                className={`group relative px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 overflow-hidden ${
+                className={`px-6 py-3 rounded-xl text-sm font-bold uppercase transition-all border-2 ${
                   isSelected 
-                    ? 'border-black bg-black text-white shadow-lg shadow-black/20 scale-105' 
-                    : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:shadow-md'
+                    ? 'border-red-600 bg-red-600 text-white shadow-lg scale-105' 
+                    : 'border-gray-200 bg-white text-black hover:border-black'
                 }`}
               >
-                {isSelected && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                )}
-                
-                <span className="relative z-10">{val}</span>
+                {val}
               </button>
             );
           }
@@ -900,28 +881,28 @@ function VariantSelector({ attrName, values, selectedAttributes, setSelectedAttr
 
 function GraphicsUpload({ images, setImages, fileInputRef, handleImageUpload, templateDesign }: { images: UploadedImage[]; setImages: Dispatch<SetStateAction<UploadedImage[]>>; fileInputRef: React.RefObject<HTMLInputElement>; handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void; templateDesign: Design | null }) {
   return (
-    <div className="space-y-5 pt-8 border-t-2 border-zinc-100">
-      <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
+    <div className="space-y-4 pb-6 border-b-2 border-gray-200">
+      <label className="flex items-center gap-2 text-sm font-black uppercase text-black">
         <ImageIcon className="w-5 h-5" />
-        <span>{templateDesign ? 'Additional Graphics & Logos' : 'Graphics & Logos'}</span>
+        <span>{templateDesign ? 'Additional Graphics' : 'Upload Graphics'}</span>
       </label>
       
-      <div className="grid gap-4">
+      <div className="space-y-4">
         {images.map((img: UploadedImage, idx: number) => (
-          <div key={idx} className="group flex gap-4 p-5 bg-white rounded-3xl border border-zinc-200/50 shadow-md hover:shadow-xl transition-all">
-            <div className="w-24 h-24 relative rounded-2xl overflow-hidden flex-shrink-0 ring-2 ring-zinc-100">
-              <img src={img.preview} className="object-cover w-full h-full" alt="upload" loading="lazy" />
+          <div key={idx} className="group flex gap-4 p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 hover:border-red-600 transition-all">
+            <div className="w-20 h-20 relative rounded-xl overflow-hidden flex-shrink-0">
+              <img src={img.preview} className="w-full h-full object-cover" alt="upload" loading="lazy" />
               <button
-               onClick={() => setImages((prev: UploadedImage[]) => prev.filter((_: UploadedImage, i: number) => i !== idx))} 
-                className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg"
+                onClick={() => setImages((prev: UploadedImage[]) => prev.filter((_: UploadedImage, i: number) => i !== idx))} 
+                className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
               >
                 <X className="w-3 h-3" />
               </button>
             </div>
             
             <textarea 
-              placeholder={templateDesign ? "Add placement instructions for this additional image (e.g., 'Replace logo on template')" : "Add placement instructions (e.g., 'Center front, 4 inches below collar')"} 
-              className="flex-1 bg-zinc-50 rounded-xl px-4 py-3 text-xs font-bold uppercase outline-none resize-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+              placeholder="Placement instructions (e.g., 'Center front, 4 inches below collar')" 
+              className="flex-1 bg-white rounded-xl px-4 py-3 text-sm outline-none resize-none border-2 border-gray-200 focus:border-red-600 transition-all"
               rows={3}
               value={img.note}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -935,16 +916,16 @@ function GraphicsUpload({ images, setImages, fileInputRef, handleImageUpload, te
         
         <button 
           onClick={() => fileInputRef.current?.click()} 
-          className="group py-12 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center gap-3 hover:bg-zinc-50 hover:border-red-300 transition-all"
+          className="group w-full py-12 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center gap-3 hover:bg-gray-50 hover:border-red-600 transition-all"
         >
-          <div className="w-14 h-14 rounded-full bg-zinc-100 group-hover:bg-red-100 flex items-center justify-center transition-colors">
-            <Plus className="w-6 h-6 text-zinc-400 group-hover:text-red-600 transition-colors" />
+          <div className="w-16 h-16 rounded-full bg-gray-100 group-hover:bg-red-600 flex items-center justify-center transition-all">
+            <Plus className="w-8 h-8 text-gray-400 group-hover:text-white transition-colors" />
           </div>
           <div className="text-center">
-            <p className="text-xs font-black uppercase tracking-widest text-zinc-600 group-hover:text-red-600 transition-colors">
-              Upload Graphics
+            <p className="text-sm font-bold text-black group-hover:text-red-600 transition-colors">
+              Upload Graphics & Logos
             </p>
-            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               PNG, JPG up to 10MB
             </p>
           </div>
@@ -957,47 +938,41 @@ function GraphicsUpload({ images, setImages, fileInputRef, handleImageUpload, te
 
 function TextCustomization({ customText, setCustomText, templateDesign }: { customText: string; setCustomText: Dispatch<SetStateAction<string>>; templateDesign: Design | null }) {
   return (
-    <div className="space-y-5 pt-8 border-t-2 border-zinc-100">
-      <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
+    <div className="space-y-4 pb-6 border-b-2 border-gray-200">
+      <label className="flex items-center gap-2 text-sm font-black uppercase text-black">
         <Type className="w-5 h-5" />
-        <span>Text Customization</span>
+        <span>Custom Text</span>
       </label>
       
-      <div className="relative group">
-        <textarea
-          value={customText}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomText(e.target.value)}
-          placeholder={templateDesign ? "Add additional text to this template..." : "Enter text to print on product..."}
-          className="w-full bg-white border-2 border-zinc-200 rounded-[32px] px-8 py-6 text-sm font-bold uppercase outline-none focus:border-black focus:ring-4 focus:ring-black/5 transition-all min-h-[120px] resize-none"
-        />
-        <div className="absolute right-6 bottom-6 flex items-center gap-2 text-zinc-300 group-focus-within:text-black transition-colors">
-          <span className="text-[9px] font-black uppercase tracking-widest">Type Lab</span>
-          <RefreshCw className="w-3 h-3" />
-        </div>
-      </div>
+      <textarea
+        value={customText}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomText(e.target.value)}
+        placeholder={templateDesign ? "Add text to customize this template..." : "Enter text to print on your product..."}
+        className="w-full bg-white border-2 border-gray-200 rounded-2xl px-6 py-4 text-base outline-none focus:border-red-600 transition-all min-h-[120px] resize-none"
+      />
     </div>
   );
 }
 
 function GlobalInstructions({ overallNote, setOverallNote }: { overallNote: string; setOverallNote: Dispatch<SetStateAction<string>> }) {
   return (
-    <div className="space-y-5 pt-8 border-t-2 border-zinc-100">
-      <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600">
+    <div className="space-y-4 pb-6 border-b-2 border-gray-200">
+      <label className="flex items-center gap-2 text-sm font-black uppercase text-black">
         <MessageSquare className="w-5 h-5" />
-        <span>Global Instructions</span>
+        <span>Special Instructions</span>
       </label>
       
-      <div className="bg-zinc-950 rounded-[32px] p-8 space-y-4">
-        <div className="flex items-center gap-3 text-red-500">
+      <div className="bg-black rounded-2xl p-6 space-y-4">
+        <div className="flex items-center gap-2 text-red-600">
           <Sparkles className="w-4 h-4" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Designer Briefing</span>
+          <span className="text-xs font-bold uppercase">Designer Notes</span>
         </div>
         
         <textarea
           value={overallNote}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setOverallNote(e.target.value)}
-          placeholder="Tell our production team exactly how you want this to look. (e.g., 'Oversized fit feel', 'distressed edges', 'vibrant colors')"
-          className="w-full bg-zinc-900 border-none text-white placeholder:text-zinc-600 text-xs font-bold uppercase outline-none resize-none min-h-[100px]"
+          placeholder="Tell our production team exactly how you want this (e.g., 'Oversized fit', 'Vibrant colors', 'Distressed edges')"
+          className="w-full bg-gray-900 border-none text-white placeholder:text-gray-500 text-sm outline-none resize-none min-h-[100px] rounded-xl p-4"
         />
       </div>
     </div>
@@ -1006,21 +981,25 @@ function GlobalInstructions({ overallNote, setOverallNote }: { overallNote: stri
 
 function SurpriseFeature({ showSurprise, setShowSurprise, selectedEmotion, setSelectedEmotion, secretMessage, setSecretMessage }: { showSurprise: boolean; setShowSurprise: Dispatch<SetStateAction<boolean>>; selectedEmotion: string | null; setSelectedEmotion: Dispatch<SetStateAction<string | null>>; secretMessage: string; setSecretMessage: Dispatch<SetStateAction<string>> }) {
   return (
-    <div className="pt-8 border-t-2 border-zinc-100">
+    <div className="pb-6 border-b-2 border-gray-200">
       <button 
         onClick={() => setShowSurprise(!showSurprise)}
-        className={`w-full flex items-center justify-between p-6 rounded-[32px] border-2 transition-all duration-500 ${showSurprise ? 'border-red-600 bg-red-50/20' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200'}`}
+        className={`w-full flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
+          showSurprise ? 'border-red-600 bg-red-50' : 'border-gray-200 bg-white hover:border-gray-400'
+        }`}
       >
-        <div className="flex items-center gap-4 text-left">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${showSurprise ? 'bg-red-600 text-white' : 'bg-white text-zinc-400 border border-zinc-100 shadow-sm'}`}>
-            <Sparkles className="w-5 h-5" />
+        <div className="flex items-center gap-4">
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+            showSurprise ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-400'
+          }`}>
+            <Sparkles className="w-6 h-6" />
           </div>
-          <div>
-            <h3 className="text-xs font-black uppercase italic tracking-tight text-zinc-900">Include Surprise Experience</h3>
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Digital Secret Message Reveal</p>
+          <div className="text-left">
+            <h3 className="text-base font-black text-black">Add Secret Message</h3>
+            <p className="text-sm text-gray-600">Digital surprise reveal</p>
           </div>
         </div>
-        {showSurprise ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        {showSurprise ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
       </button>
 
       <AnimatePresence>
@@ -1031,29 +1010,34 @@ function SurpriseFeature({ showSurprise, setShowSurprise, selectedEmotion, setSe
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 p-8 bg-zinc-50 rounded-[40px] border-2 border-zinc-100 space-y-8">
+            <div className="mt-6 p-6 bg-gray-50 rounded-2xl border-2 border-gray-200 space-y-6">
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">1. What do you want them to feel?</label>
-                <div className="flex flex-wrap gap-2">
+                <label className="text-sm font-bold text-black uppercase">1. Choose Emotion</label>
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
                   {EMOTIONS.map((e: { id: string; label: string; emoji: string }) => (
                     <button
                       key={e.id}
                       onClick={() => setSelectedEmotion(e.id)}
-                      className={`px-5 py-3 rounded-full border-2 text-[10px] font-black uppercase transition-all ${selectedEmotion === e.id ? 'border-red-600 bg-white text-red-600 shadow-lg' : 'border-zinc-200 bg-white text-zinc-400'}`}
+                      className={`px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all ${
+                        selectedEmotion === e.id 
+                          ? 'border-red-600 bg-red-600 text-white shadow-lg' 
+                          : 'border-gray-200 bg-white text-black hover:border-gray-400'
+                      }`}
                     >
-                      {e.emoji} {e.label}
+                      <span className="mr-2">{e.emoji}</span>
+                      {e.label}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">2. Type your secret message</label>
+                <label className="text-sm font-bold text-black uppercase">2. Your Message</label>
                 <textarea 
                   value={secretMessage}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSecretMessage(e.target.value)}
-                  placeholder="Type your secret message here... (50–300 characters)"
-                  className="w-full bg-white border-2 border-zinc-200 rounded-3xl p-6 text-sm outline-none focus:border-red-600 transition-all h-32 font-medium"
+                  placeholder="Write your secret message (50-300 characters)..."
+                  className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 text-base outline-none focus:border-red-600 transition-all h-32"
                 />
               </div>
             </div>
@@ -1066,58 +1050,73 @@ function SurpriseFeature({ showSurprise, setShowSurprise, selectedEmotion, setSe
 
 function FinalActions({ placementId, isSaving, templateDesign, images, customText, selectedVariant, handleFinishDesign, handleOrderNow, setPlacementId }: { placementId: number | null; isSaving: boolean; templateDesign: Design | null; images: UploadedImage[]; customText: string; selectedVariant: Variant | null; handleFinishDesign: () => Promise<void>; handleOrderNow: () => Promise<void>; setPlacementId: Dispatch<SetStateAction<number | null>> }) {
   return (
-    <div className="pt-12">
+    <div className="pt-6">
       {!placementId ? (
         <button 
           onClick={handleFinishDesign}
           disabled={isSaving || (!templateDesign && images.length === 0 && !customText) || !selectedVariant || selectedVariant.stock_quantity <= 0}
-          className="w-full py-6 bg-black text-white rounded-full text-xs font-black uppercase tracking-[0.4em] hover:bg-red-600 hover:scale-[1.02] transition-all disabled:opacity-30 disabled:grayscale disabled:hover:scale-100 shadow-2xl shadow-black/20"
+          className="w-full py-5 bg-black hover:bg-red-600 text-white rounded-2xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl flex items-center justify-center gap-2"
         >
-          {isSaving ? "Locking Design Assets..." : "Confirm Customizations"}
+          {isSaving ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Saving Design...
+            </>
+          ) : (
+            <>
+              <Check className="w-5 h-5" />
+              Save & Continue
+            </>
+          )}
         </button>
       ) : (
         <div className="flex flex-col sm:flex-row gap-4">
           <button 
             onClick={handleOrderNow}
-            className="flex-1 py-6 bg-red-600 text-white rounded-full text-xs font-black uppercase tracking-[0.4em] hover:bg-red-700 transition-all flex items-center justify-center gap-3"
+            className="flex-1 py-5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-bold uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2"
           >
             <ShoppingBag className="w-5 h-5" />
-            Move to Checkout
+            Proceed to Checkout
           </button>
           <button 
             onClick={() => setPlacementId(null)}
-            className="px-10 py-6 border-2 border-zinc-200 rounded-full text-xs font-black uppercase tracking-[0.4em] hover:bg-zinc-50 transition-all"
+            className="px-8 py-5 border-2 border-black hover:bg-black hover:text-white text-black rounded-2xl text-sm font-bold uppercase tracking-wider transition-all"
           >
-            Edit
+            Edit Design
           </button>
         </div>
       )}
-      
-      <p className="mt-6 text-center text-[9px] font-black uppercase tracking-widest text-zinc-400">
-        Lensra Lab Verified Production Standard • 2026 Edition
-      </p>
     </div>
   );
 }
 
 function MobileStickyFooter({ placementId, isSaving, selectedProduct, selectedVariant, handleFinishDesign, handleOrderNow }: { placementId: number | null; isSaving: boolean; selectedProduct: Product | null; selectedVariant: Variant | null; handleFinishDesign: () => Promise<void>; handleOrderNow: () => Promise<void> }) {
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-xl border-t border-zinc-200 z-[60]">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t-2 border-gray-200 z-50">
       {!placementId ? (
         <button 
           onClick={handleFinishDesign}
           disabled={isSaving || !selectedVariant || selectedVariant.stock_quantity <= 0}
-          className="w-full py-5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+          className="w-full py-4 bg-black hover:bg-red-600 text-white rounded-2xl text-sm font-bold uppercase flex items-center justify-center gap-2 shadow-xl transition-all disabled:opacity-50"
         >
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-          Save Progress
+          {isSaving ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Check className="w-5 h-5" />
+              Save Design
+            </>
+          )}
         </button>
       ) : (
         <button 
           onClick={handleOrderNow}
-          className="w-full py-5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+          className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-bold uppercase flex items-center justify-center gap-2 shadow-xl transition-all"
         >
-          <ShoppingBag className="w-4 h-4" />
+          <ShoppingBag className="w-5 h-5" />
           Checkout - ₦{parseFloat(selectedVariant?.price_override || selectedProduct?.base_price || "0").toLocaleString()}
         </button>
       )}
