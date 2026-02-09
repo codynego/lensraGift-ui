@@ -25,7 +25,9 @@ import {
   RotateCcw,
   Zap,
   Clock,
+  Package,
   Award,
+  TrendingUp,
   MessageCircle,
   Info,
 } from 'lucide-react';
@@ -72,11 +74,11 @@ interface ProductDetail {
 }
 
 const EMOTIONS = [
-  { id: 'loved', label: 'Loved', emoji: '❤️' },
-  { id: 'joyful', label: 'Joyful', emoji: '😊' },
-  { id: 'emotional', label: 'Emotional', emoji: '🥹' },
-  { id: 'appreciated', label: 'Appreciated', emoji: '🙏' },
-  { id: 'remembered', label: 'Remembered', emoji: '💭' },
+  { id: 'loved', label: 'Loved', emoji: '❤️', color: 'red' },
+  { id: 'joyful', label: 'Joyful', emoji: '😊', color: 'amber' },
+  { id: 'emotional', label: 'Emotional', emoji: '🥹', color: 'blue' },
+  { id: 'appreciated', label: 'Appreciated', emoji: '🙏', color: 'green' },
+  { id: 'remembered', label: 'Remembered', emoji: '💭', color: 'purple' },
 ];
 
 const TRUST_BADGES = [
@@ -252,16 +254,11 @@ export default function ClientProductDetail({
   const isColorAttribute = (type: string) => type.toLowerCase().includes('color');
 
   const discount = calculateDiscount();
-  const canPurchase = !isAdding && 
-                      (product.variants.length === 0 || activeVariant) && 
-                      quantity <= currentStock && 
-                      currentStock > 0 && 
-                      isSurpriseValid;
 
   return (
     <div className="min-h-screen bg-white">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-white border-b-2 border-gray-200">
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <button
@@ -271,7 +268,6 @@ export default function ClientProductDetail({
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               <span>Back</span>
             </button>
-            
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsFavorited(!isFavorited)}
@@ -369,33 +365,6 @@ export default function ClientProductDetail({
                   ))}
                 </div>
               )}
-
-              {/* Quick Buy Section - Desktop */}
-              <div className="hidden lg:block bg-red-50 border-2 border-red-200 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-                    <Zap className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-black">Quick Purchase</h3>
-                    <p className="text-sm text-gray-600">Skip the cart, buy now</p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleBuyNow}
-                  disabled={!canPurchase}
-                  className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-base uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isAdding ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Zap className="w-5 h-5" />
-                      Buy Now - ₦{(parseFloat(currentPrice) * quantity).toLocaleString()}
-                    </>
-                  )}
-                </button>
-              </div>
 
               {/* Trust Badges */}
               <div className="grid grid-cols-2 gap-4 pt-8 border-t-2 border-gray-200">
@@ -674,7 +643,7 @@ export default function ClientProductDetail({
                 {/* Buy Now - Primary CTA */}
                 <button
                   onClick={handleBuyNow}
-                  disabled={!canPurchase}
+                  disabled={isAdding || (product.variants.length > 0 && !activeVariant) || quantity > currentStock || currentStock === 0 || !isSurpriseValid}
                   className="w-full py-6 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black text-lg uppercase tracking-wider flex items-center justify-center gap-3 shadow-2xl shadow-red-600/30 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isAdding ? (
@@ -690,7 +659,7 @@ export default function ClientProductDetail({
                 {/* Add to Cart - Secondary */}
                 <button
                   onClick={handleAddToCart}
-                  disabled={!canPurchase}
+                  disabled={isAdding || (product.variants.length > 0 && !activeVariant) || quantity > currentStock || currentStock === 0 || !isSurpriseValid}
                   className="w-full py-6 border-2 border-black hover:bg-black hover:text-white text-black rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isAdding ? (
