@@ -86,6 +86,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <meta name="p:domain_verify" content="f8b7975759669136bd46bcbf56ffd0e5"/>
+
+      </head>
       <body className={`${inter.className} antialiased flex flex-col min-h-screen bg-[#050505] text-white`}>
         <AuthProvider>
           <Navbar />
