@@ -1,607 +1,992 @@
-// app/ClientHomepage.tsx
-// Redesigned with modern UI, red/black/white brand colors, improved UX
-
 "use client";
 
-import { useState, useEffect } from 'react';
-import { 
-  ShoppingBag, Zap, Award, ArrowRight, 
-  ShieldCheck, Sparkles, Clock, Heart, Gift, Star, Instagram, ChevronRight, TrendingUp, Palette, X, Cake, PartyPopper, GraduationCap, Package, Truck, RotateCcw, CreditCard
-} from 'lucide-react';
-import LensraSubscribe from '@/components/LensraSubscribe';
-import { motion } from 'framer-motion';
+// app/ClientHomepage.tsx
+// Lensra — rebranded homepage client component
+// Brand: Premium & minimal — ink black, warm cream, brushed gold
+// Products: Custom Mugs + Canvas Prints only
+// Tagline: "Gifts That Remember."
+// Fonts: Cormorant Garamond (display) · DM Sans (body)
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+import { useState, useEffect, useRef } from "react";
+import { motion, useInView, type Variants } from "framer-motion";
+import Link from "next/link";
+import Image from "next/image";
+import LensraSubscribe from "@/components/LensraSubscribe";
 
-const getImageUrl = (imagePath: string | null | undefined): string | null => {
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const BaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getImageUrl(imagePath: string | null | undefined): string | null {
   if (!imagePath) return null;
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
     return imagePath;
-  }
-  return `${BaseUrl.replace(/\/$/, '')}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}`;
+  return `${BaseUrl.replace(/\/$/, "")}${
+    imagePath.startsWith("/") ? imagePath : "/" + imagePath
+  }`;
+}
+
+function formatPrice(price: string | number) {
+  const num = typeof price === "string" ? parseFloat(price) : price;
+  return `₦${num.toLocaleString("en-NG", { minimumFractionDigits: 0 })}`;
+}
+
+// ── Motion variants ───────────────────────────────────────────────────────────
+
+// framer-motion requires ease bezier as a const tuple, not a plain number[]
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  // custom prop (index) controls per-child delay via variants + staggerChildren
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
 };
 
-export default function ClientHomepage({ initialProducts }: { initialProducts: any[] }) {
-  const [products] = useState(initialProducts);
-  const [popularProducts, setPopularProducts] = useState<any[]>([]);
-  const [staffPicks, setStaffPicks] = useState<any[]>([]);
-  const [selectedIntent, setSelectedIntent] = useState<string | null>(null);
-  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+const stagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+};
 
-  useEffect(() => {
-    // Fetch popular products
-    fetch(`${BaseUrl}api/products/featured/`)
-      .then(res => res.json())
-      .then(data => setPopularProducts(data.results || []))
-      .catch(err => console.error('Error fetching popular products:', err));
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-    // Fetch staff picks
-    const tag = selectedIntent || '';
-    const endpoint = tag 
-      ? `${BaseUrl}api/products/featured/?tag=${tag}`
-      : `${BaseUrl}api/products/?is_featured=true&limit=8`;
-    
-    fetch(endpoint)
-      .then(res => res.json())
-      .then(data => setStaffPicks(data.results || []))
-      .catch(err => console.error('Error fetching staff picks:', err));
-  }, [selectedIntent]);
+function GrainOverlay() {
+  return (
+    <svg
+      aria-hidden
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 9999,
+        opacity: 0.028,
+        mixBlendMode: "multiply",
+      }}
+    >
+      <filter id="ln-grain">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.65"
+          numOctaves="3"
+          stitchTiles="stitch"
+        />
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
+      <rect width="100%" height="100%" filter="url(#ln-grain)" />
+    </svg>
+  );
+}
 
-  useEffect(() => {
-    const hasSeenPopup = localStorage.getItem('lensra_subscribe_popup_seen');
-    
-    if (!hasSeenPopup) {
-      const timer = setTimeout(() => {
-        setShowSubscribeModal(true);
-        localStorage.setItem('lensra_subscribe_popup_seen', 'true');
-      }, 15000);
-
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleIntentSelection = (intent: string) => {
-    setSelectedIntent(intent);
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('gift_intent', intent);
-    }
-  };
-
-  const closeModal = () => {
-    setShowSubscribeModal(false);
-  };
-
-  const occasions = [
-    { 
-      name: "Birthday", 
-      icon: Cake, 
-      gradient: "from-red-500 to-pink-500", 
-      slug: "birthday",
-      image: "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=400&q=80"
-    },
-    { 
-      name: "Anniversary", 
-      icon: Heart, 
-      gradient: "from-red-600 to-red-500", 
-      slug: "anniversary",
-      image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80"
-    },
-    { 
-      name: "Valentine", 
-      icon: Heart, 
-      gradient: "from-pink-500 to-red-500", 
-      slug: "valentine",
-      image: "https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?w=400&q=80"
-    },
-    { 
-      name: "Graduation", 
-      icon: GraduationCap, 
-      gradient: "from-black to-gray-700", 
-      slug: "graduation",
-      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=80"
-    },
-    { 
-      name: "Wedding", 
-      icon: PartyPopper, 
-      gradient: "from-red-500 to-pink-500", 
-      slug: "wedding",
-      image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=80"
-    },
-    { 
-      name: "Just Because", 
-      icon: Gift, 
-      gradient: "from-black to-gray-800", 
-      slug: "just-because",
-      image: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=400&q=80"
-    }
-  ];
-
-  const budgetRanges = [
-    { label: "Under ₦5k", range: "0-5000", icon: "💰", max: 5000 },
-    { label: "₦5k – ₦10k", range: "5000-10000", icon: "💵", min: 5000, max: 10000 },
-    { label: "₦10k – ₦20k", range: "10000-20000", icon: "💸", min: 10000, max: 20000 },
-    { label: "Premium", range: "20000+", icon: "👑", min: 20000 }
-  ];
-
-  const intentOptions = [
-    { label: "For Him", emoji: "👨", value: "for-him" },
-    { label: "For Her", emoji: "👩", value: "for-her" },
-    { label: "Friends", emoji: "🤝", value: "for-friends" },
-    { label: "Family", emoji: "👨‍👩‍👧", value: "for-family" },
-    { label: "Kids", emoji: "👶", value: "for-kids" },
-    { label: "Colleagues", emoji: "💼", value: "for-colleagues" },
-    { label: "Couples", emoji: "💑", value: "for-couples" },
-    { label: "Parents", emoji: "👪", value: "for-parents" }
-  ];
-
-  const trustFeatures = [
-    {
-      icon: Truck,
-      title: "Express Delivery",
-      description: "3-5 days nationwide shipping",
-      color: "red"
-    },
-    {
-      icon: ShieldCheck,
-      title: "Secure Payment",
-      description: "100% protected transactions",
-      color: "black"
-    },
-    {
-      icon: RotateCcw,
-      title: "Easy Returns",
-      description: "30-day hassle-free returns",
-      color: "red"
-    },
-    {
-      icon: Award,
-      title: "Premium Quality",
-      description: "Verified craftsmanship",
-      color: "black"
-    }
-  ];
+function ProductCard({ product }: { product: any }) {
+  const imageUrl = getImageUrl(product.image_url);
+  const isMug = product.category === "mug";
 
   return (
-    <div className="min-h-screen bg-white">
-      
+    <motion.div variants={fadeUp}>
+      <Link href={`/shop/${product.slug}`} className="ln-product-card">
+        <div className="ln-product-img-wrap">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 50vw, 33vw"
+              style={{ objectFit: "cover" }}
+              className="ln-product-img"
+            />
+          ) : (
+            <div className="ln-product-placeholder">
+              {isMug ? "☕" : "🖼"}
+            </div>
+          )}
+          <div className="ln-product-hover-overlay">
+            <span className="ln-product-hover-cta">Customise →</span>
+          </div>
+          {product.is_trending && (
+            <div className="ln-product-badge">Trending</div>
+          )}
+        </div>
+        <div className="ln-product-meta">
+          <div className="ln-product-category">
+            {isMug ? "Custom Mug" : "Canvas Print"}
+          </div>
+          <h3 className="ln-product-name">{product.name}</h3>
+          <div className="ln-product-price">
+            From {formatPrice(product.base_price || 0)}
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <div className="ln-section-label">{children}</div>;
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function ClientHomepage({
+  initialProducts,
+}: {
+  initialProducts: any[];
+}) {
+  const [products] = useState(initialProducts);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [activeFilter, setActiveFilter] = useState<"all" | "mug" | "canvas">("all");
+  const [showModal, setShowModal] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // In-view refs for scroll-triggered animation
+  const productsRef = useRef(null);
+  const howRef = useRef(null);
+  const whyRef = useRef(null);
+  const productsInView = useInView(productsRef, { once: true, margin: "-80px" });
+  const howInView = useInView(howRef, { once: true, margin: "-80px" });
+  const whyInView = useInView(whyRef, { once: true, margin: "-80px" });
+
+  // Scroll-aware nav
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 56);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Fetch featured products (mug + canvas only)
+  useEffect(() => {
+    fetch(`${BaseUrl}api/products/featured/`)
+      .then((r) => r.json())
+      .then((d) => {
+        const results = d.results || d || [];
+        setFeaturedProducts(
+          results.filter((p: any) => ["mug", "canvas"].includes(p.category))
+        );
+      })
+      .catch(console.error);
+  }, []);
+
+  // Subscribe modal — once after 20s
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("lensra_subscribe_seen")) return;
+    const t = setTimeout(() => {
+      setShowModal(true);
+      localStorage.setItem("lensra_subscribe_seen", "true");
+    }, 20000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Derived state
+  const allProducts = products.filter((p) =>
+    ["mug", "canvas"].includes(p.category)
+  );
+  const filtered =
+    activeFilter === "all"
+      ? allProducts
+      : allProducts.filter((p) => p.category === activeFilter);
+  const displayProducts = filtered.length > 0 ? filtered : featuredProducts;
+  const mugCount = allProducts.filter((p) => p.category === "mug").length;
+  const canvasCount = allProducts.filter((p) => p.category === "canvas").length;
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+
+        :root {
+          --ln-ink:       #0e0e0d;
+          --ln-warm:      #f7f2ea;
+          --ln-white:     #ffffff;
+          --ln-gold:      #b8965a;
+          --ln-gold-lt:   #d4b07a;
+          --ln-gold-pale: #f0e6d0;
+          --ln-muted:     #7a7168;
+          --ln-rule:      #e2d9cc;
+          --ln-display:   'Cormorant Garamond', Georgia, serif;
+          --ln-body:      'DM Sans', system-ui, sans-serif;
+          --ln-ease:      cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        html { scroll-behavior: smooth; }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+          background: var(--ln-warm);
+          color: var(--ln-ink);
+          font-family: var(--ln-body);
+          font-weight: 300;
+          -webkit-font-smoothing: antialiased;
+        }
+
+        /* NAV */
+        .ln-nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 5vw; height: 64px;
+          transition: background 0.4s var(--ln-ease), border-color 0.4s;
+          border-bottom: 1px solid transparent;
+        }
+        .ln-nav.scrolled {
+          background: rgba(247,242,234,0.94);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border-color: var(--ln-rule);
+        }
+        .ln-nav-logo {
+          font-family: var(--ln-display);
+          font-size: 26px; font-weight: 400; letter-spacing: -0.02em;
+          color: #f5f0e8; text-decoration: none; line-height: 1;
+          transition: color 0.3s;
+        }
+        .ln-nav-logo.dark { color: var(--ln-ink); }
+        .ln-nav-logo em { font-style: italic; color: var(--ln-gold); }
+        .ln-nav-links {
+          display: flex; align-items: center; gap: 36px; list-style: none;
+        }
+        .ln-nav-links a {
+          font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+          color: rgba(245,240,232,0.5); text-decoration: none; transition: color 0.2s;
+        }
+        .ln-nav-links.dark a { color: var(--ln-muted); }
+        .ln-nav-links a:hover { color: #f5f0e8; }
+        .ln-nav-links.dark a:hover { color: var(--ln-ink); }
+        .ln-nav-cta {
+          background: rgba(184,150,90,0.85) !important;
+          color: var(--ln-white) !important;
+          padding: 10px 22px !important;
+        }
+        .ln-nav-links.dark .ln-nav-cta {
+          background: var(--ln-ink) !important;
+          color: var(--ln-warm) !important;
+        }
+        .ln-nav-cta:hover { background: var(--ln-gold) !important; }
+
+        /* HERO */
+        .ln-hero {
+          min-height: 100svh;
+          display: grid; grid-template-columns: 55% 45%;
+          background: var(--ln-ink);
+          position: relative; overflow: hidden;
+        }
+        .ln-hero-left {
+          display: flex; flex-direction: column; justify-content: flex-end;
+          padding: 128px 5vw 88px; position: relative; z-index: 2;
+        }
+        .ln-hero-left::before {
+          content: ''; position: absolute; inset: 0; pointer-events: none;
+          background: radial-gradient(ellipse 80% 70% at 0% 100%, #141007, transparent 65%);
+        }
+        .ln-hero-eyebrow {
+          font-size: 10px; letter-spacing: 0.45em; text-transform: uppercase;
+          color: var(--ln-gold); margin-bottom: 30px;
+          display: flex; align-items: center; gap: 14px; position: relative;
+        }
+        .ln-hero-eyebrow::before {
+          content: ''; width: 32px; height: 1px;
+          background: var(--ln-gold); display: block; flex-shrink: 0;
+        }
+        .ln-hero-h1 {
+          font-family: var(--ln-display);
+          font-size: clamp(56px, 6.5vw, 100px);
+          font-weight: 300; line-height: 0.9;
+          letter-spacing: -0.025em; color: #f5f0e8; position: relative;
+        }
+        .ln-hero-h1 em {
+          font-style: italic; color: var(--ln-gold-lt); display: block; margin-top: 4px;
+        }
+        .ln-hero-body {
+          margin-top: 32px; font-size: 15px;
+          color: #5a5248; max-width: 400px; line-height: 1.85; position: relative;
+        }
+        .ln-hero-actions {
+          margin-top: 48px; display: flex; gap: 14px; flex-wrap: wrap; position: relative;
+        }
+        .ln-btn-gold {
+          display: inline-flex; align-items: center; gap: 10px;
+          background: var(--ln-gold); color: var(--ln-white);
+          padding: 16px 34px; font-size: 11px; letter-spacing: 0.25em;
+          text-transform: uppercase; text-decoration: none; font-weight: 400;
+          transition: background 0.25s var(--ln-ease), transform 0.25s; white-space: nowrap;
+        }
+        .ln-btn-gold:hover { background: var(--ln-gold-lt); transform: translateY(-2px); }
+        .ln-btn-ghost-light {
+          display: inline-flex; align-items: center; gap: 10px;
+          border: 1px solid #2e2820; color: #4a4438;
+          padding: 16px 34px; font-size: 11px; letter-spacing: 0.25em;
+          text-transform: uppercase; text-decoration: none; font-weight: 400;
+          transition: border-color 0.25s, color 0.25s; white-space: nowrap;
+        }
+        .ln-btn-ghost-light:hover { border-color: var(--ln-gold); color: var(--ln-gold-lt); }
+
+        /* Hero right */
+        .ln-hero-right {
+          position: relative; overflow: hidden; background: #100e08;
+        }
+        .ln-hero-right::before {
+          content: ''; position: absolute; inset: 0;
+          background: radial-gradient(ellipse 60% 80% at 80% 30%, #1e1a0f, transparent);
+        }
+        .ln-hero-ghost {
+          position: absolute; bottom: 60px; right: -12px;
+          font-family: var(--ln-display);
+          font-size: clamp(80px, 12vw, 160px);
+          font-weight: 300; font-style: italic;
+          color: rgba(184,150,90,0.06); white-space: nowrap;
+          line-height: 1; pointer-events: none; user-select: none;
+          letter-spacing: -0.04em;
+        }
+        .ln-float-wrap {
+          position: absolute; inset: 0;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          gap: 20px; padding: 100px 32px 80px;
+        }
+        .ln-float-card {
+          background: rgba(255,255,255,0.035);
+          border: 1px solid rgba(184,150,90,0.15);
+          padding: 28px 32px;
+          display: flex; align-items: center; gap: 20px;
+          width: 100%; max-width: 320px;
+          position: relative; overflow: hidden; backdrop-filter: blur(4px);
+        }
+        .ln-float-card::before {
+          content: ''; position: absolute;
+          left: 0; top: 0; bottom: 0; width: 2px; background: var(--ln-gold);
+        }
+        .ln-float-icon { font-size: 40px; line-height: 1; flex-shrink: 0; }
+        .ln-float-label {
+          font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase;
+          color: var(--ln-gold); margin-bottom: 5px;
+        }
+        .ln-float-name {
+          font-family: var(--ln-display); font-size: 20px;
+          font-weight: 300; color: #e8e0d0; line-height: 1.1;
+        }
+        .ln-float-sub { font-size: 12px; color: #3a3428; margin-top: 4px; }
+        .ln-hero-stats {
+          display: flex; gap: 2px;
+          position: absolute; bottom: 0; left: 0; right: 0;
+        }
+        .ln-hero-stat {
+          flex: 1; background: rgba(255,255,255,0.02);
+          border-top: 1px solid #1a1812;
+          padding: 16px 18px; text-align: center;
+        }
+        .ln-hero-stat-num {
+          font-family: var(--ln-display); font-size: 26px;
+          font-weight: 300; color: var(--ln-gold-lt); line-height: 1;
+        }
+        .ln-hero-stat-label {
+          font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+          color: #2e2a22; margin-top: 4px;
+        }
+
+        /* SECTION COMMONS */
+        .ln-section { padding: 100px 5vw; }
+        .ln-section-inner { max-width: 1360px; margin: 0 auto; }
+        .ln-section-label {
+          font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+          color: var(--ln-gold); margin-bottom: 18px;
+          display: flex; align-items: center; gap: 10px;
+        }
+        .ln-section-label::after {
+          content: ''; width: 40px; height: 1px; background: var(--ln-rule); display: block;
+        }
+        .ln-section-h2 {
+          font-family: var(--ln-display);
+          font-size: clamp(32px, 3.5vw, 52px);
+          font-weight: 300; line-height: 1.05; letter-spacing: -0.01em;
+        }
+        .ln-section-header {
+          display: flex; align-items: flex-end; justify-content: space-between;
+          margin-bottom: 52px; flex-wrap: wrap; gap: 24px;
+        }
+
+        /* PRODUCTS */
+        .ln-products-section { background: var(--ln-warm); padding: 100px 5vw; }
+        .ln-filter-tabs { display: flex; gap: 2px; }
+        .ln-filter-tab {
+          padding: 11px 24px; font-size: 11px; letter-spacing: 0.2em;
+          text-transform: uppercase; background: var(--ln-white);
+          border: none; cursor: pointer; color: var(--ln-muted);
+          transition: background 0.2s, color 0.2s;
+          font-family: var(--ln-body); font-weight: 300;
+        }
+        .ln-filter-tab:hover:not(.active) { background: var(--ln-gold-pale); color: var(--ln-ink); }
+        .ln-filter-tab.active { background: var(--ln-ink); color: var(--ln-warm); }
+        .ln-products-grid {
+          display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2px;
+        }
+        .ln-products-empty {
+          grid-column: 1/-1; padding: 80px 0; text-align: center;
+          font-family: var(--ln-display); font-size: 28px;
+          font-style: italic; color: var(--ln-muted);
+        }
+        .ln-product-card {
+          display: block; text-decoration: none; color: inherit; background: var(--ln-white);
+        }
+        .ln-product-img-wrap {
+          position: relative; aspect-ratio: 4/3; overflow: hidden; background: var(--ln-gold-pale);
+        }
+        .ln-product-img { transition: transform 0.65s var(--ln-ease); }
+        .ln-product-card:hover .ln-product-img { transform: scale(1.05); }
+        .ln-product-placeholder {
+          width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center; font-size: 72px;
+        }
+        .ln-product-hover-overlay {
+          position: absolute; inset: 0; background: rgba(14,14,13,0);
+          display: flex; align-items: flex-end; padding: 20px; transition: background 0.35s;
+        }
+        .ln-product-card:hover .ln-product-hover-overlay { background: rgba(14,14,13,0.38); }
+        .ln-product-hover-cta {
+          font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+          color: var(--ln-warm); opacity: 0; transform: translateY(10px);
+          transition: opacity 0.3s, transform 0.3s;
+        }
+        .ln-product-card:hover .ln-product-hover-cta { opacity: 1; transform: translateY(0); }
+        .ln-product-badge {
+          position: absolute; top: 16px; left: 16px;
+          background: var(--ln-gold); color: var(--ln-white);
+          font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+          padding: 5px 12px; font-family: var(--ln-body);
+        }
+        .ln-product-meta { padding: 20px 22px 26px; }
+        .ln-product-category {
+          font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+          color: var(--ln-gold); margin-bottom: 6px;
+        }
+        .ln-product-name {
+          font-family: var(--ln-display); font-size: 22px;
+          font-weight: 400; line-height: 1.15; margin-bottom: 8px;
+        }
+        .ln-product-price { font-size: 13px; color: var(--ln-muted); letter-spacing: 0.05em; }
+
+        /* OCCASIONS */
+        .ln-occasions-section {
+          background: var(--ln-white); padding: 80px 5vw;
+          border-top: 1px solid var(--ln-rule);
+        }
+        .ln-occasions-grid {
+          display: grid; grid-template-columns: repeat(6, 1fr);
+          gap: 2px; margin-top: 40px;
+        }
+        .ln-occasion-card {
+          display: block; text-decoration: none;
+          background: var(--ln-warm); padding: 28px 16px;
+          text-align: center; transition: background 0.25s;
+        }
+        .ln-occasion-card:hover { background: var(--ln-gold-pale); }
+        .ln-occasion-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+        .ln-occasion-name {
+          font-family: var(--ln-display); font-size: 16px;
+          font-weight: 400; color: var(--ln-ink);
+        }
+        .ln-occasion-arrow {
+          font-size: 11px; color: var(--ln-gold); margin-top: 6px;
+          opacity: 0; transition: opacity 0.2s;
+        }
+        .ln-occasion-card:hover .ln-occasion-arrow { opacity: 1; }
+
+        /* HOW IT WORKS */
+        .ln-how-section {
+          background: var(--ln-ink); padding: 100px 5vw;
+          position: relative; overflow: hidden;
+        }
+        .ln-how-section::before {
+          content: ''; position: absolute; inset: 0; pointer-events: none;
+          background: radial-gradient(ellipse 70% 60% at 100% 100%, #18130a, transparent 60%);
+        }
+        .ln-how-section .ln-section-label { color: var(--ln-gold); }
+        .ln-how-section .ln-section-label::after { background: #222018; }
+        .ln-how-section .ln-section-h2 { color: #f0ebe0; }
+        .ln-how-steps {
+          display: grid; grid-template-columns: repeat(4, 1fr);
+          gap: 2px; margin-top: 60px;
+        }
+        .ln-how-step {
+          background: rgba(255,255,255,0.025); padding: 40px 28px;
+          border-top: 1px solid #1a1812;
+        }
+        .ln-how-step-num {
+          font-family: var(--ln-display); font-size: 72px; font-weight: 300;
+          color: rgba(184,150,90,0.12); line-height: 1; margin-bottom: 24px;
+        }
+        .ln-how-step-icon { font-size: 28px; display: block; margin-bottom: 14px; }
+        .ln-how-step h4 {
+          font-size: 15px; font-weight: 500; color: #d8d0c4;
+          margin-bottom: 10px; font-family: var(--ln-body);
+        }
+        .ln-how-step p { font-size: 13.5px; color: #4a4438; line-height: 1.78; margin: 0; }
+
+        /* WHY LENSRA */
+        .ln-why-section { padding: 100px 5vw; background: var(--ln-warm); }
+        .ln-why-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 2px; margin-top: 56px;
+        }
+        .ln-why-card {
+          background: var(--ln-white); padding: 44px 36px;
+          border-top: 2px solid transparent; transition: border-color 0.3s;
+        }
+        .ln-why-card:hover { border-color: var(--ln-gold); }
+        .ln-why-icon { font-size: 32px; margin-bottom: 20px; display: block; }
+        .ln-why-card h3 {
+          font-family: var(--ln-display); font-size: 26px;
+          font-weight: 400; margin-bottom: 12px;
+        }
+        .ln-why-card p { font-size: 14px; color: var(--ln-muted); line-height: 1.82; margin: 0; }
+
+        /* CTA STRIP */
+        .ln-cta-strip {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 48px; flex-wrap: wrap;
+          padding: 100px 5vw; border-top: 1px solid var(--ln-rule);
+          background: var(--ln-warm);
+        }
+        .ln-cta-strip-left { max-width: 580px; }
+        .ln-cta-h2 {
+          font-family: var(--ln-display);
+          font-size: clamp(32px, 4vw, 54px);
+          font-weight: 300; line-height: 1.05;
+          letter-spacing: -0.01em; margin-bottom: 16px;
+        }
+        .ln-cta-h2 em { font-style: italic; color: var(--ln-gold); }
+        .ln-cta-p { font-size: 15px; color: var(--ln-muted); line-height: 1.82; margin: 0; }
+        .ln-cta-actions { display: flex; gap: 12px; flex-direction: column; min-width: 220px; }
+        .ln-btn-ink {
+          display: block; text-align: center;
+          background: var(--ln-ink); color: var(--ln-warm);
+          padding: 17px 36px; font-size: 11px; letter-spacing: 0.25em;
+          text-transform: uppercase; text-decoration: none; font-weight: 400;
+          transition: background 0.25s;
+        }
+        .ln-btn-ink:hover { background: var(--ln-gold); }
+        .ln-btn-outline {
+          display: block; text-align: center;
+          border: 1px solid var(--ln-rule); color: var(--ln-muted);
+          padding: 17px 36px; font-size: 11px; letter-spacing: 0.25em;
+          text-transform: uppercase; text-decoration: none; font-weight: 400;
+          transition: border-color 0.25s, color 0.25s;
+        }
+        .ln-btn-outline:hover { border-color: var(--ln-gold); color: var(--ln-gold); }
+
+        /* SUBSCRIBE MODAL */
+        .ln-modal-backdrop {
+          position: fixed; inset: 0; background: rgba(14,14,13,0.75);
+          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+          z-index: 500; display: flex; align-items: center; justify-content: center; padding: 24px;
+        }
+        .ln-modal-inner { position: relative; }
+        .ln-modal-close {
+          position: absolute; top: -14px; right: -14px;
+          width: 36px; height: 36px;
+          background: var(--ln-ink); color: var(--ln-warm);
+          border: none; cursor: pointer; font-size: 16px;
+          display: flex; align-items: center; justify-content: center;
+          z-index: 10; transition: background 0.2s;
+        }
+        .ln-modal-close:hover { background: var(--ln-gold); }
+
+        /* FOOTER */
+        .ln-footer { background: var(--ln-ink); padding: 72px 5vw 32px; }
+        .ln-footer-top {
+          display: grid; grid-template-columns: 2fr 1fr 1fr;
+          gap: 56px; padding-bottom: 56px; border-bottom: 1px solid #1a1812;
+        }
+        .ln-footer-brand {
+          font-family: var(--ln-display); font-size: 30px;
+          font-weight: 300; color: #f5f0e8;
+          margin-bottom: 14px; letter-spacing: -0.02em; line-height: 1;
+        }
+        .ln-footer-brand em { font-style: italic; color: var(--ln-gold); }
+        .ln-footer-desc { font-size: 13.5px; color: #3a3630; line-height: 1.8; max-width: 280px; }
+        .ln-footer-col h4 {
+          font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+          color: var(--ln-gold); margin-bottom: 20px;
+        }
+        .ln-footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .ln-footer-col li { margin-bottom: 10px; }
+        .ln-footer-col a { font-size: 13.5px; color: #3a3630; text-decoration: none; transition: color 0.2s; }
+        .ln-footer-col a:hover { color: var(--ln-gold-lt); }
+        .ln-footer-bottom {
+          display: flex; align-items: center; justify-content: space-between;
+          padding-top: 28px; flex-wrap: wrap; gap: 16px;
+        }
+        .ln-footer-copy { font-size: 12px; color: #2a2620; letter-spacing: 0.1em; }
+        .ln-footer-copy span { color: var(--ln-gold); }
+        .ln-footer-legal { display: flex; gap: 24px; }
+        .ln-footer-legal a {
+          font-size: 11px; color: #2a2620; text-decoration: none;
+          letter-spacing: 0.1em; transition: color 0.2s;
+        }
+        .ln-footer-legal a:hover { color: #3a3630; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1100px) {
+          .ln-how-steps { grid-template-columns: 1fr 1fr; }
+          .ln-occasions-grid { grid-template-columns: repeat(3, 1fr); }
+          .ln-footer-top { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 800px) {
+          .ln-hero { grid-template-columns: 1fr; min-height: auto; }
+          .ln-hero-left { padding: 108px 6vw 64px; }
+          .ln-hero-right { display: none; }
+          .ln-nav-links { display: none; }
+          .ln-why-grid { grid-template-columns: 1fr; }
+          .ln-how-steps { grid-template-columns: 1fr; }
+          .ln-cta-strip { flex-direction: column; }
+          .ln-cta-actions { width: 100%; }
+          .ln-products-grid { grid-template-columns: 1fr 1fr; }
+          .ln-occasions-grid { grid-template-columns: repeat(3, 1fr); }
+          .ln-footer-top { grid-template-columns: 1fr; gap: 36px; }
+        }
+        @media (max-width: 480px) {
+          .ln-products-grid { grid-template-columns: 1fr; }
+          .ln-occasions-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+      `}</style>
+
+      <GrainOverlay />
+
       {/* SUBSCRIBE MODAL */}
-      {showSubscribeModal && (
-        <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={closeModal}
-        >
-          <div 
-            className="relative"
-            onClick={(e) => e.stopPropagation()}
-          >
+      {showModal && (
+        <div className="ln-modal-backdrop" onClick={() => setShowModal(false)}>
+          <div className="ln-modal-inner" onClick={(e) => e.stopPropagation()}>
             <button
-              onClick={closeModal}
-              className="absolute -top-3 -right-3 w-10 h-10 bg-black hover:bg-red-600 rounded-full flex items-center justify-center transition-all z-10 shadow-xl"
-              aria-label="Close popup"
+              className="ln-modal-close"
+              onClick={() => setShowModal(false)}
+              aria-label="Close"
             >
-              <X className="w-5 h-5 text-white" />
+              ✕
             </button>
             <LensraSubscribe source="first_gift_popup" />
           </div>
         </div>
       )}
 
-      {/* HERO SECTION */}
-      <section className="relative bg-black overflow-hidden">
-        {/* Dotted Pattern */}
-        <div className="absolute inset-0 opacity-5" 
-             style={{ 
-               backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', 
-               backgroundSize: '40px 40px' 
-             }} 
-        />
-        
-        {/* Gradient Accent */}
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-red-600/20 to-transparent" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 relative z-10">
-          <div className="max-w-4xl">
+      {/* NAV */}
+      <nav className={`ln-nav ${scrolled ? "scrolled" : ""}`}>
+        <Link href="/" className={`ln-nav-logo ${scrolled ? "dark" : ""}`}>
+          Lens<em>ra</em>
+        </Link>
+        <ul className={`ln-nav-links ${scrolled ? "dark" : ""}`}>
+          <li><Link href="/shop">Shop</Link></li>
+          <li><Link href="/business">Business</Link></li>
+          <li><Link href="/about">Our Story</Link></li>
+          <li>
+            <Link href="/shop" className="ln-nav-cta">
+              Start Customising
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      {/* HERO */}
+      <section className="ln-hero">
+        {/* Left — text */}
+        <div className="ln-hero-left">
+          <motion.div
+            className="ln-hero-eyebrow"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          >
+            Benin City, Nigeria · Est. 2024
+          </motion.div>
+
+          <motion.h1
+            className="ln-hero-h1"
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.22 }}
+          >
+            Gifts
+            <em>That Remember.</em>
+          </motion.h1>
+
+          <motion.p
+            className="ln-hero-body"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.38 }}
+          >
+            Custom mugs and premium canvas prints — personalised with your
+            photos, names, and words. Crafted with care. Delivered across
+            Nigeria.
+          </motion.p>
+
+          <motion.div
+            className="ln-hero-actions"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.52 }}
+          >
+            <Link href="/shop?category=mug" className="ln-btn-gold">
+              ☕ Custom Mugs
+            </Link>
+            <Link href="/shop?category=canvas" className="ln-btn-ghost-light">
+              🖼 Canvas Prints
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Right — decorative */}
+        <motion.div
+          className="ln-hero-right"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2, delay: 0.4 }}
+        >
+          <div className="ln-hero-ghost">Remember.</div>
+
+          <div className="ln-float-wrap">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              className="ln-float-card"
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
             >
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-tight mb-6">
-                Gifts That Make
-                <span className="block text-red-600 mt-2">Moments Unforgettable</span>
-              </h1>
-              
-              <p className="text-xl sm:text-2xl text-gray-300 mb-10 max-w-2xl font-medium">
-                Personalized gifts for every special occasion. Delivered with love.
-              </p>
-
-              {/* Primary CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <a 
-                  href="/shop" 
-                  className="group inline-flex items-center justify-center gap-3 px-8 py-5 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-base uppercase tracking-wide shadow-2xl shadow-red-600/30 transition-all hover:scale-105"
-                >
-                  <Gift className="w-6 h-6" />
-                  Shop All Gifts
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </a>
-                
-                <a 
-                  href="/editor" 
-                  className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-white hover:bg-gray-100 text-black rounded-2xl font-bold text-base uppercase tracking-wide transition-all border-2 border-white"
-                >
-                  <Palette className="w-6 h-6" />
-                  Customize Gift
-                </a>
+              <div className="ln-float-icon">☕</div>
+              <div>
+                <div className="ln-float-label">Product 01</div>
+                <div className="ln-float-name">Custom Ceramic Mug</div>
+                <div className="ln-float-sub">Your photo · Your words</div>
               </div>
+            </motion.div>
 
-              {/* Trust Badges */}
-              <div className="flex flex-wrap items-center gap-6 text-gray-400 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-600" />
-                  <span className="font-medium">72hr Delivery</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-600" />
-                  <span className="font-medium">Premium Quality</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-600" />
-                  <span className="font-medium">500+ Happy Customers</span>
-                </div>
+            <motion.div
+              className="ln-float-card"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 7, ease: "easeInOut", repeat: Infinity, delay: 1 }}
+            >
+              <div className="ln-float-icon">🖼</div>
+              <div>
+                <div className="ln-float-label">Product 02</div>
+                <div className="ln-float-name">Premium Canvas Print</div>
+                <div className="ln-float-sub">Archival quality · Any size</div>
               </div>
             </motion.div>
           </div>
-        </div>
 
-        {/* Bottom Wave */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 48h1440V0s-168 48-720 48S0 0 0 0v48z" fill="white"/>
-          </svg>
-        </div>
+          <div className="ln-hero-stats">
+            {[
+              { num: "500+", label: "Customers" },
+              { num: "72h", label: "Delivery" },
+              { num: "🇳🇬", label: "Nationwide" },
+            ].map((s) => (
+              <div className="ln-hero-stat" key={s.label}>
+                <div className="ln-hero-stat-num">{s.num}</div>
+                <div className="ln-hero-stat-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </section>
 
-      {/* QUICK INTENT PICKER */}
-      <section className="py-12 bg-white border-b-2 border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-xl font-black text-black mb-8 uppercase tracking-wide">
-            Who Are You Shopping For?
-          </h2>
-          
-          <div className="overflow-x-auto pb-4">
-            <div className="flex gap-3 min-w-max">
-              {intentOptions.map((option) => (
+      {/* PRODUCTS */}
+      <section className="ln-products-section">
+        <div className="ln-section-inner">
+          <div className="ln-section-header">
+            <div>
+              <SectionLabel>Our Products</SectionLabel>
+              <h2 className="ln-section-h2">
+                Two products.<br />Every occasion.
+              </h2>
+            </div>
+            <div className="ln-filter-tabs">
+              {(
+                [
+                  { key: "all", label: `All (${allProducts.length})` },
+                  { key: "mug", label: `Mugs (${mugCount})` },
+                  { key: "canvas", label: `Canvas (${canvasCount})` },
+                ] as const
+              ).map(({ key, label }) => (
                 <button
-                  key={option.value}
-                  onClick={() => handleIntentSelection(option.value)}
-                  className={`flex-shrink-0 px-6 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
-                    selectedIntent === option.value
-                      ? 'bg-red-600 text-white border-red-600 shadow-lg scale-105'
-                      : 'bg-white text-black border-gray-200 hover:border-red-600 hover:shadow-md'
-                  }`}
+                  key={key}
+                  className={`ln-filter-tab ${activeFilter === key ? "active" : ""}`}
+                  onClick={() => setActiveFilter(key)}
                 >
-                  <span className="mr-2 text-lg">{option.emoji}</span>
-                  {option.label}
+                  {label}
                 </button>
               ))}
             </div>
           </div>
+
+          <motion.div
+            ref={productsRef}
+            className="ln-products-grid"
+            variants={stagger}
+            initial="hidden"
+            animate={productsInView ? "show" : "hidden"}
+          >
+            {displayProducts.length > 0 ? (
+              displayProducts.map((product, i) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <div className="ln-products-empty">New designs arriving soon.</div>
+            )}
+          </motion.div>
         </div>
       </section>
 
-      {/* SHOP BY OCCASION */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-black text-black mb-4">
-              Shop by Occasion
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Find the perfect gift for any celebration
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-            {occasions.map((occasion, index) => (
-              <motion.a
-                key={occasion.slug}
-                href={`/shop?tag=${occasion.slug}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="group relative bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-red-600 hover:shadow-2xl transition-all"
-              >
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden">
-                  <img
-                    src={occasion.image}
-                    alt={occasion.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  
-                  {/* Gradient Overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${occasion.gradient} opacity-30 group-hover:opacity-40 transition-opacity`} />
-                  
-                  {/* Dark Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                </div>
-                
-                {/* Content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-end p-4 text-center">
-                  <h3 className="font-black text-base sm:text-lg text-white mb-1">
-                    {occasion.name}
-                  </h3>
-                  <div className="inline-flex items-center gap-1 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                    Shop Now
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </motion.a>
-            ))}
-          </div>
-          
-          <div className="text-center">
-            <a 
-              href="/categories" 
-              className="inline-flex items-center gap-2 px-8 py-4 bg-black hover:bg-red-600 text-white rounded-2xl font-bold text-base transition-all shadow-xl group"
-            >
-              Browse All Categories
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* POPULAR GIFTS */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-5 py-2 bg-red-600 rounded-full mb-6">
-              <TrendingUp className="w-4 h-4 text-white" />
-              <span className="text-xs font-black uppercase tracking-wider text-white">
-                Trending Now
-              </span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl font-black text-black mb-4">
-              Popular Gifts
-            </h2>
-            <p className="text-xl text-gray-600">
-              See what others are loving
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-10">
-            {popularProducts.slice(0, 10).map((product) => (
-              <ProductCard key={product.id} product={product} showTrending />
-            ))}
-          </div>
-
-          <div className="text-center">
-            <a 
-              href="/shop" 
-              className="inline-flex items-center gap-2 px-8 py-4 bg-black hover:bg-red-600 text-white rounded-2xl font-bold text-base transition-all shadow-xl group"
-            >
-              View All Gifts
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* SHOP BY BUDGET */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-black text-black mb-4">
-              Shop by Budget
-            </h2>
-            <p className="text-xl text-gray-600">
-              Great gifts at every price point
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {budgetRanges.map((budget) => {
-              const params = new URLSearchParams();
-              if (budget.min) params.set('price_min', budget.min.toString());
-              if (budget.max) params.set('price_max', budget.max.toString());
-              
-              return (
-                <a
-                  key={budget.range}
-                  href={`/shop?${params.toString()}`}
-                  className="group relative bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-red-600 hover:shadow-2xl transition-all text-center overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  
-                  <div className="relative">
-                    <div className="text-5xl mb-4">{budget.icon}</div>
-                    <h3 className="font-black text-xl text-black mb-3">
-                      {budget.label}
-                    </h3>
-                    <div className="inline-flex items-center gap-2 text-sm text-red-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                      Shop Now
-                      <ArrowRight className="w-4 h-4" />
-                    </div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* STAFF PICKS */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-5 py-2 bg-black rounded-full mb-6">
-              <Star className="w-4 h-4 text-white fill-white" />
-              <span className="text-xs font-black uppercase tracking-wider text-white">
-                {selectedIntent ? 'Recommended for You' : 'Staff Picks'}
-              </span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl font-black text-black mb-4">
-              {selectedIntent ? 'Recommended for You' : 'Staff Picks'}
-            </h2>
-            <p className="text-xl text-gray-600">
-              {selectedIntent ? 'Curated based on your selection' : 'Handpicked by our team'}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {staffPicks.slice(0, 8).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* GIFT FINDER CTA */}
-      <section className="relative py-20 bg-red-600 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, white 35px, white 70px)`,
-          }}></div>
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8">
-            <Sparkles className="w-10 h-10" />
-          </div>
-          
-          <h2 className="text-4xl sm:text-5xl font-black mb-6">
-            Not Sure What to Get?
+      {/* OCCASIONS */}
+      <section className="ln-occasions-section">
+        <div className="ln-section-inner">
+          <SectionLabel>Shop by Occasion</SectionLabel>
+          <h2 className="ln-section-h2">
+            Every moment deserves<br />to be remembered.
           </h2>
-          <p className="text-xl text-red-50 mb-10 max-w-2xl mx-auto font-medium">
-            Answer a few quick questions and we'll recommend the perfect gift
-          </p>
-          
-          <a 
-            href="/gift-finder" 
-            className="inline-flex items-center gap-3 px-10 py-5 bg-white hover:bg-black text-red-600 hover:text-white rounded-2xl font-black text-lg uppercase tracking-wide transition-all shadow-2xl hover:scale-105 group"
+          <div className="ln-occasions-grid">
+            {[
+              { icon: "🎂", name: "Birthday",    slug: "birthday" },
+              { icon: "💍", name: "Anniversary", slug: "anniversary" },
+              { icon: "💝", name: "Valentine",   slug: "valentine" },
+              { icon: "🎓", name: "Graduation",  slug: "graduation" },
+              { icon: "🤍", name: "Wedding",     slug: "wedding" },
+              { icon: "🎁", name: "Just Because",slug: "just-because" },
+            ].map((o) => (
+              <Link
+                key={o.slug}
+                href={`/shop?tag=${o.slug}`}
+                className="ln-occasion-card"
+              >
+                <span className="ln-occasion-icon">{o.icon}</span>
+                <div className="ln-occasion-name">{o.name}</div>
+                <div className="ln-occasion-arrow">→</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="ln-how-section">
+        <div className="ln-section-inner">
+          <SectionLabel>The Process</SectionLabel>
+          <h2 className="ln-section-h2">
+            From idea to doorstep<br />in four steps.
+          </h2>
+          <motion.div
+            ref={howRef}
+            className="ln-how-steps"
+            variants={stagger}
+            initial="hidden"
+            animate={howInView ? "show" : "hidden"}
           >
-            Start Gift Finder
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </a>
-
-          <p className="text-sm text-red-100 mt-8">
-            Takes 2 minutes • Personalized • Completely free
-          </p>
+            {[
+              { num: "01", icon: "🎨", title: "Pick your product",
+                body: "Choose a custom mug or premium canvas print — two products, each designed to become a lasting gift." },
+              { num: "02", icon: "📐", title: "Choose a template",
+                body: "Pick from five curated styles: Minimal, Celebration, Romantic, Corporate, or Quote." },
+              { num: "03", icon: "✍🏾", title: "Personalise it",
+                body: "Upload your photo, type a name, a date, a message. Watch it come to life on screen before you order." },
+              { num: "04", icon: "📦", title: "We make & deliver",
+                body: "Produced in Benin City with premium materials. Shipped nationwide, packaged beautifully, within 72 hours." },
+            ].map((step, i) => (
+              <motion.div key={step.num} className="ln-how-step" variants={fadeUp}>
+                <div className="ln-how-step-num">{step.num}</div>
+                <span className="ln-how-step-icon">{step.icon}</span>
+                <h4>{step.title}</h4>
+                <p>{step.body}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* TRUST FEATURES */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {trustFeatures.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="text-center"
-                >
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 ${
-                    feature.color === 'red' ? 'bg-red-600' : 'bg-black'
-                  }`}>
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-black text-lg text-black mb-2">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* INSTAGRAM CTA */}
-      <section className="py-20 bg-black">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Instagram className="w-16 h-16 text-red-600 mx-auto mb-6" />
-          <h3 className="text-4xl font-black text-white mb-4">
-            Join Our Community
-          </h3>
-          <p className="text-xl text-gray-400 mb-8">
-            Share your gifts with <span className="text-red-600 font-bold">#LensraMoments</span> and get featured
-          </p>
-          <a 
-            href="https://instagram.com/lensragift" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-600 to-red-600 text-white rounded-2xl font-bold text-base hover:shadow-2xl hover:shadow-pink-500/30 transition-all hover:scale-105 group"
+      {/* WHY LENSRA */}
+      <section className="ln-why-section">
+        <div className="ln-section-inner">
+          <SectionLabel>Why Lensra</SectionLabel>
+          <h2 className="ln-section-h2">
+            Premium isn't a price.<br />It's a standard.
+          </h2>
+          <motion.div
+            ref={whyRef}
+            className="ln-why-grid"
+            variants={stagger}
+            initial="hidden"
+            animate={whyInView ? "show" : "hidden"}
           >
-            <Instagram className="w-6 h-6" />
-            Follow @lensragift
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </a>
+            {[
+              { icon: "🎯", title: "Made for the moment",
+                body: "Every gift is designed around a specific memory. Not mass-produced. Made for one person, one occasion." },
+              { icon: "🏺", title: "Crafted, not printed",
+                body: "Premium ceramic mugs and archival-grade canvas at full resolution. Quality that sits on a shelf for years." },
+              { icon: "⚡", title: "72-hour delivery",
+                body: "Produced in Benin City. Shipped to Lagos, Abuja, Port Harcourt — anywhere in Nigeria — within 72 hours." },
+              { icon: "🏢", title: "Lensra Business",
+                body: "Corporate gifts that actually impress. Branded mugs, staff packs, client gifts at volume. Dedicated support." },
+            ].map((item, i) => (
+              <motion.div key={item.title} className="ln-why-card" variants={fadeUp}>
+                <span className="ln-why-icon">{item.icon}</span>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* FLOATING CTA - Mobile */}
-      <div className="fixed bottom-6 right-6 md:hidden z-40">
-        <a 
-          href="/gift-finder" 
-          className="flex items-center gap-2 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold shadow-2xl hover:shadow-red-600/50 transition-all"
-        >
-          <Gift className="w-5 h-5" />
-          Gift Finder
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function ProductCard({ product, showTrending = false }: { product: any; showTrending?: boolean }) {
-  const imageUrl = getImageUrl(product.image_url);
-  
-  return (
-    <a href={`/shop/${product.slug}`} className="group block">
-      <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden mb-4 border-2 border-gray-200 group-hover:border-red-600 group-hover:shadow-2xl transition-all">
-        {imageUrl ? (
-          <img
-            src={imageUrl} 
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ShoppingBag className="w-12 h-12 text-gray-300" />
-          </div>
-        )}
-        
-        {showTrending && (product.is_trending || product.is_featured) && (
-          <div className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5" />
-            Trending
-          </div>
-        )}
-
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all" />
-        
-        <div className="absolute bottom-4 left-4 right-4 transform translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-          <button className="w-full py-3 bg-white hover:bg-red-600 text-black hover:text-white rounded-xl text-sm font-bold transition-all shadow-xl">
-            Quick View
-          </button>
+      {/* CTA STRIP */}
+      <div className="ln-cta-strip">
+        <div className="ln-cta-strip-left">
+          <h2 className="ln-cta-h2">
+            Every gift starts with
+            <br />
+            <em>a memory worth keeping.</em>
+          </h2>
+          <p className="ln-cta-p">
+            Start customising your mug or canvas print today.
+            It takes two minutes — and lasts a lifetime.
+          </p>
+        </div>
+        <div className="ln-cta-actions">
+          <Link href="/shop" className="ln-btn-ink">Browse All Gifts</Link>
+          <Link href="/business" className="ln-btn-outline">Corporate Gifting →</Link>
         </div>
       </div>
-      
-      <div>
-        <h3 className="font-bold text-black mb-2 line-clamp-2 group-hover:text-red-600 transition-colors leading-tight">
-          {product.name}
-        </h3>
-        <p className="font-black text-xl text-black">
-          ₦{parseFloat(product.base_price || "0").toLocaleString()}
-        </p>
-      </div>
-    </a>
+
+      {/* FOOTER */}
+      <footer className="ln-footer">
+        <div className="ln-footer-top">
+          <div>
+            <div className="ln-footer-brand">Lens<em>ra</em></div>
+            <p className="ln-footer-desc">
+              Custom mugs and premium canvas prints. Personalised with your
+              photos and words. Made in Benin City, delivered across Nigeria.
+            </p>
+          </div>
+          <div className="ln-footer-col">
+            <h4>Shop</h4>
+            <ul>
+              <li><Link href="/shop?category=mug">Custom Mugs</Link></li>
+              <li><Link href="/shop?category=canvas">Canvas Prints</Link></li>
+              <li><Link href="/business">Corporate Gifts</Link></li>
+            </ul>
+          </div>
+          <div className="ln-footer-col">
+            <h4>Support</h4>
+            <ul>
+              <li><Link href="/track">Track Order</Link></li>
+              <li><Link href="/delivery">Delivery Info</Link></li>
+              <li><Link href="/returns">Returns</Link></li>
+              <li><Link href="/contact">Contact Us</Link></li>
+            </ul>
+          </div>
+        </div>
+        <div className="ln-footer-bottom">
+          <div className="ln-footer-copy">© 2026 <span>Lensra</span>. Proudly Nigerian.</div>
+          <div className="ln-footer-legal">
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }

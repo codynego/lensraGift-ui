@@ -1,58 +1,66 @@
 // app/page.tsx
-// Server component for homepage
+// Server component — Lensra rebranded homepage
 
 import { Metadata } from 'next';
-import ClientHomepage from './ClientHomepage'; // Client component defined below
+import ClientHomepage from './ClientHomepage';
 import { WithContext, WebPage, Organization, BreadcrumbList } from 'schema-dts';
 
 const BaseUrl = "https://api.lensra.com/";
 
-interface Product {
+export interface Product {
   id: number;
   slug: string;
   name: string;
   base_price: string;
-  category: string;
+  category: 'mug' | 'canvas' | string;
   image_url: string | null;
   is_active: boolean;
   is_trending: boolean;
   is_featured: boolean;
 }
 
+// ── Metadata ──────────────────────────────────────────────────────────────────
+
 export const metadata: Metadata = {
-  title: 'Lensra | Premium Personalized Gifts & Digital Experiences in Nigeria',
-  description: 'Create unforgettable personalized gifts with photos, messages, and more. Fast 72-hour delivery across Nigeria. Custom mugs, t-shirts, and mystery boxes for every occasion.',
+  title: 'Lensra | Gifts That Remember — Custom Mugs & Canvas Prints in Nigeria',
+  description:
+    'Turn your most precious moments into lasting gifts. Custom mugs and premium canvas prints, personalised with your photos and words. Delivered across Nigeria from Benin City.',
   keywords: [
-    'personalized gifts Nigeria',
-    'custom gifts Lagos',
-    'print on demand Nigeria',
-    'digital gift experiences',
-    'birthday gifts Nigeria',
-    'mystery gift boxes',
+    'custom mugs Nigeria',
+    'personalised canvas prints Nigeria',
+    'custom gifts Benin City',
+    'premium personalised gifts Nigeria',
+    'photo gifts Nigeria',
+    'custom mug Nigeria',
+    'canvas print gift Nigeria',
     'Lensra gifts',
   ],
   openGraph: {
-    title: 'Lensra | Turn Photos into Unforgettable Gifts',
-    description: 'Premium custom gifts with digital reveals. Delivered in 72 hours anywhere in Nigeria.',
+    title: 'Lensra — Gifts That Remember',
+    description:
+      'Custom mugs and premium canvas prints, personalised with your photos and words. Delivered across Nigeria.',
     url: 'https://www.lensra.com',
+    siteName: 'Lensra',
     images: [
       {
-        url: '/heroimg-41.jpg',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Lensra Personalized Gifts',
+        alt: 'Lensra — Custom Mugs & Canvas Prints',
       },
     ],
     type: 'website',
+    locale: 'en_NG',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lensra | Personalized Gifts in Nigeria',
-    description: 'Create custom gifts with photos and messages. Fast delivery nationwide.',
-    images: ['/heroimg-41.jpg'],
+    title: 'Lensra — Gifts That Remember',
+    description:
+      'Custom mugs and premium canvas prints. Personalised, premium, delivered nationwide.',
+    images: ['/og-image.jpg'],
   },
   alternates: {
-    canonical: '/',
+    canonical: 'https://www.lensra.com',
   },
   robots: {
     index: true,
@@ -60,40 +68,45 @@ export const metadata: Metadata = {
   },
 };
 
-// Homepage Schema Component
+// ── Schema ────────────────────────────────────────────────────────────────────
+
 function HomepageSchema() {
-  const jsonLd: WithContext<WebPage> & { breadcrumb: WithContext<BreadcrumbList>; publisher: Organization } = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "Lensra Homepage",
-    "description": "Premium personalized gifts and digital experiences in Nigeria.",
-    "url": "https://www.lensra.com",
+  const jsonLd: WithContext<WebPage> & {
+    breadcrumb: WithContext<BreadcrumbList>;
+    publisher: Organization;
+  } = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Lensra — Gifts That Remember',
+    description:
+      'Custom mugs and premium canvas prints, personalised with your photos and words. Delivered across Nigeria.',
+    url: 'https://www.lensra.com',
     breadcrumb: {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
         {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://www.lensra.com"
-        }
-      ]
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://www.lensra.com',
+        },
+      ],
     },
     publisher: {
-      "@type": "Organization",
-      "name": "Lensra",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://www.lensra.com/logo.png" // Replace with actual logo
+      '@type': 'Organization',
+      name: 'Lensra',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.lensra.com/logo.png',
       },
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Lagos",
-        "addressRegion": "Lagos",
-        "addressCountry": "NG"
-      }
-    }
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Benin City',
+        addressRegion: 'Edo',
+        addressCountry: 'NG',
+      },
+    },
   };
 
   return (
@@ -104,16 +117,24 @@ function HomepageSchema() {
   );
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default async function Homepage() {
   let products: Product[] = [];
 
   try {
-    const prodRes = await fetch(`${BaseUrl}api/products/`, { next: { revalidate: 3600 } }); // ISR
-    if (!prodRes.ok) throw new Error('Failed to fetch products');
-    const prodData = await prodRes.json();
-    products = Array.isArray(prodData) ? prodData : (prodData.results || []);
+    const res = await fetch(`${BaseUrl}api/products/`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) throw new Error('Failed to fetch products');
+    const data = await res.json();
+    products = Array.isArray(data) ? data : (data.results ?? []);
+    // Only surface active mug + canvas products on the homepage
+    products = products.filter(
+      (p) => p.is_active && ['mug', 'canvas'].includes(p.category),
+    );
   } catch (err) {
-    console.error("Fetch Error:", err);
+    console.error('[Lensra] Product fetch error:', err);
   }
 
   return (
