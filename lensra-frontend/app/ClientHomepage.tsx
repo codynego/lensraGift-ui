@@ -217,7 +217,7 @@ export default function ClientHomepage({
           background: var(--ln-warm);
           color: var(--ln-ink);
           font-family: var(--ln-body);
-          font-weight: 300;
+          font-weight: 400;
           -webkit-font-smoothing: antialiased;
         }
 
@@ -230,7 +230,7 @@ export default function ClientHomepage({
           border-bottom: 1px solid transparent;
         }
         .ln-nav.scrolled {
-          background: rgba(247,242,234,0.94);
+          background: rgba(247,242,234,0.97);
           backdrop-filter: blur(14px);
           -webkit-backdrop-filter: blur(14px);
           border-color: var(--ln-rule);
@@ -247,14 +247,14 @@ export default function ClientHomepage({
           display: flex; align-items: center; gap: 36px; list-style: none;
         }
         .ln-nav-links a {
-          font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-          color: rgba(245,240,232,0.5); text-decoration: none; transition: color 0.2s;
+          font-size: 12px; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase;
+          color: rgba(245,240,232,0.75); text-decoration: none; transition: color 0.2s;
         }
-        .ln-nav-links.dark a { color: var(--ln-muted); }
+        .ln-nav-links.dark a { color: #4a4438; }
         .ln-nav-links a:hover { color: #f5f0e8; }
         .ln-nav-links.dark a:hover { color: var(--ln-ink); }
         .ln-nav-cta {
-          background: rgba(184,150,90,0.85) !important;
+          background: var(--ln-gold) !important;
           color: var(--ln-white) !important;
           padding: 10px 22px !important;
         }
@@ -262,7 +262,7 @@ export default function ClientHomepage({
           background: var(--ln-ink) !important;
           color: var(--ln-warm) !important;
         }
-        .ln-nav-cta:hover { background: var(--ln-gold) !important; }
+        .ln-nav-cta:hover { opacity: 0.85; }
 
         /* HERO */
         .ln-hero {
@@ -280,7 +280,7 @@ export default function ClientHomepage({
           background: radial-gradient(ellipse 80% 70% at 0% 100%, #141007, transparent 65%);
         }
         .ln-hero-eyebrow {
-          font-size: 10px; letter-spacing: 0.45em; text-transform: uppercase;
+          font-size: 11px; font-weight: 500; letter-spacing: 0.35em; text-transform: uppercase;
           color: var(--ln-gold); margin-bottom: 30px;
           display: flex; align-items: center; gap: 14px; position: relative;
         }
@@ -291,32 +291,32 @@ export default function ClientHomepage({
         .ln-hero-h1 {
           font-family: var(--ln-display);
           font-size: clamp(56px, 6.5vw, 100px);
-          font-weight: 300; line-height: 0.9;
-          letter-spacing: -0.025em; color: #f5f0e8; position: relative;
+          font-weight: 400; line-height: 0.92;
+          letter-spacing: -0.02em; color: #ffffff; position: relative;
         }
         .ln-hero-h1 em {
-          font-style: italic; color: var(--ln-gold-lt); display: block; margin-top: 4px;
+          font-style: italic; color: var(--ln-gold-lt); display: block; margin-top: 6px;
         }
         .ln-hero-body {
-          margin-top: 32px; font-size: 15px;
-          color: #5a5248; max-width: 400px; line-height: 1.85; position: relative;
+          margin-top: 28px; font-size: 17px; font-weight: 400;
+          color: #c8bfb0; max-width: 420px; line-height: 1.75; position: relative;
         }
         .ln-hero-actions {
-          margin-top: 48px; display: flex; gap: 14px; flex-wrap: wrap; position: relative;
+          margin-top: 44px; display: flex; gap: 14px; flex-wrap: wrap; position: relative;
         }
         .ln-btn-gold {
           display: inline-flex; align-items: center; gap: 10px;
-          background: var(--ln-gold); color: var(--ln-white);
-          padding: 16px 34px; font-size: 11px; letter-spacing: 0.25em;
-          text-transform: uppercase; text-decoration: none; font-weight: 400;
+          background: var(--ln-gold); color: #ffffff;
+          padding: 16px 34px; font-size: 12px; font-weight: 500; letter-spacing: 0.2em;
+          text-transform: uppercase; text-decoration: none;
           transition: background 0.25s var(--ln-ease), transform 0.25s; white-space: nowrap;
         }
         .ln-btn-gold:hover { background: var(--ln-gold-lt); transform: translateY(-2px); }
         .ln-btn-ghost-light {
           display: inline-flex; align-items: center; gap: 10px;
-          border: 1px solid #2e2820; color: #4a4438;
-          padding: 16px 34px; font-size: 11px; letter-spacing: 0.25em;
-          text-transform: uppercase; text-decoration: none; font-weight: 400;
+          border: 1px solid rgba(255,255,255,0.2); color: #c8bfb0;
+          padding: 16px 34px; font-size: 12px; font-weight: 400; letter-spacing: 0.2em;
+          text-transform: uppercase; text-decoration: none;
           transition: border-color 0.25s, color 0.25s; white-space: nowrap;
         }
         .ln-btn-ghost-light:hover { border-color: var(--ln-gold); color: var(--ln-gold-lt); }
@@ -358,37 +358,37 @@ export default function ClientHomepage({
         }
         .ln-float-icon { font-size: 40px; line-height: 1; flex-shrink: 0; }
         .ln-float-label {
-          font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase;
+          font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
           color: var(--ln-gold); margin-bottom: 5px;
         }
         .ln-float-name {
           font-family: var(--ln-display); font-size: 20px;
-          font-weight: 300; color: #e8e0d0; line-height: 1.1;
+          font-weight: 400; color: #f0e8da; line-height: 1.1;
         }
-        .ln-float-sub { font-size: 12px; color: #3a3428; margin-top: 4px; }
+        .ln-float-sub { font-size: 13px; font-weight: 400; color: #7a6e60; margin-top: 4px; }
         .ln-hero-stats {
           display: flex; gap: 2px;
           position: absolute; bottom: 0; left: 0; right: 0;
         }
         .ln-hero-stat {
-          flex: 1; background: rgba(255,255,255,0.02);
+          flex: 1; background: rgba(255,255,255,0.03);
           border-top: 1px solid #1a1812;
           padding: 16px 18px; text-align: center;
         }
         .ln-hero-stat-num {
           font-family: var(--ln-display); font-size: 26px;
-          font-weight: 300; color: var(--ln-gold-lt); line-height: 1;
+          font-weight: 400; color: var(--ln-gold-lt); line-height: 1;
         }
         .ln-hero-stat-label {
-          font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
-          color: #2e2a22; margin-top: 4px;
+          font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
+          color: #6a6055; margin-top: 4px;
         }
 
         /* SECTION COMMONS */
         .ln-section { padding: 100px 5vw; }
         .ln-section-inner { max-width: 1360px; margin: 0 auto; }
         .ln-section-label {
-          font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+          font-size: 11px; font-weight: 500; letter-spacing: 0.35em; text-transform: uppercase;
           color: var(--ln-gold); margin-bottom: 18px;
           display: flex; align-items: center; gap: 10px;
         }
@@ -398,7 +398,7 @@ export default function ClientHomepage({
         .ln-section-h2 {
           font-family: var(--ln-display);
           font-size: clamp(32px, 3.5vw, 52px);
-          font-weight: 300; line-height: 1.05; letter-spacing: -0.01em;
+          font-weight: 400; line-height: 1.05; letter-spacing: -0.01em; color: var(--ln-ink);
         }
         .ln-section-header {
           display: flex; align-items: flex-end; justify-content: space-between;
@@ -409,14 +409,14 @@ export default function ClientHomepage({
         .ln-products-section { background: var(--ln-warm); padding: 100px 5vw; }
         .ln-filter-tabs { display: flex; gap: 2px; }
         .ln-filter-tab {
-          padding: 11px 24px; font-size: 11px; letter-spacing: 0.2em;
+          padding: 11px 24px; font-size: 12px; font-weight: 400; letter-spacing: 0.15em;
           text-transform: uppercase; background: var(--ln-white);
-          border: none; cursor: pointer; color: var(--ln-muted);
+          border: none; cursor: pointer; color: #5a5248;
           transition: background 0.2s, color 0.2s;
-          font-family: var(--ln-body); font-weight: 300;
+          font-family: var(--ln-body);
         }
         .ln-filter-tab:hover:not(.active) { background: var(--ln-gold-pale); color: var(--ln-ink); }
-        .ln-filter-tab.active { background: var(--ln-ink); color: var(--ln-warm); }
+        .ln-filter-tab.active { background: var(--ln-ink); color: var(--ln-warm); font-weight: 500; }
         .ln-products-grid {
           display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2px;
         }
@@ -456,14 +456,14 @@ export default function ClientHomepage({
         }
         .ln-product-meta { padding: 20px 22px 26px; }
         .ln-product-category {
-          font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+          font-size: 11px; font-weight: 500; letter-spacing: 0.25em; text-transform: uppercase;
           color: var(--ln-gold); margin-bottom: 6px;
         }
         .ln-product-name {
           font-family: var(--ln-display); font-size: 22px;
-          font-weight: 400; line-height: 1.15; margin-bottom: 8px;
+          font-weight: 400; line-height: 1.15; margin-bottom: 8px; color: var(--ln-ink);
         }
-        .ln-product-price { font-size: 13px; color: var(--ln-muted); letter-spacing: 0.05em; }
+        .ln-product-price { font-size: 14px; font-weight: 400; color: #4a4438; letter-spacing: 0.03em; }
 
         /* OCCASIONS */
         .ln-occasions-section {
@@ -482,11 +482,11 @@ export default function ClientHomepage({
         .ln-occasion-card:hover { background: var(--ln-gold-pale); }
         .ln-occasion-icon { font-size: 28px; margin-bottom: 10px; display: block; }
         .ln-occasion-name {
-          font-family: var(--ln-display); font-size: 16px;
+          font-family: var(--ln-display); font-size: 17px;
           font-weight: 400; color: var(--ln-ink);
         }
         .ln-occasion-arrow {
-          font-size: 11px; color: var(--ln-gold); margin-top: 6px;
+          font-size: 12px; font-weight: 500; color: var(--ln-gold); margin-top: 6px;
           opacity: 0; transition: opacity 0.2s;
         }
         .ln-occasion-card:hover .ln-occasion-arrow { opacity: 1; }
@@ -513,14 +513,14 @@ export default function ClientHomepage({
         }
         .ln-how-step-num {
           font-family: var(--ln-display); font-size: 72px; font-weight: 300;
-          color: rgba(184,150,90,0.12); line-height: 1; margin-bottom: 24px;
+          color: rgba(184,150,90,0.15); line-height: 1; margin-bottom: 24px;
         }
         .ln-how-step-icon { font-size: 28px; display: block; margin-bottom: 14px; }
         .ln-how-step h4 {
-          font-size: 15px; font-weight: 500; color: #d8d0c4;
+          font-size: 16px; font-weight: 500; color: #f0e8da;
           margin-bottom: 10px; font-family: var(--ln-body);
         }
-        .ln-how-step p { font-size: 13.5px; color: #4a4438; line-height: 1.78; margin: 0; }
+        .ln-how-step p { font-size: 14px; font-weight: 400; color: #8a8070; line-height: 1.75; margin: 0; }
 
         /* WHY LENSRA */
         .ln-why-section { padding: 100px 5vw; background: var(--ln-warm); }
@@ -536,9 +536,9 @@ export default function ClientHomepage({
         .ln-why-icon { font-size: 32px; margin-bottom: 20px; display: block; }
         .ln-why-card h3 {
           font-family: var(--ln-display); font-size: 26px;
-          font-weight: 400; margin-bottom: 12px;
+          font-weight: 400; margin-bottom: 12px; color: var(--ln-ink);
         }
-        .ln-why-card p { font-size: 14px; color: var(--ln-muted); line-height: 1.82; margin: 0; }
+        .ln-why-card p { font-size: 15px; font-weight: 400; color: #4a4438; line-height: 1.8; margin: 0; }
 
         /* CTA STRIP */
         .ln-cta-strip {
@@ -551,11 +551,11 @@ export default function ClientHomepage({
         .ln-cta-h2 {
           font-family: var(--ln-display);
           font-size: clamp(32px, 4vw, 54px);
-          font-weight: 300; line-height: 1.05;
-          letter-spacing: -0.01em; margin-bottom: 16px;
+          font-weight: 400; line-height: 1.05;
+          letter-spacing: -0.01em; margin-bottom: 16px; color: var(--ln-ink);
         }
         .ln-cta-h2 em { font-style: italic; color: var(--ln-gold); }
-        .ln-cta-p { font-size: 15px; color: var(--ln-muted); line-height: 1.82; margin: 0; }
+        .ln-cta-p { font-size: 16px; font-weight: 400; color: #4a4438; line-height: 1.8; margin: 0; }
         .ln-cta-actions { display: flex; gap: 12px; flex-direction: column; min-width: 220px; }
         .ln-btn-ink {
           display: block; text-align: center;
@@ -603,27 +603,27 @@ export default function ClientHomepage({
           margin-bottom: 14px; letter-spacing: -0.02em; line-height: 1;
         }
         .ln-footer-brand em { font-style: italic; color: var(--ln-gold); }
-        .ln-footer-desc { font-size: 13.5px; color: #3a3630; line-height: 1.8; max-width: 280px; }
+        .ln-footer-desc { font-size: 14px; font-weight: 400; color: #6a6055; line-height: 1.8; max-width: 280px; }
         .ln-footer-col h4 {
-          font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+          font-size: 11px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
           color: var(--ln-gold); margin-bottom: 20px;
         }
         .ln-footer-col ul { list-style: none; padding: 0; margin: 0; }
         .ln-footer-col li { margin-bottom: 10px; }
-        .ln-footer-col a { font-size: 13.5px; color: #3a3630; text-decoration: none; transition: color 0.2s; }
+        .ln-footer-col a { font-size: 14px; font-weight: 400; color: #6a6055; text-decoration: none; transition: color 0.2s; }
         .ln-footer-col a:hover { color: var(--ln-gold-lt); }
         .ln-footer-bottom {
           display: flex; align-items: center; justify-content: space-between;
           padding-top: 28px; flex-wrap: wrap; gap: 16px;
         }
-        .ln-footer-copy { font-size: 12px; color: #2a2620; letter-spacing: 0.1em; }
+        .ln-footer-copy { font-size: 13px; font-weight: 400; color: #3a3630; letter-spacing: 0.05em; }
         .ln-footer-copy span { color: var(--ln-gold); }
         .ln-footer-legal { display: flex; gap: 24px; }
         .ln-footer-legal a {
-          font-size: 11px; color: #2a2620; text-decoration: none;
-          letter-spacing: 0.1em; transition: color 0.2s;
+          font-size: 12px; font-weight: 400; color: #3a3630; text-decoration: none;
+          letter-spacing: 0.08em; transition: color 0.2s;
         }
-        .ln-footer-legal a:hover { color: #3a3630; }
+        .ln-footer-legal a:hover { color: #6a6055; }
 
         /* RESPONSIVE */
         @media (max-width: 1100px) {
