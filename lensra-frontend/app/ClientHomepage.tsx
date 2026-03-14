@@ -223,7 +223,8 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
       .catch(console.error);
   }, []);
 
-  const allProducts = products.filter(p => ["tote","pouch"].includes(p.category));
+  // const allProducts = products.filter(p => ["tote","pouch"].includes(p.category));
+  const allProducts = products
   const filtered = activeFilter === "all" ? allProducts
     : allProducts.filter(p => p.category === activeFilter);
   const displayProducts = filtered.length > 0 ? filtered : featuredProducts;
