@@ -5,6 +5,7 @@
 import type { Metadata } from "next";
 import AdireNav from "@/components/AdireNav";
 import AdireFooter from "@/components/AdireFooter";
+import { AuthProvider } from "@/context/AuthContext"; // ← adjust path to match yours
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,14 +40,15 @@ export default function RootLayout({
       </head>
       <body>
         {/*
-          Nav sits fixed at z-index 400 — no wrapper needed.
-          Page content should have padding-top: 68px to clear the nav height.
+          AuthProvider must wrap everything — it supplies the auth context
+          that useAuth() reads on /login, /signup, /reseller-program etc.
+          It must be a Client Component ("use client" in AuthContext.tsx).
         */}
-        <AdireNav />
-
-        <main>{children}</main>
-
-        <AdireFooter />
+        <AuthProvider>
+          <AdireNav />
+          <main>{children}</main>
+          <AdireFooter />
+        </AuthProvider>
       </body>
     </html>
   );
