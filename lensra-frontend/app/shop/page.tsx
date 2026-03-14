@@ -956,7 +956,7 @@ function ShopContent() {
         <AnkaraPattern color="#C17B3A" opacity={0.06} />
         <div className="ad-shop-header-inner">
           <div>
-            <div className="ad-shop-overline">Adire Shop</div>
+            <div className="ad-shop-overline">Lensra Shop</div>
             <h1 className="ad-shop-h1">
               All<br /><em>Products.</em>
             </h1>

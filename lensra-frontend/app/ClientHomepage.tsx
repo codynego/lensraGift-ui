@@ -1,7 +1,7 @@
 "use client";
 
 // app/ClientHomepage.tsx
-// Lensra — Bold, cultural, unapologetically Nigerian
+// Adire — Bold, cultural, unapologetically Nigerian
 // Layout: asymmetric, overlapping, editorial with Ankara energy
 // Fonts: Playfair Display (display) · Syne (body/labels)
 // Palette: deep indigo · kola amber · harmattan cream · terracotta · forest
@@ -278,7 +278,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           will-change: transform;
         }
 
-        /* Big rotated "Lensra" watermark */
+        /* Big rotated "ADIRE" watermark */
         .ad-hero-watermark {
           position: absolute;
           top: 50%; left: 50%;
@@ -786,7 +786,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           position: relative; overflow: hidden;
         }
         .ad-cta-section::before {
-          content: 'Lensra';
+          content: 'LENSRA';
           position: absolute; right: -2%;
           top: 50%; transform: translateY(-50%);
           font-family: var(--disp);
@@ -875,7 +875,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
           <AnkaraPattern color="#C17B3A" opacity={0.055} />
         </motion.div>
 
-        <div className="ad-hero-watermark">Lensra</div>
+        <div className="ad-hero-watermark">LENSRA</div>
 
         {/* Terracotta slash — right side */}
         <div className="ad-hero-slash">
@@ -915,7 +915,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: EASE, delay: 0.1 }}
           >
-            Benin City, Nigeria · Est. 2025
+            Benin City, Nigeria · Est. 2024
           </motion.div>
 
           <motion.h1 className="ad-hero-h1"
@@ -1078,7 +1078,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
         </motion.div>
       </section>
 
-      {/* ═══════════════════════ WHY Lensra ═══════════════════════ */}
+      {/* ═══════════════════════ WHY ADIRE ═══════════════════════ */}
       <section className="ad-why-section">
         <AnkaraPattern color="#C17B3A" opacity={0.04} />
         <div className="ad-section-overline" style={{ color: "var(--amber)", marginBottom: "12px" }}>
@@ -1112,7 +1112,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
               body: "Your person's name embroidered directly onto the fabric. Not a sticker. Not a print. Permanent." },
             { icon: "📦", title: "Packaged like a gift",
               body: "Kraft box, tissue paper, handwritten card. The unboxing is part of the experience." },
-            { icon: "🏢", title: "Lensra for Business",
+            { icon: "🏢", title: "Lensra Business",
               body: "Staff packs. Client gifts. Corporate events. Ankara sets that actually impress. Bulk pricing available." },
           ].map((item) => (
             <motion.div key={item.title} className="ad-why-card" variants={fadeUp}>

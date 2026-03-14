@@ -40,7 +40,7 @@ export async function generateMetadata({
     const images = [product.image_url, ...product.gallery.map(g => g.image_url)].filter(Boolean) as string[];
 
     return {
-      title: `${product.name} | Personalised Ankara Gift — Adire Nigeria`,
+      title: `${product.name} | Personalised Ankara Gift — Lensra Nigeria`,
       description: product.description.slice(0, 160) + "…",
       keywords: [
         product.name.toLowerCase(),
@@ -48,10 +48,10 @@ export async function generateMetadata({
         "custom Ankara gift Nigeria",
         "embroidered Ankara bag Nigeria",
         "personalised gifts Benin City",
-        "Adire gifts",
+        "Lensra gifts",
       ],
       openGraph: {
-        title: `${product.name} — Adire Personalised Ankara Gifts`,
+        title: `${product.name} — Lensra Personalised Ankara Gifts`,
         description: "Handmade, embroidered with your name. Made in Benin City. Delivered across Nigeria.",
         url: `${SiteUrl}/shop/${params.id}`,
         images: images.map(img => ({ url: img, width: 800, height: 1067, alt: product.name })),
@@ -59,7 +59,7 @@ export async function generateMetadata({
       },
       twitter: {
         card: "summary_large_image",
-        title: `${product.name} | Adire`,
+        title: `${product.name} | Lensra`,
         description: "Personalised Ankara gift. Made in Nigeria, delivered nationwide.",
         images,
       },
@@ -67,7 +67,7 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: "Product Not Found | Adire",
+      title: "Product Not Found | Lensra",
       description: "Browse our collection of personalised Ankara gifts.",
     };
   }
@@ -102,7 +102,7 @@ export default async function ProductDetailPage({
       }
     }
   } catch (err) {
-    console.error("[Adire] Product fetch error:", err);
+    console.error("[Lensra] Product fetch error:", err);
   }
 
   if (!product) {

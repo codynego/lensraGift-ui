@@ -6,8 +6,8 @@ import { Metadata } from "next";
 import ClientHomepage from "./ClientHomepage";
 import { WithContext, WebPage, Organization, BreadcrumbList } from "schema-dts";
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.adire.ng/";
-const SiteUrl = "https://www.adire.ng";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+const SiteUrl = "https://www.lensra.com";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ export interface Product {
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: "Adire | Personalised Ankara Gifts — Made in Nigeria",
+  title: "Lensra | Personalised Ankara Gifts — Made in Nigeria",
   description:
     "Handmade personalised Ankara tote bags and pouches, embroidered with your name and made to order in Benin City. The most meaningful gift you can give. Delivered across Nigeria.",
   keywords: [
@@ -38,22 +38,22 @@ export const metadata: Metadata = {
     "Ankara gifts Nigeria",
     "handmade Nigerian gifts",
     "embroidered Ankara bag Nigeria",
-    "Adire gifts Nigeria",
+    "Lensra gifts Nigeria",
     "custom gifts Nigeria",
     "Nigerian gifting brand",
   ],
   openGraph: {
-    title: "Adire — Personalised Ankara Gifts. Made Nigerian.",
+    title: "Lensra — Personalised Ankara Gifts. Made Nigerian.",
     description:
       "Handmade Ankara tote bags and pouches embroidered with your name. Made to order in Benin City. Delivered nationwide.",
     url: SiteUrl,
-    siteName: "Adire",
+    siteName: "Lensra",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Adire — Personalised Ankara Gifts",
+        alt: "Lensra — Personalised Ankara Gifts",
       },
     ],
     type: "website",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Adire — Made Personal. Made Nigerian.",
+    title: "Lensra — Gifts That Remember.",
     description:
       "Personalised Ankara tote bags and pouches. Embroidered, handmade, delivered nationwide.",
     images: ["/og-image.jpg"],
@@ -84,7 +84,7 @@ function HomepageSchema() {
   } = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: "Adire — Personalised Ankara Gifts",
+    name: "Lensra — Personalised Ankara Gifts",
     description:
       "Handmade personalised Ankara tote bags and pouches, embroidered with your name and made to order in Benin City. Delivered across Nigeria.",
     url: SiteUrl,
@@ -102,7 +102,7 @@ function HomepageSchema() {
     },
     publisher: {
       "@type": "Organization",
-      name: "Adire",
+      name: "Lensra",
       url: SiteUrl,
       logo: {
         "@type": "ImageObject",
@@ -147,7 +147,7 @@ export default async function Homepage() {
       (p) => p.is_active && ["tote", "pouch"].includes(p.category)
     );
   } catch (err) {
-    console.error("[Adire] Product fetch error:", err);
+    console.error("[Lensra] Product fetch error:", err);
   }
 
   return (

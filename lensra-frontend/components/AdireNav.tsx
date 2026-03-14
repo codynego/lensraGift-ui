@@ -335,10 +335,10 @@ export default function AdireNav() {
         className={`n-bar ${scrolled || open ? "solid" : ""}`}
         role="navigation" aria-label="Main navigation"
       >
-        <Link href="/" className="n-logo" aria-label="Adire home">
+        <Link href="/" className="n-logo" aria-label="Lensra home">
           <Mark light={light} />
           <span className={`n-logo-word ${light ? "" : "dark"}`}>
-            Adire<span className="n-logo-dot">.</span>
+            Lensra<span className="n-logo-dot">.</span>
           </span>
         </Link>
 
@@ -432,7 +432,7 @@ export default function AdireNav() {
           <motion.div
             className="n-mob"
             role="dialog"
-            aria-label="Navigation menu"
+            aria-label="Lensra navigation"
             initial={{ clipPath: "inset(0 0 100% 0)" }}
             animate={{ clipPath: "inset(0 0 0% 0)" }}
             exit={{ clipPath: "inset(0 0 100% 0)" }}

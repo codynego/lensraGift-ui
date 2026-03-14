@@ -76,7 +76,7 @@ export default function AdireFooter() {
           position: relative; overflow: hidden;
         }
         .f-band::before {
-          content: 'ADIRE';
+          content: 'LENSRA';
           position: absolute; right: 4vw;
           top: 50%; transform: translateY(-50%);
           font-family: 'Playfair Display', serif;
@@ -296,7 +296,7 @@ export default function AdireFooter() {
             {/* Brand column */}
             <div className="f-brand">
               <div>
-                <Link href="/" className="f-logo" aria-label="Adire home">
+                <Link href="/" className="f-logo" aria-label="Lensra home">
                   <svg className="f-logo-mark" viewBox="0 0 32 32" fill="none" aria-hidden>
                     <circle cx="16" cy="16" r="15" stroke="#F5F0E8" strokeWidth="1" fill="none" />
                     <circle cx="16" cy="16" r="4"  fill="#C17B3A" />
@@ -308,19 +308,19 @@ export default function AdireFooter() {
                     <line x1="5"  y1="16" x2="27" y2="16" stroke="#F5F0E8" strokeWidth="0.6" />
                   </svg>
                   <span className="f-logo-word">
-                    Adire<span className="f-logo-dot">.</span>
+                    Lensra<span className="f-logo-dot">.</span>
                   </span>
                 </Link>
-                <p className="f-tagline">Made Personal. Made Nigerian.</p>
+                <p className="f-tagline">Gifts That Remember.</p>
                 <p className="f-desc">
-                  Personalised Ankara tote bags and pouches, embroidered
+                  Personalised Ankara tote bags and pouches — embroidered
                   with your name. Made to order in Benin City.
                   Delivered anywhere in Nigeria in 3–5 days.
                 </p>
               </div>
               <div className="f-socials">
-                <a href="https://instagram.com/adiregifts"    className="f-social" aria-label="Instagram"  target="_blank" rel="noopener noreferrer"><IgIcon /></a>
-                <a href="https://tiktok.com/@adiregifts"      className="f-social" aria-label="TikTok"     target="_blank" rel="noopener noreferrer"><TkIcon /></a>
+                <a href="https://instagram.com/lensraNG"    className="f-social" aria-label="Instagram"  target="_blank" rel="noopener noreferrer"><IgIcon /></a>
+                <a href="https://tiktok.com/@lensra"      className="f-social" aria-label="TikTok"     target="_blank" rel="noopener noreferrer"><TkIcon /></a>
                 <a href="https://wa.me/2348051385049"          className="f-social" aria-label="WhatsApp"   target="_blank" rel="noopener noreferrer"><WaIcon /></a>
               </div>
             </div>
@@ -385,8 +385,8 @@ export default function AdireFooter() {
 
               <div className="f-contact-item">
                 <span className="f-contact-label">Email</span>
-                <a href="mailto:hello@adire.ng" className="f-contact-val">
-                  hello@adire.ng
+                <a href="mailto:hello@lensra.com" className="f-contact-val">
+                  hello@lensra.com
                 </a>
               </div>
 
@@ -406,7 +406,7 @@ export default function AdireFooter() {
           {/* ── Bottom bar ── */}
           <div className="f-bottom">
             <p className="f-copy">
-              © {year} <strong>Adire</strong>. Proudly Nigerian. All rights reserved.
+              © {year} <strong>Lensra</strong>. Proudly Nigerian. All rights reserved.
             </p>
             <div className="f-legal">
               <Link href="/privacy" className="f-legal-link">Privacy</Link>

@@ -33,8 +33,8 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: {
-    default: "Adire | Personalised Ankara Gifts — Made in Nigeria",
-    template: "%s | Adire",
+    default: "Lensra | Personalised Ankara Gifts — Made in Nigeria",
+    template: "%s | Lensra",
   },
   description:
     "Handmade personalised Ankara tote bags and pouches, embroidered with your name and made to order in Benin City. The most meaningful gift you can give. Delivered across Nigeria in 3–5 days.",
@@ -46,30 +46,30 @@ export const metadata: Metadata = {
     "Ankara gifts Nigeria",
     "handmade Nigerian gifts",
     "embroidered Ankara bag Nigeria",
-    "Adire gifts Nigeria",
+    "Lensra gifts Nigeria",
     "custom gifts Nigeria",
     "Nigerian gifting brand",
     "Ankara gift delivery Nigeria",
     "made in Nigeria gifts",
   ],
-  authors: [{ name: "Adire" }],
-  creator: "Adire",
+  authors: [{ name: "Lensra" }],
+  creator: "Lensra",
   metadataBase: new URL("https://www.lensra.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Adire — Made Personal. Made Nigerian.",
+    title: "Lensra — Personalised Ankara Gifts. Made Nigerian.",
     description:
       "Handmade Ankara tote bags and pouches embroidered with your name. Made to order in Benin City. Delivered nationwide.",
     url: "https://www.lensra.com",
-    siteName: "Adire",
+    siteName: "Lensra",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Adire — Personalised Ankara Gifts",
+        alt: "Lensra — Personalised Ankara Gifts",
       },
     ],
     locale: "en_NG",
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Adire | Personalised Ankara Gifts",
+    title: "Lensra | Personalised Ankara Gifts",
     description:
       "Embroidered with your name. Made by hand in Benin City. Delivered across Nigeria.",
     images: ["/og-image.jpg"],
