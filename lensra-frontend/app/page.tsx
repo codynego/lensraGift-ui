@@ -141,11 +141,13 @@ export default async function Homepage() {
     });
     if (!res.ok) throw new Error("Failed to fetch products");
     const data = await res.json();
+    console.log("Fetched products data:", data);
     products = Array.isArray(data) ? data : (data.results ?? []);
     // Only surface active tote + pouch products on the homepage
     products = products.filter(
       (p) => p.is_active && ["tote", "pouch"].includes(p.category)
     );
+    console.log("Filtered active tote/pouch products:", products);
   } catch (err) {
     console.error("[Lensra] Product fetch error:", err);
   }
