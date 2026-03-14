@@ -1,179 +1,185 @@
 "use client";
 
 // app/ClientHomepage.tsx
-// Adire — Personalised Ankara Gifts
-// Brand: Warm luxury — indigo night, kola amber, harmattan cream, cocoa dark
-// Products: Ankara Tote Bags + Ankara Pouches
-// Tagline: "Made Personal. Made Nigerian."
-// Fonts: Cormorant Garamond (display) · Instrument Sans (body)
+// Adire — Bold, cultural, unapologetically Nigerian
+// Layout: asymmetric, overlapping, editorial with Ankara energy
+// Fonts: Playfair Display (display) · Syne (body/labels)
+// Palette: deep indigo · kola amber · harmattan cream · terracotta · forest
 
 import { useState, useEffect, useRef } from "react";
-import { motion, useInView, type Variants } from "framer-motion";
+import { motion, useInView, useScroll, useTransform, type Variants } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
-// ── Constants ────────────────────────────────────────────────────────────────
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.adire.ng/";
 
-const BaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.adire.ng/";
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function getImageUrl(imagePath: string | null | undefined): string | null {
-  if (!imagePath) return null;
-  if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
-    return imagePath;
-  return `${BaseUrl.replace(/\/$/, "")}${
-    imagePath.startsWith("/") ? imagePath : "/" + imagePath
-  }`;
+function getImageUrl(p: string | null | undefined): string | null {
+  if (!p) return null;
+  if (p.startsWith("http://") || p.startsWith("https://")) return p;
+  return `${BaseUrl.replace(/\/$/, "")}${p.startsWith("/") ? p : "/" + p}`;
 }
 
 function formatPrice(price: string | number) {
-  const num = typeof price === "string" ? parseFloat(price) : price;
-  return `₦${num.toLocaleString("en-NG", { minimumFractionDigits: 0 })}`;
+  const n = typeof price === "string" ? parseFloat(price) : price;
+  return `₦${n.toLocaleString("en-NG", { minimumFractionDigits: 0 })}`;
 }
-
-// ── Motion variants ──────────────────────────────────────────────────────────
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 32 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.75, ease: EASE } },
+  hidden: { opacity: 0, y: 40 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } },
 };
-
-const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.9, ease: EASE } },
-};
-
 const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.11, delayChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.13, delayChildren: 0.05 } },
 };
 
-// ── Grain overlay ────────────────────────────────────────────────────────────
-
-function GrainOverlay() {
+// ── Ankara SVG tile pattern ───────────────────────────────────────────────────
+function AnkaraTile({ color = "#C17B3A", size = 60, opacity = 1 }: {
+  color?: string; size?: number; opacity?: number;
+}) {
+  const h = size; const w = size;
   return (
-    <svg
-      aria-hidden
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        zIndex: 9999,
-        opacity: 0.032,
-        mixBlendMode: "multiply",
-      }}
-    >
-      <filter id="ad-grain">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.68"
-          numOctaves="3"
-          stitchTiles="stitch"
-        />
-        <feColorMatrix type="saturate" values="0" />
-      </filter>
-      <rect width="100%" height="100%" filter="url(#ad-grain)" />
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none"
+      xmlns="http://www.w3.org/2000/svg" style={{ opacity }}>
+      <rect width={w} height={h} fill="none" />
+      <circle cx={w/2} cy={h/2} r={h*0.18} fill={color} />
+      <circle cx={w/2} cy={h/2} r={h*0.32} fill="none" stroke={color} strokeWidth="1" />
+      <circle cx={w/2} cy={h/2} r={h*0.46} fill="none" stroke={color} strokeWidth="0.5" />
+      <line x1="0" y1={h/2} x2={w} y2={h/2} stroke={color} strokeWidth="0.4" />
+      <line x1={w/2} y1="0" x2={w/2} y2={h} stroke={color} strokeWidth="0.4" />
+      <line x1="0" y1="0" x2={w} y2={h} stroke={color} strokeWidth="0.3" />
+      <line x1={w} y1="0" x2="0" y2={h} stroke={color} strokeWidth="0.3" />
+      <rect x={w*0.1} y={h*0.1} width={w*0.3} height={h*0.3}
+        fill="none" stroke={color} strokeWidth="0.4"
+        transform={`rotate(45 ${w*0.25} ${h*0.25})`} />
+      <rect x={w*0.6} y={h*0.1} width={w*0.3} height={h*0.3}
+        fill="none" stroke={color} strokeWidth="0.4"
+        transform={`rotate(45 ${w*0.75} ${h*0.25})`} />
+      <rect x={w*0.1} y={h*0.6} width={w*0.3} height={h*0.3}
+        fill="none" stroke={color} strokeWidth="0.4"
+        transform={`rotate(45 ${w*0.25} ${h*0.75})`} />
+      <rect x={w*0.6} y={h*0.6} width={w*0.3} height={h*0.3}
+        fill="none" stroke={color} strokeWidth="0.4"
+        transform={`rotate(45 ${w*0.75} ${h*0.75})`} />
     </svg>
   );
 }
 
-// ── Adire pattern SVG (decorative) ───────────────────────────────────────────
-
-function AdirePattern({ opacity = 0.06 }: { opacity?: number }) {
+// ── Full-bleed Ankara background pattern ──────────────────────────────────────
+function AnkaraPattern({ color = "#C17B3A", opacity = 0.07 }: {
+  color?: string; opacity?: number;
+}) {
   return (
-    <svg
-      aria-hidden
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        opacity,
-      }}
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg aria-hidden style={{
+      position: "absolute", inset: 0, width: "100%", height: "100%",
+      pointerEvents: "none", opacity,
+    }} xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <pattern
-          id="adire-dots"
-          x="0"
-          y="0"
-          width="40"
-          height="40"
-          patternUnits="userSpaceOnUse"
-        >
-          <circle cx="20" cy="20" r="1.5" fill="#C17B3A" />
-          <circle cx="0" cy="0" r="1.5" fill="#C17B3A" />
-          <circle cx="40" cy="0" r="1.5" fill="#C17B3A" />
-          <circle cx="0" cy="40" r="1.5" fill="#C17B3A" />
-          <circle cx="40" cy="40" r="1.5" fill="#C17B3A" />
-          <rect
-            x="16" y="16" width="8" height="8"
-            fill="none" stroke="#C17B3A" strokeWidth="0.5"
-            transform="rotate(45 20 20)"
-          />
+        <pattern id={`ankara-${color.replace("#","")}`}
+          x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+          <circle cx="30" cy="30" r="5" fill={color} />
+          <circle cx="30" cy="30" r="10" fill="none" stroke={color} strokeWidth="0.8" />
+          <circle cx="30" cy="30" r="17" fill="none" stroke={color} strokeWidth="0.4" />
+          <circle cx="30" cy="30" r="24" fill="none" stroke={color} strokeWidth="0.3" />
+          <line x1="0" y1="30" x2="60" y2="30" stroke={color} strokeWidth="0.3" />
+          <line x1="30" y1="0" x2="30" y2="60" stroke={color} strokeWidth="0.3" />
+          <line x1="0" y1="0" x2="60" y2="60" stroke={color} strokeWidth="0.2" />
+          <line x1="60" y1="0" x2="0" y2="60" stroke={color} strokeWidth="0.2" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#adire-dots)" />
+      <rect width="100%" height="100%" fill={`url(#ankara-${color.replace("#","")})`} />
     </svg>
   );
 }
 
-// ── Product Card ─────────────────────────────────────────────────────────────
+// ── Grain overlay ─────────────────────────────────────────────────────────────
+function Grain() {
+  return (
+    <svg aria-hidden style={{
+      position: "fixed", inset: 0, width: "100%", height: "100%",
+      pointerEvents: "none", zIndex: 9999, opacity: 0.025, mixBlendMode: "multiply",
+    }}>
+      <filter id="grain-f">
+        <feTurbulence type="fractalNoise" baseFrequency="0.72"
+          numOctaves="3" stitchTiles="stitch" />
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
+      <rect width="100%" height="100%" filter="url(#grain-f)" />
+    </svg>
+  );
+}
 
-function ProductCard({ product }: { product: any }) {
+// ── Marquee strip ─────────────────────────────────────────────────────────────
+function Marquee() {
+  const items = [
+    "ANKARA TOTE BAGS", "✦", "MADE IN BENIN CITY", "✦",
+    "EMBROIDERED BY HAND", "✦", "DELIVERED NATIONWIDE", "✦",
+    "PERSONALISED FOR YOU", "✦", "PROUDLY NIGERIAN", "✦",
+  ];
+  const repeated = [...items, ...items];
+  return (
+    <div className="ad-marquee-wrap">
+      <motion.div
+        className="ad-marquee-track"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 22, ease: "linear", repeat: Infinity }}
+      >
+        {repeated.map((item, i) => (
+          <span key={i} className={item === "✦" ? "ad-marquee-dot" : "ad-marquee-item"}>
+            {item}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+// ── Product card ──────────────────────────────────────────────────────────────
+function ProductCard({ product, index }: { product: any; index: number }) {
   const imageUrl = getImageUrl(product.image_url);
   const isTote = product.category === "tote";
+  const isOffset = index % 3 === 1;
 
   return (
-    <motion.div variants={fadeUp}>
+    <motion.div variants={fadeUp}
+      style={{ marginTop: isOffset ? "48px" : "0" }}
+    >
       <Link href={`/shop/${product.slug}`} className="ad-product-card">
         <div className="ad-product-img-wrap">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 50vw, 33vw"
-              style={{ objectFit: "cover" }}
-              className="ad-product-img"
-            />
-          ) : (
-            <div className="ad-product-placeholder">
-              <div className="ad-placeholder-inner">
-                <span className="ad-placeholder-icon">{isTote ? "👜" : "👝"}</span>
-                <span className="ad-placeholder-label">
-                  {isTote ? "Ankara Tote" : "Ankara Pouch"}
-                </span>
-              </div>
-            </div>
-          )}
-          <div className="ad-product-overlay">
-            <span className="ad-product-cta">Personalise →</span>
-          </div>
           {product.is_trending && (
-            <div className="ad-product-badge">Trending</div>
+            <div className="ad-product-badge">Hot</div>
           )}
           {product.is_new && (
             <div className="ad-product-badge ad-badge-new">New</div>
           )}
-        </div>
-        <div className="ad-product-meta">
-          <div className="ad-product-category">
-            {isTote ? "Ankara Tote Bag" : "Ankara Pouch"}
-          </div>
-          <h3 className="ad-product-name">{product.name}</h3>
-          <div className="ad-product-footer">
-            <div className="ad-product-price">
-              From {formatPrice(product.base_price || 0)}
+          {imageUrl ? (
+            <Image src={imageUrl} alt={product.name} fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              style={{ objectFit: "cover" }} className="ad-product-img" />
+          ) : (
+            <div className="ad-product-placeholder">
+              <AnkaraTile color="#C17B3A" size={80} opacity={0.35} />
+              <span className="ad-placeholder-text">
+                {isTote ? "Ankara Tote Bag" : "Ankara Pouch"}
+              </span>
             </div>
-            <div className="ad-product-personalise">Personalised →</div>
+          )}
+          <div className="ad-product-hover">
+            <span>Personalise this →</span>
+          </div>
+        </div>
+        <div className="ad-product-info">
+          <span className="ad-product-cat">
+            {isTote ? "Tote Bag" : "Pouch"}
+          </span>
+          <h3 className="ad-product-name">{product.name}</h3>
+          <div className="ad-product-row">
+            <span className="ad-product-price">
+              From {formatPrice(product.base_price || 0)}
+            </span>
+            <span className="ad-product-arrow">→</span>
           </div>
         </div>
       </Link>
@@ -181,1039 +187,959 @@ function ProductCard({ product }: { product: any }) {
   );
 }
 
-// ── Section label ────────────────────────────────────────────────────────────
-
-function SectionLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
-  return (
-    <div className={`ad-section-label ${light ? "ad-section-label-light" : ""}`}>
-      {children}
-    </div>
-  );
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
-
-export default function ClientHomepage({
-  initialProducts,
-}: {
-  initialProducts: any[];
-}) {
+// ── Main ──────────────────────────────────────────────────────────────────────
+export default function ClientHomepage({ initialProducts }: { initialProducts: any[] }) {
   const [products] = useState(initialProducts);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [activeFilter, setActiveFilter] = useState<"all" | "tote" | "pouch">("all");
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
+  const heroRef = useRef(null);
   const productsRef = useRef(null);
   const processRef = useRef(null);
   const whyRef = useRef(null);
-  const occasionsRef = useRef(null);
 
-  const productsInView = useInView(productsRef, { once: true, margin: "-80px" });
-  const processInView = useInView(processRef, { once: true, margin: "-80px" });
-  const whyInView = useInView(whyRef, { once: true, margin: "-80px" });
-  const occasionsInView = useInView(occasionsRef, { once: true, margin: "-80px" });
+  const productsInView = useInView(productsRef, { once: true, margin: "-60px" });
+  const processInView  = useInView(processRef,  { once: true, margin: "-60px" });
+  const whyInView      = useInView(whyRef,      { once: true, margin: "-60px" });
 
-  // Scroll-aware nav
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", fn, { passive: true });
+    fn();
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  // Fetch featured products
   useEffect(() => {
     fetch(`${BaseUrl}api/products/featured/`)
-      .then((r) => r.json())
-      .then((d) => {
-        const results = d.results || d || [];
-        setFeaturedProducts(
-          results.filter((p: any) => ["tote", "pouch"].includes(p.category))
-        );
+      .then(r => r.json())
+      .then(d => {
+        const r = d.results || d || [];
+        setFeaturedProducts(r.filter((p: any) => ["tote","pouch"].includes(p.category)));
       })
       .catch(console.error);
   }, []);
 
-  // Derived state
-  const allProducts = products.filter((p) =>
-    ["tote", "pouch"].includes(p.category)
-  );
-  const filtered =
-    activeFilter === "all"
-      ? allProducts
-      : allProducts.filter((p) => p.category === activeFilter);
+  const allProducts = products.filter(p => ["tote","pouch"].includes(p.category));
+  const filtered = activeFilter === "all" ? allProducts
+    : allProducts.filter(p => p.category === activeFilter);
   const displayProducts = filtered.length > 0 ? filtered : featuredProducts;
-  const toteCount = allProducts.filter((p) => p.category === "tote").length;
-  const pouchCount = allProducts.filter((p) => p.category === "pouch").length;
+  const toteCount  = allProducts.filter(p => p.category === "tote").length;
+  const pouchCount = allProducts.filter(p => p.category === "pouch").length;
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Instrument+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;500;600;700;800&display=swap');
 
         :root {
-          --ad-indigo:      #1B2A4A;
-          --ad-indigo-deep: #111d33;
-          --ad-indigo-mid:  #243560;
-          --ad-amber:       #C17B3A;
-          --ad-amber-lt:    #D4956A;
-          --ad-amber-pale:  #F0DFC4;
-          --ad-cream:       #F5F0E8;
-          --ad-cream-lt:    #FDF9F4;
-          --ad-cocoa:       #2C1810;
-          --ad-shea:        #E8D5B0;
-          --ad-muted:       #7A6E60;
-          --ad-rule:        #E2D4BE;
-          --ad-rule-dark:   #1e2d4e;
-          --ad-display:     'Cormorant Garamond', Georgia, serif;
-          --ad-body:        'Instrument Sans', system-ui, sans-serif;
-          --ad-ease:        cubic-bezier(0.16, 1, 0.3, 1);
+          --indigo:    #1B2A4A;
+          --indigo-d:  #0e1a30;
+          --amber:     #C17B3A;
+          --amber-l:   #D4956A;
+          --amber-p:   #F0DFC4;
+          --cream:     #F5F0E8;
+          --cream-l:   #FDF9F4;
+          --terra:     #8B3A2A;
+          --forest:    #2A4A2E;
+          --cocoa:     #2C1810;
+          --muted:     #7A6E60;
+          --rule:      #E2D4BE;
+          --disp:      'Playfair Display', Georgia, serif;
+          --body:      'Syne', system-ui, sans-serif;
+          --ease:      cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        html { scroll-behavior: smooth; }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+        html { scroll-behavior: smooth; }
         body {
-          background: var(--ad-cream);
-          color: var(--ad-cocoa);
-          font-family: var(--ad-body);
-          font-weight: 400;
+          background: var(--cream);
+          color: var(--cocoa);
+          font-family: var(--body);
           -webkit-font-smoothing: antialiased;
           overflow-x: hidden;
         }
 
-        /* ── NAV ── */
-        .ad-nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 300;
-          height: 68px;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0 5vw;
-          transition: background 0.45s var(--ad-ease), border-color 0.45s;
-          border-bottom: 1px solid transparent;
-        }
-        .ad-nav.scrolled {
-          background: rgba(245,240,232,0.96);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-color: var(--ad-rule);
-        }
-        .ad-nav-logo {
-          font-family: var(--ad-display);
-          font-size: 28px; font-weight: 400;
-          letter-spacing: 0.06em; text-transform: uppercase;
-          color: #f5f0e8; text-decoration: none; line-height: 1;
-          transition: color 0.3s;
-        }
-        .ad-nav-logo.dark { color: var(--ad-indigo); }
-        .ad-nav-logo span { color: var(--ad-amber); font-style: italic; font-weight: 300; }
-        .ad-nav-links {
-          display: flex; align-items: center; gap: 40px; list-style: none;
-        }
-        .ad-nav-links a {
-          font-size: 11px; font-weight: 400; letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: rgba(245,240,232,0.7); text-decoration: none; transition: color 0.2s;
-        }
-        .ad-nav-links.dark a { color: var(--ad-muted); }
-        .ad-nav-links a:hover,
-        .ad-nav-links.dark a:hover { color: var(--ad-amber); }
-        .ad-nav-cta {
-          background: var(--ad-amber) !important;
-          color: #fff !important;
-          padding: 10px 24px !important;
-          letter-spacing: 0.18em !important;
-          transition: background 0.2s !important;
-        }
-        .ad-nav-cta:hover { background: var(--ad-amber-lt) !important; color: #fff !important; }
-        .ad-nav-links.dark .ad-nav-cta {
-          background: var(--ad-indigo) !important;
-          color: var(--ad-cream) !important;
-        }
-
-        /* ── HERO ── */
+        /* ── HERO ───────────────────────────────────────────────────── */
         .ad-hero {
           min-height: 100svh;
-          display: grid;
-          grid-template-columns: 52% 48%;
-          background: var(--ad-indigo);
+          background: var(--indigo-d);
           position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .ad-hero-bg {
+          position: absolute; inset: 0;
+          will-change: transform;
+        }
+
+        /* Big rotated "ADIRE" watermark */
+        .ad-hero-watermark {
+          position: absolute;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%) rotate(-12deg);
+          font-family: var(--disp);
+          font-size: clamp(120px, 18vw, 260px);
+          font-weight: 900; font-style: italic;
+          color: rgba(193,123,58,0.055);
+          white-space: nowrap;
+          pointer-events: none; user-select: none;
+          letter-spacing: -0.04em; line-height: 1;
+          z-index: 0;
+        }
+
+        /* Terracotta diagonal slash */
+        .ad-hero-slash {
+          position: absolute;
+          top: 0; right: 0;
+          width: 42%;
+          height: 100%;
+          background: var(--terra);
+          clip-path: polygon(18% 0, 100% 0, 100% 100%, 0% 100%);
+          z-index: 0;
           overflow: hidden;
         }
 
-        /* Hero left */
-        .ad-hero-left {
-          display: flex; flex-direction: column;
-          justify-content: flex-end;
-          padding: 130px 5vw 100px;
-          position: relative; z-index: 2;
-        }
-        .ad-hero-eyebrow {
-          font-size: 10px; font-weight: 500;
-          letter-spacing: 0.38em; text-transform: uppercase;
-          color: var(--ad-amber);
-          display: flex; align-items: center; gap: 16px;
-          margin-bottom: 32px;
-        }
-        .ad-hero-eyebrow::before {
-          content: '';
-          width: 28px; height: 1px;
-          background: var(--ad-amber); flex-shrink: 0;
-        }
-        .ad-hero-h1 {
-          font-family: var(--ad-display);
-          font-size: clamp(58px, 6.8vw, 108px);
-          font-weight: 300; line-height: 0.9;
-          letter-spacing: -0.01em;
-          color: var(--ad-cream);
-        }
-        .ad-hero-h1 em {
-          font-style: italic;
-          color: var(--ad-amber-lt);
-          display: block;
-          margin-top: 4px;
-        }
-        .ad-hero-body {
-          margin-top: 32px;
-          font-size: 16px; font-weight: 300;
-          color: rgba(232,213,176,0.75);
-          max-width: 400px; line-height: 1.85;
-        }
-        .ad-hero-actions {
-          margin-top: 48px;
-          display: flex; gap: 12px; flex-wrap: wrap;
-        }
-        .ad-btn-amber {
-          display: inline-flex; align-items: center; gap: 10px;
-          background: var(--ad-amber); color: #fff;
-          padding: 16px 36px;
-          font-family: var(--ad-body);
-          font-size: 11px; font-weight: 500;
-          letter-spacing: 0.22em; text-transform: uppercase;
-          text-decoration: none;
-          transition: background 0.25s var(--ad-ease), transform 0.25s;
-          white-space: nowrap;
-        }
-        .ad-btn-amber:hover { background: var(--ad-amber-lt); transform: translateY(-2px); }
-        .ad-btn-ghost {
-          display: inline-flex; align-items: center; gap: 10px;
-          border: 1px solid rgba(232,213,176,0.25);
-          color: rgba(232,213,176,0.6);
-          padding: 16px 36px;
-          font-family: var(--ad-body);
-          font-size: 11px; font-weight: 400;
-          letter-spacing: 0.22em; text-transform: uppercase;
-          text-decoration: none;
-          transition: border-color 0.25s, color 0.25s;
-          white-space: nowrap;
-        }
-        .ad-btn-ghost:hover {
-          border-color: var(--ad-amber);
-          color: var(--ad-amber-lt);
+        /* Amber accent bar */
+        .ad-hero-bar {
+          position: absolute; left: 0; bottom: 0;
+          width: 5px; height: 55%;
+          background: var(--amber);
+          z-index: 2;
         }
 
-        /* Hero right */
-        .ad-hero-right {
-          position: relative; overflow: hidden;
-          background: var(--ad-indigo-deep);
+        .ad-hero-content {
+          position: relative; z-index: 2;
+          display: flex; flex-direction: column;
+          justify-content: flex-end;
+          flex: 1;
+          padding: 120px 6vw 80px;
+          max-width: 780px;
         }
-        .ad-hero-pattern {
-          position: absolute; inset: 0;
+
+        .ad-hero-overline {
+          display: flex; align-items: center; gap: 14px;
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 0.42em; text-transform: uppercase;
+          color: var(--amber);
+          margin-bottom: 28px;
         }
-        .ad-hero-ghost-text {
-          position: absolute; bottom: 40px; right: -8px;
-          font-family: var(--ad-display);
-          font-size: clamp(70px, 10vw, 140px);
-          font-weight: 300; font-style: italic;
-          color: rgba(193,123,58,0.07);
-          white-space: nowrap; line-height: 1;
-          pointer-events: none; user-select: none;
+        .ad-hero-overline::before {
+          content: '';
+          display: block; width: 36px; height: 2px;
+          background: var(--amber); flex-shrink: 0;
+        }
+
+        .ad-hero-h1 {
+          font-family: var(--disp);
+          font-size: clamp(64px, 9.5vw, 148px);
+          font-weight: 900; line-height: 0.88;
           letter-spacing: -0.03em;
+          color: var(--cream);
+          position: relative;
         }
-        .ad-hero-cards {
+        .ad-hero-h1 .line-2 {
+          display: block;
+          color: var(--amber);
+          font-style: italic;
+          font-weight: 400;
+          margin-left: clamp(32px, 5vw, 80px);
+        }
+        .ad-hero-h1 .line-3 {
+          display: block;
+          -webkit-text-stroke: 1.5px var(--cream);
+          color: transparent;
+        }
+
+        /* Floating tag pinned to h1 */
+        .ad-hero-tag {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: var(--amber);
+          padding: 6px 16px;
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 0.28em; text-transform: uppercase;
+          color: #fff;
+          position: absolute; right: -12px; bottom: 16px;
+        }
+
+        .ad-hero-body {
+          margin-top: 36px;
+          font-size: 16px; font-weight: 400; line-height: 1.8;
+          color: rgba(245,240,232,0.55);
+          max-width: 440px;
+        }
+
+        .ad-hero-actions {
+          margin-top: 44px;
+          display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+        }
+
+        .ad-btn-primary {
+          display: inline-flex; align-items: center; gap: 10px;
+          background: var(--amber); color: #fff;
+          padding: 18px 40px;
+          font-family: var(--body);
+          font-size: 11px; font-weight: 700;
+          letter-spacing: 0.24em; text-transform: uppercase;
+          text-decoration: none;
+          transition: background 0.2s var(--ease), transform 0.2s;
+        }
+        .ad-btn-primary:hover { background: var(--amber-l); transform: translateY(-2px); }
+
+        .ad-btn-secondary {
+          display: inline-flex; align-items: center; gap: 10px;
+          border: 1.5px solid rgba(245,240,232,0.2);
+          color: rgba(245,240,232,0.55);
+          padding: 18px 40px;
+          font-family: var(--body);
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.24em; text-transform: uppercase;
+          text-decoration: none;
+          transition: border-color 0.2s, color 0.2s;
+        }
+        .ad-btn-secondary:hover { border-color: var(--amber); color: var(--amber-l); }
+
+        /* Hero stats — horizontal bottom strip */
+        .ad-hero-stats {
+          position: relative; z-index: 2;
+          display: flex;
+          border-top: 1px solid rgba(245,240,232,0.06);
+        }
+        .ad-hero-stat {
+          flex: 1; padding: 22px 0 22px 5vw;
+          border-right: 1px solid rgba(245,240,232,0.06);
+        }
+        .ad-hero-stat:last-child { border-right: none; }
+        .ad-hero-stat-num {
+          font-family: var(--disp);
+          font-size: 36px; font-weight: 700;
+          color: var(--amber); line-height: 1;
+        }
+        .ad-hero-stat-label {
+          font-size: 10px; font-weight: 600;
+          letter-spacing: 0.22em; text-transform: uppercase;
+          color: rgba(245,240,232,0.3); margin-top: 4px;
+        }
+
+        /* Terracotta side image strip */
+        .ad-hero-slash-inner {
           position: absolute; inset: 0;
           display: flex; flex-direction: column;
           align-items: center; justify-content: center;
-          gap: 20px; padding: 110px 36px 90px;
-        }
-        .ad-hero-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(193,123,58,0.18);
-          padding: 26px 28px;
-          display: flex; align-items: center; gap: 20px;
-          width: 100%; max-width: 300px;
-          position: relative; overflow: hidden;
-          backdrop-filter: blur(8px);
-        }
-        .ad-hero-card::before {
-          content: '';
-          position: absolute; left: 0; top: 0; bottom: 0;
-          width: 3px; background: var(--ad-amber);
-        }
-        .ad-hero-card-icon {
-          font-size: 36px; line-height: 1; flex-shrink: 0;
-        }
-        .ad-hero-card-label {
-          font-size: 9px; font-weight: 500;
-          letter-spacing: 0.32em; text-transform: uppercase;
-          color: var(--ad-amber); margin-bottom: 5px;
-        }
-        .ad-hero-card-name {
-          font-family: var(--ad-display);
-          font-size: 19px; font-weight: 400;
-          color: var(--ad-cream); line-height: 1.1;
-        }
-        .ad-hero-card-sub {
-          font-size: 12px; font-weight: 300;
-          color: rgba(193,123,58,0.65); margin-top: 3px;
-        }
-        .ad-hero-stats {
-          position: absolute; bottom: 0; left: 0; right: 0;
-          display: flex; gap: 1px;
-        }
-        .ad-hero-stat {
-          flex: 1;
-          background: rgba(255,255,255,0.025);
-          border-top: 1px solid rgba(255,255,255,0.04);
-          padding: 14px 0; text-align: center;
-        }
-        .ad-hero-stat-num {
-          font-family: var(--ad-display);
-          font-size: 24px; font-weight: 400;
-          color: var(--ad-amber-lt); line-height: 1;
-        }
-        .ad-hero-stat-label {
-          font-size: 9px; font-weight: 500;
-          letter-spacing: 0.2em; text-transform: uppercase;
-          color: rgba(193,123,58,0.4); margin-top: 3px;
+          gap: 16px; padding: 120px 8% 80px;
         }
 
-        /* ── SECTION COMMONS ── */
-        .ad-section { padding: 100px 5vw; }
-        .ad-section-inner { max-width: 1360px; margin: 0 auto; }
-        .ad-section-label {
-          font-size: 10px; font-weight: 500;
+        .ad-slash-pill {
+          background: rgba(0,0,0,0.2);
+          border: 1px solid rgba(245,240,232,0.15);
+          padding: 18px 20px;
+          display: flex; align-items: center; gap: 14px;
+          width: 100%; max-width: 260px;
+          backdrop-filter: blur(6px);
+        }
+        .ad-slash-pill-icon { font-size: 32px; flex-shrink: 0; }
+        .ad-slash-pill-label {
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 0.3em; text-transform: uppercase;
+          color: rgba(245,240,232,0.5); margin-bottom: 4px;
+        }
+        .ad-slash-pill-name {
+          font-family: var(--disp);
+          font-size: 17px; font-weight: 700;
+          color: var(--cream); line-height: 1.1;
+        }
+        .ad-slash-pill-sub {
+          font-size: 11px; font-weight: 400;
+          color: rgba(245,240,232,0.4); margin-top: 3px;
+        }
+
+        /* ── MARQUEE ─────────────────────────────────────────────────── */
+        .ad-marquee-wrap {
+          background: var(--amber);
+          padding: 14px 0; overflow: hidden;
+          position: relative; z-index: 10;
+        }
+        .ad-marquee-track {
+          display: flex; align-items: center; gap: 0;
+          white-space: nowrap; width: max-content;
+        }
+        .ad-marquee-item {
+          font-size: 11px; font-weight: 700;
+          letter-spacing: 0.28em; text-transform: uppercase;
+          color: #fff; padding: 0 28px;
+        }
+        .ad-marquee-dot {
+          color: rgba(255,255,255,0.5);
+          font-size: 14px; padding: 0 4px;
+        }
+
+        /* ── PRODUCTS ────────────────────────────────────────────────── */
+        .ad-products-section {
+          padding: 100px 6vw;
+          background: var(--cream);
+          position: relative;
+        }
+
+        /* Asymmetric section header */
+        .ad-section-header {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: end;
+          margin-bottom: 60px; gap: 32px;
+        }
+        .ad-section-overline {
+          font-size: 10px; font-weight: 700;
           letter-spacing: 0.38em; text-transform: uppercase;
-          color: var(--ad-amber); margin-bottom: 16px;
+          color: var(--amber); margin-bottom: 12px;
           display: flex; align-items: center; gap: 12px;
         }
-        .ad-section-label::after {
-          content: '';
-          width: 36px; height: 1px;
-          background: var(--ad-rule);
+        .ad-section-overline::before {
+          content: ''; width: 24px; height: 2px;
+          background: var(--amber); flex-shrink: 0;
         }
-        .ad-section-label-light::after { background: var(--ad-rule-dark); }
         .ad-section-h2 {
-          font-family: var(--ad-display);
-          font-size: clamp(34px, 3.8vw, 58px);
-          font-weight: 300; line-height: 1.05;
-          letter-spacing: -0.01em; color: var(--ad-indigo);
+          font-family: var(--disp);
+          font-size: clamp(36px, 4.5vw, 68px);
+          font-weight: 900; line-height: 0.92;
+          letter-spacing: -0.02em; color: var(--indigo);
         }
-        .ad-section-h2-light { color: var(--ad-cream); }
-        .ad-section-header {
-          display: flex; align-items: flex-end;
-          justify-content: space-between;
-          margin-bottom: 56px; flex-wrap: wrap; gap: 28px;
+        .ad-section-h2 em {
+          font-style: italic; font-weight: 400; color: var(--amber);
         }
+        .ad-section-h2-light { color: var(--cream); }
 
-        /* ── PRODUCTS ── */
-        .ad-products-section {
-          background: var(--ad-cream); padding: 100px 5vw;
-        }
-        .ad-filter-row {
-          display: flex; gap: 2px;
+        /* Filter tabs */
+        .ad-filters {
+          display: flex; flex-direction: column;
+          align-items: flex-end; gap: 6px;
         }
         .ad-filter-btn {
-          padding: 10px 22px;
-          font-family: var(--ad-body);
-          font-size: 11px; font-weight: 400;
-          letter-spacing: 0.18em; text-transform: uppercase;
-          background: var(--ad-cream-lt);
-          border: none; cursor: pointer;
-          color: var(--ad-muted);
-          transition: background 0.2s, color 0.2s;
+          display: block;
+          font-family: var(--body);
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 0.24em; text-transform: uppercase;
+          padding: 8px 20px;
+          background: none; border: 1.5px solid var(--rule);
+          color: var(--muted); cursor: pointer;
+          transition: all 0.2s; white-space: nowrap;
         }
-        .ad-filter-btn:hover:not(.active) {
-          background: var(--ad-amber-pale);
-          color: var(--ad-cocoa);
-        }
+        .ad-filter-btn:hover { border-color: var(--amber); color: var(--amber); }
         .ad-filter-btn.active {
-          background: var(--ad-indigo);
-          color: var(--ad-cream);
-          font-weight: 500;
+          background: var(--indigo); border-color: var(--indigo);
+          color: var(--cream);
         }
+
+        /* Products asymmetric grid */
         .ad-products-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 2px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 24px;
+          align-items: start;
         }
         .ad-products-empty {
           grid-column: 1/-1; padding: 80px 0; text-align: center;
-          font-family: var(--ad-display);
-          font-size: 26px; font-style: italic;
-          color: var(--ad-muted);
+          font-family: var(--disp);
+          font-size: 28px; font-style: italic; color: var(--muted);
         }
 
         /* Product card */
         .ad-product-card {
           display: block; text-decoration: none; color: inherit;
-          background: var(--ad-cream-lt);
+          position: relative;
         }
         .ad-product-img-wrap {
-          position: relative; aspect-ratio: 3/4; overflow: hidden;
-          background: var(--ad-shea);
+          position: relative; aspect-ratio: 3/4;
+          overflow: hidden; background: var(--amber-p);
         }
-        .ad-product-img { transition: transform 0.7s var(--ad-ease); }
-        .ad-product-card:hover .ad-product-img { transform: scale(1.06); }
+        .ad-product-img { transition: transform 0.8s var(--ease); }
+        .ad-product-card:hover .ad-product-img { transform: scale(1.07); }
         .ad-product-placeholder {
           width: 100%; height: 100%;
-          display: flex; align-items: center; justify-content: center;
-          background: linear-gradient(160deg, var(--ad-shea) 0%, var(--ad-amber-pale) 100%);
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 16px;
+          background: var(--amber-p);
         }
-        .ad-placeholder-inner {
-          display: flex; flex-direction: column; align-items: center; gap: 12px;
+        .ad-placeholder-text {
+          font-family: var(--disp);
+          font-size: 13px; font-style: italic;
+          color: var(--amber); letter-spacing: 0.05em;
         }
-        .ad-placeholder-icon { font-size: 56px; }
-        .ad-placeholder-label {
-          font-family: var(--ad-display);
-          font-size: 14px; font-style: italic;
-          color: var(--ad-amber); letter-spacing: 0.05em;
-        }
-        .ad-product-overlay {
+        .ad-product-hover {
           position: absolute; inset: 0;
           background: rgba(27,42,74,0);
-          display: flex; align-items: flex-end; padding: 20px;
+          display: flex; align-items: flex-end;
+          padding: 24px;
           transition: background 0.35s;
         }
-        .ad-product-card:hover .ad-product-overlay {
-          background: rgba(27,42,74,0.42);
-        }
-        .ad-product-cta {
-          font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
-          color: var(--ad-cream); opacity: 0; transform: translateY(10px);
+        .ad-product-card:hover .ad-product-hover { background: rgba(27,42,74,0.5); }
+        .ad-product-hover span {
+          font-size: 11px; font-weight: 700;
+          letter-spacing: 0.2em; text-transform: uppercase;
+          color: var(--cream);
+          opacity: 0; transform: translateY(12px);
           transition: opacity 0.3s, transform 0.3s;
         }
-        .ad-product-card:hover .ad-product-cta { opacity: 1; transform: translateY(0); }
-        .ad-product-badge {
-          position: absolute; top: 14px; left: 14px;
-          background: var(--ad-amber); color: #fff;
-          font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase;
-          padding: 5px 12px; font-family: var(--ad-body);
+        .ad-product-card:hover .ad-product-hover span {
+          opacity: 1; transform: translateY(0);
         }
-        .ad-badge-new { background: var(--ad-indigo); }
-        .ad-product-meta { padding: 18px 20px 24px; }
-        .ad-product-category {
-          font-size: 10px; font-weight: 500;
-          letter-spacing: 0.28em; text-transform: uppercase;
-          color: var(--ad-amber); margin-bottom: 6px;
+        .ad-product-badge {
+          position: absolute; top: 16px; right: 16px;
+          background: var(--terra); color: #fff;
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 0.22em; text-transform: uppercase;
+          padding: 5px 12px;
+          font-family: var(--body);
+        }
+        .ad-badge-new { background: var(--forest); }
+        .ad-product-info {
+          padding: 16px 0 0;
+        }
+        .ad-product-cat {
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 0.3em; text-transform: uppercase;
+          color: var(--amber); display: block; margin-bottom: 6px;
         }
         .ad-product-name {
-          font-family: var(--ad-display);
-          font-size: 22px; font-weight: 400; line-height: 1.15;
-          margin-bottom: 10px; color: var(--ad-indigo);
+          font-family: var(--disp);
+          font-size: 20px; font-weight: 700;
+          color: var(--indigo); line-height: 1.15; margin-bottom: 10px;
         }
-        .ad-product-footer {
+        .ad-product-row {
           display: flex; align-items: center; justify-content: space-between;
         }
         .ad-product-price {
-          font-size: 14px; font-weight: 400;
-          color: var(--ad-muted); letter-spacing: 0.02em;
+          font-size: 13px; font-weight: 600; color: var(--muted);
         }
-        .ad-product-personalise {
-          font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-          color: var(--ad-amber); font-weight: 500;
+        .ad-product-arrow {
+          font-size: 18px; color: var(--amber);
+          transition: transform 0.2s;
         }
+        .ad-product-card:hover .ad-product-arrow { transform: translateX(4px); }
 
-        /* ── OCCASIONS ── */
+        /* ── OCCASIONS ───────────────────────────────────────────────── */
         .ad-occasions-section {
-          background: var(--ad-indigo);
-          padding: 80px 5vw; position: relative; overflow: hidden;
+          background: var(--indigo);
+          padding: 100px 6vw;
+          position: relative; overflow: hidden;
         }
         .ad-occasions-grid {
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 2px; margin-top: 44px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 2px; margin-top: 56px;
         }
-        .ad-occasion-card {
+        .ad-occasion-tile {
           display: block; text-decoration: none;
+          padding: 36px 28px;
           background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(193,123,58,0.1);
-          padding: 28px 16px; text-align: center;
+          border: 1px solid rgba(193,123,58,0.12);
+          position: relative; overflow: hidden;
           transition: background 0.25s, border-color 0.25s;
+          group: true;
         }
-        .ad-occasion-card:hover {
-          background: rgba(193,123,58,0.08);
-          border-color: rgba(193,123,58,0.3);
+        .ad-occasion-tile::before {
+          content: '';
+          position: absolute; bottom: 0; left: 0;
+          width: 100%; height: 2px;
+          background: var(--amber);
+          transform: scaleX(0); transform-origin: left;
+          transition: transform 0.3s var(--ease);
         }
-        .ad-occasion-icon {
-          font-size: 26px; margin-bottom: 10px; display: block;
+        .ad-occasion-tile:hover { background: rgba(193,123,58,0.06); border-color: rgba(193,123,58,0.3); }
+        .ad-occasion-tile:hover::before { transform: scaleX(1); }
+        .ad-occasion-num {
+          font-family: var(--disp);
+          font-size: 56px; font-weight: 900; font-style: italic;
+          color: rgba(193,123,58,0.1); line-height: 1;
+          margin-bottom: 12px; display: block;
         }
         .ad-occasion-name {
-          font-family: var(--ad-display);
-          font-size: 16px; font-weight: 400;
-          color: var(--ad-cream); line-height: 1.2;
+          font-family: var(--disp);
+          font-size: 26px; font-weight: 700;
+          color: var(--cream); display: block; margin-bottom: 8px;
         }
-        .ad-occasion-arrow {
-          font-size: 12px; color: var(--ad-amber);
-          margin-top: 6px; opacity: 0;
-          transition: opacity 0.2s;
+        .ad-occasion-sub {
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.18em; text-transform: uppercase;
+          color: var(--amber); display: block;
         }
-        .ad-occasion-card:hover .ad-occasion-arrow { opacity: 1; }
 
-        /* ── PROCESS ── */
+        /* ── PROCESS ─────────────────────────────────────────────────── */
         .ad-process-section {
-          background: var(--ad-cocoa);
-          padding: 100px 5vw;
-          position: relative; overflow: hidden;
+          background: var(--cream-l);
+          padding: 100px 6vw;
+          border-top: 1px solid var(--rule);
         }
-        .ad-process-steps {
+        .ad-process-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 2px; margin-top: 60px;
-        }
-        .ad-process-step {
-          background: rgba(255,255,255,0.025);
-          padding: 40px 26px;
-          border-top: 1px solid rgba(193,123,58,0.12);
           position: relative;
         }
-        .ad-process-num {
-          font-family: var(--ad-display);
-          font-size: 80px; font-weight: 300;
-          color: rgba(193,123,58,0.1);
-          line-height: 1; margin-bottom: 20px;
-          letter-spacing: -0.03em;
+        /* connecting line */
+        .ad-process-grid::before {
+          content: '';
+          position: absolute;
+          top: 44px; left: 8%;  right: 8%;
+          height: 1px;
+          background: repeating-linear-gradient(
+            90deg, var(--amber) 0, var(--amber) 8px, transparent 8px, transparent 16px
+          );
+          z-index: 0;
         }
-        .ad-process-icon {
-          font-size: 26px; display: block; margin-bottom: 14px;
+        .ad-process-step {
+          background: #fff;
+          padding: 36px 24px;
+          position: relative; z-index: 1;
+        }
+        .ad-process-step:nth-child(even) {
+          margin-top: 32px;
+        }
+        .ad-process-circle {
+          width: 48px; height: 48px; border-radius: 50%;
+          background: var(--amber);
+          display: flex; align-items: center; justify-content: center;
+          font-family: var(--disp);
+          font-size: 18px; font-weight: 900;
+          color: #fff; margin-bottom: 20px;
         }
         .ad-process-step h4 {
-          font-size: 15px; font-weight: 500;
-          color: var(--ad-cream); margin-bottom: 10px;
-          font-family: var(--ad-body);
-          letter-spacing: 0.03em;
+          font-family: var(--disp);
+          font-size: 20px; font-weight: 700;
+          color: var(--indigo); margin-bottom: 10px;
         }
         .ad-process-step p {
-          font-size: 13px; font-weight: 300;
-          color: rgba(232,213,176,0.5); line-height: 1.8;
+          font-size: 13px; font-weight: 400;
+          color: var(--muted); line-height: 1.8;
         }
 
-        /* ── WHY ADIRE ── */
+        /* ── WHY ─────────────────────────────────────────────────────── */
         .ad-why-section {
-          background: var(--ad-cream-lt);
-          padding: 100px 5vw;
-          border-top: 1px solid var(--ad-rule);
+          background: var(--indigo-d);
+          padding: 100px 6vw;
+          position: relative; overflow: hidden;
         }
-        .ad-why-grid {
+        /* Asymmetric layout: large left block + 2-col right */
+        .ad-why-layout {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 2px; margin-top: 56px;
+          grid-template-columns: 1.1fr 1fr;
+          gap: 3px; margin-top: 60px;
+          align-items: start;
+        }
+        .ad-why-hero-card {
+          background: var(--terra);
+          padding: 56px 44px;
+          position: relative; overflow: hidden;
+          grid-row: span 2;
+          display: flex; flex-direction: column; justify-content: flex-end;
+          min-height: 440px;
+        }
+        .ad-why-hero-num {
+          font-family: var(--disp);
+          font-size: 160px; font-weight: 900; font-style: italic;
+          color: rgba(0,0,0,0.15);
+          position: absolute; top: -20px; right: -10px;
+          line-height: 1; user-select: none;
+        }
+        .ad-why-hero-title {
+          font-family: var(--disp);
+          font-size: 38px; font-weight: 900;
+          color: var(--cream); margin-bottom: 14px; line-height: 1.05;
+          position: relative; z-index: 1;
+        }
+        .ad-why-hero-body {
+          font-size: 15px; font-weight: 400;
+          color: rgba(245,240,232,0.6); line-height: 1.8;
+          position: relative; z-index: 1;
         }
         .ad-why-card {
-          background: #fff; padding: 44px 36px;
-          border-top: 2px solid transparent;
-          transition: border-color 0.3s;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(193,123,58,0.1);
+          padding: 32px 28px;
+          transition: background 0.25s;
         }
-        .ad-why-card:hover { border-color: var(--ad-amber); }
-        .ad-why-icon { font-size: 28px; margin-bottom: 20px; display: block; }
-        .ad-why-card h3 {
-          font-family: var(--ad-display);
-          font-size: 26px; font-weight: 400;
-          margin-bottom: 12px; color: var(--ad-indigo);
+        .ad-why-card:hover { background: rgba(193,123,58,0.06); }
+        .ad-why-card-icon {
+          font-size: 28px; margin-bottom: 16px; display: block;
         }
-        .ad-why-card p {
-          font-size: 14px; font-weight: 300;
-          color: var(--ad-muted); line-height: 1.85;
+        .ad-why-card-title {
+          font-family: var(--disp);
+          font-size: 22px; font-weight: 700;
+          color: var(--cream); margin-bottom: 10px;
+        }
+        .ad-why-card-body {
+          font-size: 13px; font-weight: 400;
+          color: rgba(193,123,58,0.4); line-height: 1.8;
         }
 
-        /* ── CRAFT STRIP ── */
-        .ad-craft-strip {
-          background: var(--ad-indigo);
-          padding: 80px 5vw;
+        /* ── CTA ─────────────────────────────────────────────────────── */
+        .ad-cta-section {
+          background: var(--amber);
+          padding: 100px 6vw;
           display: flex; align-items: center;
           justify-content: space-between;
           gap: 48px; flex-wrap: wrap;
           position: relative; overflow: hidden;
         }
-        .ad-craft-left { max-width: 560px; position: relative; z-index: 1; }
-        .ad-craft-h2 {
-          font-family: var(--ad-display);
-          font-size: clamp(32px, 3.8vw, 54px);
-          font-weight: 300; line-height: 1.05;
-          letter-spacing: -0.01em; color: var(--ad-cream);
+        .ad-cta-section::before {
+          content: 'ADIRE';
+          position: absolute; right: -2%;
+          top: 50%; transform: translateY(-50%);
+          font-family: var(--disp);
+          font-size: clamp(100px, 15vw, 200px);
+          font-weight: 900; font-style: italic;
+          color: rgba(0,0,0,0.07);
+          pointer-events: none; user-select: none;
+          line-height: 1; letter-spacing: -0.04em;
+        }
+        .ad-cta-left { max-width: 580px; position: relative; z-index: 1; }
+        .ad-cta-h2 {
+          font-family: var(--disp);
+          font-size: clamp(36px, 5vw, 72px);
+          font-weight: 900; line-height: 0.9;
+          letter-spacing: -0.03em; color: #fff;
           margin-bottom: 16px;
         }
-        .ad-craft-h2 em { font-style: italic; color: var(--ad-amber-lt); }
-        .ad-craft-p {
-          font-size: 15px; font-weight: 300;
-          color: rgba(232,213,176,0.55); line-height: 1.85;
+        .ad-cta-h2 em { font-style: italic; font-weight: 400; }
+        .ad-cta-p {
+          font-size: 16px; font-weight: 400;
+          color: rgba(255,255,255,0.65); line-height: 1.8;
         }
-        .ad-craft-actions {
+        .ad-cta-actions {
           display: flex; flex-direction: column;
-          gap: 12px; min-width: 220px; position: relative; z-index: 1;
+          gap: 12px; min-width: 220px;
+          position: relative; z-index: 1;
         }
-        .ad-btn-cream {
+        .ad-btn-white {
           display: block; text-align: center;
-          background: var(--ad-cream); color: var(--ad-indigo);
-          padding: 17px 36px;
-          font-family: var(--ad-body);
-          font-size: 11px; letter-spacing: 0.22em;
-          text-transform: uppercase; text-decoration: none;
-          font-weight: 400; transition: background 0.25s, color 0.25s;
+          background: #fff; color: var(--amber);
+          padding: 18px 36px;
+          font-family: var(--body);
+          font-size: 11px; font-weight: 700;
+          letter-spacing: 0.24em; text-transform: uppercase;
+          text-decoration: none;
+          transition: background 0.2s, color 0.2s;
         }
-        .ad-btn-cream:hover { background: var(--ad-amber); color: #fff; }
-        .ad-btn-outline-light {
+        .ad-btn-white:hover { background: var(--indigo); color: #fff; }
+        .ad-btn-outline-white {
           display: block; text-align: center;
-          border: 1px solid rgba(193,123,58,0.3);
-          color: rgba(193,123,58,0.65);
-          padding: 17px 36px;
-          font-family: var(--ad-body);
-          font-size: 11px; letter-spacing: 0.22em;
-          text-transform: uppercase; text-decoration: none;
-          font-weight: 400; transition: border-color 0.25s, color 0.25s;
+          border: 1.5px solid rgba(255,255,255,0.3);
+          color: rgba(255,255,255,0.7);
+          padding: 18px 36px;
+          font-family: var(--body);
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.24em; text-transform: uppercase;
+          text-decoration: none;
+          transition: border-color 0.2s, color 0.2s;
         }
-        .ad-btn-outline-light:hover { border-color: var(--ad-amber); color: var(--ad-amber-lt); }
+        .ad-btn-outline-white:hover { border-color: #fff; color: #fff; }
 
-        /* ── FOOTER ── */
-        .ad-footer { background: var(--ad-indigo-deep); padding: 72px 5vw 32px; }
-        .ad-footer-top {
-          display: grid; grid-template-columns: 2fr 1fr 1fr;
-          gap: 56px; padding-bottom: 56px;
-          border-bottom: 1px solid var(--ad-rule-dark);
-        }
-        .ad-footer-brand {
-          font-family: var(--ad-display);
-          font-size: 32px; font-weight: 300;
-          letter-spacing: 0.08em; text-transform: uppercase;
-          color: var(--ad-cream); margin-bottom: 6px; line-height: 1;
-        }
-        .ad-footer-brand span { color: var(--ad-amber); font-style: italic; font-weight: 300; }
-        .ad-footer-tagline {
-          font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-          color: rgba(193,123,58,0.5); margin-bottom: 16px;
-        }
-        .ad-footer-desc {
-          font-size: 13px; font-weight: 300;
-          color: rgba(193,123,58,0.35); line-height: 1.85; max-width: 260px;
-        }
-        .ad-footer-col h4 {
-          font-size: 10px; font-weight: 500;
-          letter-spacing: 0.32em; text-transform: uppercase;
-          color: var(--ad-amber); margin-bottom: 20px;
-        }
-        .ad-footer-col ul { list-style: none; }
-        .ad-footer-col li { margin-bottom: 10px; }
-        .ad-footer-col a {
-          font-size: 13px; font-weight: 300;
-          color: rgba(193,123,58,0.35); text-decoration: none;
-          transition: color 0.2s;
-        }
-        .ad-footer-col a:hover { color: var(--ad-amber-lt); }
-        .ad-footer-bottom {
-          display: flex; align-items: center;
-          justify-content: space-between;
-          padding-top: 28px; flex-wrap: wrap; gap: 16px;
-        }
-        .ad-footer-copy {
-          font-size: 12px; font-weight: 300;
-          color: rgba(193,123,58,0.25); letter-spacing: 0.06em;
-        }
-        .ad-footer-copy span { color: var(--ad-amber); }
-        .ad-footer-legal { display: flex; gap: 24px; }
-        .ad-footer-legal a {
-          font-size: 11px; font-weight: 300;
-          color: rgba(193,123,58,0.25); text-decoration: none;
-          letter-spacing: 0.08em; transition: color 0.2s;
-        }
-        .ad-footer-legal a:hover { color: rgba(193,123,58,0.55); }
-
-        /* ── RESPONSIVE ── */
+        /* ── RESPONSIVE ──────────────────────────────────────────────── */
         @media (max-width: 1100px) {
-          .ad-process-steps { grid-template-columns: 1fr 1fr; }
-          .ad-occasions-grid { grid-template-columns: repeat(3, 1fr); }
-          .ad-footer-top { grid-template-columns: 1fr 1fr; }
+          .ad-process-grid { grid-template-columns: 1fr 1fr; }
+          .ad-process-grid::before { display: none; }
+          .ad-process-step:nth-child(even) { margin-top: 0; }
+          .ad-why-layout { grid-template-columns: 1fr; }
+          .ad-why-hero-card { grid-row: auto; min-height: 320px; }
         }
-        @media (max-width: 800px) {
-          .ad-hero { grid-template-columns: 1fr; min-height: auto; }
-          .ad-hero-left { padding: 110px 6vw 72px; }
-          .ad-hero-right { display: none; }
-          .ad-nav-links { display: none; }
-          .ad-why-grid { grid-template-columns: 1fr; }
-          .ad-process-steps { grid-template-columns: 1fr; }
-          .ad-craft-strip { flex-direction: column; }
-          .ad-craft-actions { width: 100%; }
+        @media (max-width: 860px) {
+          .ad-hero-slash { display: none; }
+          .ad-hero-h1 { font-size: clamp(52px, 12vw, 88px); }
+          .ad-hero-h1 .line-2 { margin-left: 0; }
+          .ad-hero-content { max-width: 100%; }
           .ad-products-grid { grid-template-columns: 1fr 1fr; }
-          .ad-occasions-grid { grid-template-columns: repeat(3, 1fr); }
-          .ad-footer-top { grid-template-columns: 1fr; gap: 36px; }
+          .ad-occasions-grid { grid-template-columns: 1fr 1fr; }
+          .ad-section-header { grid-template-columns: 1fr; }
+          .ad-filters { flex-direction: row; align-items: flex-start; }
+          .ad-cta-section { flex-direction: column; }
+          .ad-cta-actions { width: 100%; }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 520px) {
           .ad-products-grid { grid-template-columns: 1fr; }
-          .ad-occasions-grid { grid-template-columns: repeat(2, 1fr); }
+          .ad-occasions-grid { grid-template-columns: 1fr; }
+          .ad-process-grid { grid-template-columns: 1fr; }
+          .ad-hero-stats { flex-wrap: wrap; }
+          .ad-hero-stat { flex: 0 0 50%; }
         }
       `}</style>
 
-      <GrainOverlay />
+      <Grain />
 
-      {/* ── NAV ── */}
-      <nav className={`ad-nav ${scrolled ? "scrolled" : ""}`}>
-        <Link href="/" className={`ad-nav-logo ${scrolled ? "dark" : ""}`}>
-          Adire<span>.</span>
-        </Link>
-        <ul className={`ad-nav-links ${scrolled ? "dark" : ""}`}>
-          <li><Link href="/shop">Shop</Link></li>
-          <li><Link href="/occasions">Occasions</Link></li>
-          <li><Link href="/business">Business</Link></li>
-          <li><Link href="/about">Our Story</Link></li>
-          <li>
-            <Link href="/shop" className="ad-nav-cta">
-              Personalise Now
-            </Link>
-          </li>
-        </ul>
-      </nav>
+      {/* ═══════════════════════ HERO ═══════════════════════ */}
+      <section className="ad-hero" ref={heroRef}>
+        <motion.div className="ad-hero-bg" style={{ y: heroY }}>
+          <AnkaraPattern color="#C17B3A" opacity={0.055} />
+        </motion.div>
 
-      {/* ── HERO ── */}
-      <section className="ad-hero">
+        <div className="ad-hero-watermark">ADIRE</div>
 
-        {/* Left — copy */}
-        <div className="ad-hero-left">
-          <motion.div
-            className="ad-hero-eyebrow"
-            initial={{ opacity: 0, x: -16 }}
+        {/* Terracotta slash — right side */}
+        <div className="ad-hero-slash">
+          <AnkaraPattern color="#F5F0E8" opacity={0.06} />
+          <div className="ad-hero-slash-inner">
+            <motion.div className="ad-slash-pill"
+              animate={{ y: [0, -14, 0] }}
+              transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+            >
+              <span className="ad-slash-pill-icon">👜</span>
+              <div>
+                <div className="ad-slash-pill-label">Product 01</div>
+                <div className="ad-slash-pill-name">Ankara Tote</div>
+                <div className="ad-slash-pill-sub">Embroidered · Made to order</div>
+              </div>
+            </motion.div>
+            <motion.div className="ad-slash-pill"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 7.5, ease: "easeInOut", repeat: Infinity, delay: 1 }}
+            >
+              <span className="ad-slash-pill-icon">👝</span>
+              <div>
+                <div className="ad-slash-pill-label">Product 02</div>
+                <div className="ad-slash-pill-name">Ankara Pouch</div>
+                <div className="ad-slash-pill-sub">Personalised · Gift-ready</div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <div className="ad-hero-bar" />
+
+        {/* Main copy */}
+        <div className="ad-hero-content">
+          <motion.div className="ad-hero-overline"
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: [0.16,1,0.3,1], delay: 0.1 }}
+            transition={{ duration: 0.7, ease: EASE, delay: 0.1 }}
           >
             Benin City, Nigeria · Est. 2025
           </motion.div>
 
-          <motion.h1
-            className="ad-hero-h1"
-            initial={{ opacity: 0, y: 36 }}
+          <motion.h1 className="ad-hero-h1"
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: [0.16,1,0.3,1], delay: 0.22 }}
+            transition={{ duration: 0.9, ease: EASE, delay: 0.22 }}
           >
-            Made Personal.
-            <em>Made Nigerian.</em>
+            Made
+            <em className="line-2">Personal.</em>
+            <span className="line-3">Nigerian.</span>
+            <div className="ad-hero-tag">Ankara Gifts</div>
           </motion.h1>
 
-          <motion.p
-            className="ad-hero-body"
+          <motion.p className="ad-hero-body"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16,1,0.3,1], delay: 0.38 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.4 }}
           >
-            Personalised Ankara tote bags and pouches, embroidered with your
-            name and made to order in Benin City. A gift that feels like it
-            was always theirs.
+            Personalised Ankara tote bags and pouches — embroidered with your
+            name, made by hand in Benin City, and delivered anywhere in Nigeria.
           </motion.p>
 
-          <motion.div
-            className="ad-hero-actions"
+          <motion.div className="ad-hero-actions"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16,1,0.3,1], delay: 0.52 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.55 }}
           >
-            <Link href="/shop?category=tote" className="ad-btn-amber">
+            <Link href="/shop?category=tote" className="ad-btn-primary">
               Shop Tote Bags
             </Link>
-            <Link href="/shop?category=pouch" className="ad-btn-ghost">
+            <Link href="/shop?category=pouch" className="ad-btn-secondary">
               Explore Pouches
             </Link>
           </motion.div>
         </div>
 
-        {/* Right — decorative cards */}
-        <motion.div
-          className="ad-hero-right"
+        {/* Stats strip */}
+        <motion.div className="ad-hero-stats"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.2, delay: 0.35 }}
+          transition={{ duration: 1, delay: 0.7 }}
         >
-          <div className="ad-hero-pattern">
-            <AdirePattern opacity={0.07} />
-          </div>
-
-          <div className="ad-hero-ghost-text">Adire.</div>
-
-          <div className="ad-hero-cards">
-            <motion.div
-              className="ad-hero-card"
-              animate={{ y: [0, -12, 0] }}
-              transition={{ duration: 6.5, ease: "easeInOut", repeat: Infinity }}
-            >
-              <div className="ad-hero-card-icon">👜</div>
-              <div>
-                <div className="ad-hero-card-label">Product 01</div>
-                <div className="ad-hero-card-name">Ankara Tote Bag</div>
-                <div className="ad-hero-card-sub">Embroidered · Made to order</div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="ad-hero-card"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 7.5, ease: "easeInOut", repeat: Infinity, delay: 1.2 }}
-            >
-              <div className="ad-hero-card-icon">👝</div>
-              <div>
-                <div className="ad-hero-card-label">Product 02</div>
-                <div className="ad-hero-card-name">Ankara Pouch</div>
-                <div className="ad-hero-card-sub">Personalised · Gift-ready</div>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="ad-hero-stats">
-            {[
-              { num: "100%", label: "Handmade" },
-              { num: "3–5d", label: "Delivery" },
-              { num: "🇳🇬", label: "Nationwide" },
-            ].map((s) => (
-              <div className="ad-hero-stat" key={s.label}>
-                <div className="ad-hero-stat-num">{s.num}</div>
-                <div className="ad-hero-stat-label">{s.label}</div>
-              </div>
-            ))}
-          </div>
+          {[
+            { num: "100%", label: "Handmade" },
+            { num: "3–5d", label: "Nationwide delivery" },
+            { num: "₦0",   label: "Hidden fees" },
+            { num: "500+", label: "Happy customers" },
+          ].map(s => (
+            <div key={s.label} className="ad-hero-stat">
+              <div className="ad-hero-stat-num">{s.num}</div>
+              <div className="ad-hero-stat-label">{s.label}</div>
+            </div>
+          ))}
         </motion.div>
       </section>
 
-      {/* ── PRODUCTS ── */}
+      {/* ═══════════════════════ MARQUEE ═══════════════════════ */}
+      <Marquee />
+
+      {/* ═══════════════════════ PRODUCTS ═══════════════════════ */}
       <section className="ad-products-section">
-        <div className="ad-section-inner">
-          <div className="ad-section-header">
-            <div>
-              <SectionLabel>Our Products</SectionLabel>
-              <h2 className="ad-section-h2">
-                Two products.<br />Infinite occasions.
-              </h2>
-            </div>
-            <div className="ad-filter-row">
-              {(
-                [
-                  { key: "all",   label: `All (${allProducts.length})` },
-                  { key: "tote",  label: `Tote Bags (${toteCount})` },
-                  { key: "pouch", label: `Pouches (${pouchCount})` },
-                ] as const
-              ).map(({ key, label }) => (
-                <button
-                  key={key}
-                  className={`ad-filter-btn ${activeFilter === key ? "active" : ""}`}
-                  onClick={() => setActiveFilter(key)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+        <div className="ad-section-header">
+          <div>
+            <div className="ad-section-overline">Our Products</div>
+            <h2 className="ad-section-h2">
+              Two products.<br /><em>Infinite occasions.</em>
+            </h2>
           </div>
-
-          <motion.div
-            ref={productsRef}
-            className="ad-products-grid"
-            variants={stagger}
-            initial="hidden"
-            animate={productsInView ? "show" : "hidden"}
-          >
-            {displayProducts.length > 0 ? (
-              displayProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))
-            ) : (
-              <div className="ad-products-empty">New patterns arriving soon.</div>
-            )}
-          </motion.div>
+          <div className="ad-filters">
+            {([
+              { key: "all",   label: `All (${allProducts.length})` },
+              { key: "tote",  label: `Totes (${toteCount})` },
+              { key: "pouch", label: `Pouches (${pouchCount})` },
+            ] as const).map(({ key, label }) => (
+              <button key={key}
+                className={`ad-filter-btn ${activeFilter === key ? "active" : ""}`}
+                onClick={() => setActiveFilter(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        <motion.div ref={productsRef}
+          className="ad-products-grid"
+          variants={stagger}
+          initial="hidden"
+          animate={productsInView ? "show" : "hidden"}
+        >
+          {displayProducts.length > 0 ? (
+            displayProducts.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
+            ))
+          ) : (
+            <div className="ad-products-empty">New patterns arriving soon.</div>
+          )}
+        </motion.div>
       </section>
 
-      {/* ── OCCASIONS ── */}
+      {/* ═══════════════════════ OCCASIONS ═══════════════════════ */}
       <section className="ad-occasions-section">
-        <div className="ad-section-inner">
-          <SectionLabel light>Shop by Occasion</SectionLabel>
-          <h2 className="ad-section-h2 ad-section-h2-light">
-            Every celebration<br />deserves something real.
-          </h2>
-          <motion.div
-            ref={occasionsRef}
-            className="ad-occasions-grid"
-            variants={stagger}
-            initial="hidden"
-            animate={occasionsInView ? "show" : "hidden"}
-          >
-            {[
-              { icon: "🎂", name: "Birthday",    slug: "birthday" },
-              { icon: "💍", name: "Anniversary", slug: "anniversary" },
-              { icon: "🎓", name: "Graduation",  slug: "graduation" },
-              { icon: "🤍", name: "Wedding",     slug: "wedding" },
-              { icon: "🎁", name: "Just Because",slug: "just-because" },
-              { icon: "🏢", name: "Corporate",   slug: "corporate" },
-            ].map((o) => (
-              <motion.div key={o.slug} variants={fadeUp}>
-                <Link href={`/shop?tag=${o.slug}`} className="ad-occasion-card">
-                  <span className="ad-occasion-icon">{o.icon}</span>
-                  <div className="ad-occasion-name">{o.name}</div>
-                  <div className="ad-occasion-arrow">→</div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
+        <AnkaraPattern color="#C17B3A" opacity={0.05} />
+        <div className="ad-section-overline" style={{ color: "var(--amber)", marginBottom: "12px" }}>
+          Shop by Occasion
         </div>
-        <AdirePattern opacity={0.05} />
+        <h2 className="ad-section-h2 ad-section-h2-light">
+          Every celebration<br /><em>deserves Ankara.</em>
+        </h2>
+        <motion.div className="ad-occasions-grid"
+          variants={stagger} initial="hidden"
+          animate="show"
+        >
+          {[
+            { icon: "🎂", name: "Birthday",     slug: "birthday",     sub: "Most gifted" },
+            { icon: "🎓", name: "Graduation",   slug: "graduation",   sub: "Big moment" },
+            { icon: "💍", name: "Anniversary",  slug: "anniversary",  sub: "Celebrate love" },
+            { icon: "🤍", name: "Wedding",      slug: "wedding",      sub: "Forever gift" },
+            { icon: "🏢", name: "Corporate",    slug: "corporate",    sub: "Bulk orders" },
+            { icon: "🎁", name: "Just Because", slug: "just-because", sub: "No reason needed" },
+          ].map((o, i) => (
+            <motion.div key={o.slug} variants={fadeUp}>
+              <Link href={`/shop?tag=${o.slug}`} className="ad-occasion-tile">
+                <span className="ad-occasion-num">0{i + 1}</span>
+                <span className="ad-occasion-name">{o.name}</span>
+                <span className="ad-occasion-sub">{o.sub} →</span>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
-      {/* ── PROCESS ── */}
+      {/* ═══════════════════════ PROCESS ═══════════════════════ */}
       <section className="ad-process-section">
-        <div className="ad-section-inner">
-          <SectionLabel light>How It Works</SectionLabel>
-          <h2 className="ad-section-h2 ad-section-h2-light">
-            From your name<br />to their hands.
-          </h2>
-          <motion.div
-            ref={processRef}
-            className="ad-process-steps"
-            variants={stagger}
-            initial="hidden"
-            animate={processInView ? "show" : "hidden"}
-          >
-            {[
-              {
-                num: "01", icon: "🧵",
-                title: "Choose your product",
-                body: "Pick a tote bag or pouch. Browse our curated Ankara patterns and choose the one that speaks to the occasion.",
-              },
-              {
-                num: "02", icon: "✍🏾",
-                title: "Personalise it",
-                body: "Tell us the name to be embroidered, any message, and the occasion. Every piece is made to your exact specification.",
-              },
-              {
-                num: "03", icon: "🪡",
-                title: "We craft it",
-                body: "Your bag is cut, sewn, and embroidered by hand in Benin City. Packaged in kraft tissue so it arrives as a gift should.",
-              },
-              {
-                num: "04", icon: "📦",
-                title: "Delivered to them",
-                body: "Shipped nationwide via GIG Logistics within 3–5 days. Trackable, insured, and beautifully packaged on arrival.",
-              },
-            ].map((step) => (
-              <motion.div key={step.num} className="ad-process-step" variants={fadeUp}>
-                <div className="ad-process-num">{step.num}</div>
-                <span className="ad-process-icon">{step.icon}</span>
-                <h4>{step.title}</h4>
-                <p>{step.body}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+        <div className="ad-section-overline">How It Works</div>
+        <h2 className="ad-section-h2">
+          From your name<br /><em>to their hands.</em>
+        </h2>
+        <motion.div ref={processRef}
+          className="ad-process-grid"
+          variants={stagger} initial="hidden"
+          animate={processInView ? "show" : "hidden"}
+        >
+          {[
+            { n: "1", title: "Choose your bag",
+              body: "Pick a tote or pouch. Browse 3–4 Ankara patterns, each bold and curated." },
+            { n: "2", title: "Personalise it",
+              body: "Tell us the name to embroider and the occasion. That's all we need." },
+            { n: "3", title: "We craft it",
+              body: "Cut, sewn, and embroidered by hand in Benin City. Packaged like a proper gift." },
+            { n: "4", title: "Delivered",
+              body: "GIG Logistics. Trackable. Nationwide. Arrives in 3–5 days, beautifully wrapped." },
+          ].map((step) => (
+            <motion.div key={step.n} className="ad-process-step" variants={fadeUp}>
+              <div className="ad-process-circle">{step.n}</div>
+              <h4>{step.title}</h4>
+              <p>{step.body}</p>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
-      {/* ── WHY ADIRE ── */}
+      {/* ═══════════════════════ WHY ADIRE ═══════════════════════ */}
       <section className="ad-why-section">
-        <div className="ad-section-inner">
-          <SectionLabel>Why Adire</SectionLabel>
-          <h2 className="ad-section-h2">
-            A gift they will keep.<br />Not just receive.
-          </h2>
-          <motion.div
-            ref={whyRef}
-            className="ad-why-grid"
-            variants={stagger}
-            initial="hidden"
-            animate={whyInView ? "show" : "hidden"}
-          >
-            {[
-              {
-                icon: "🇳🇬",
-                title: "Proudly Nigerian",
-                body: "Every pattern is authentic Ankara fabric sourced locally. Every stitch is Nigerian craftsmanship. Not imported. Not mass-produced.",
-              },
-              {
-                icon: "✏️",
-                title: "Truly personalised",
-                body: "Your person's name, embroidered directly onto the fabric. Not a sticker. Not a print. A permanent part of the bag that lasts for years.",
-              },
-              {
-                icon: "📦",
-                title: "Packaged like a gift",
-                body: "Every order arrives in a kraft gift box with tissue paper and a handwritten-feel card. The unboxing is part of the experience.",
-              },
-              {
-                icon: "🏢",
-                title: "Adire for Business",
-                body: "Staff appreciation packs. Client gifts. Corporate events. Branded Ankara sets that actually impress. Bulk pricing available.",
-              },
-            ].map((item) => (
-              <motion.div key={item.title} className="ad-why-card" variants={fadeUp}>
-                <span className="ad-why-icon">{item.icon}</span>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </motion.div>
-            ))}
-          </motion.div>
+        <AnkaraPattern color="#C17B3A" opacity={0.04} />
+        <div className="ad-section-overline" style={{ color: "var(--amber)", marginBottom: "12px" }}>
+          Why Adire
         </div>
+        <h2 className="ad-section-h2 ad-section-h2-light">
+          A gift they keep.<br /><em>Not just receive.</em>
+        </h2>
+        <motion.div ref={whyRef}
+          className="ad-why-layout"
+          variants={stagger} initial="hidden"
+          animate={whyInView ? "show" : "hidden"}
+        >
+          {/* Hero card — left, spans 2 rows */}
+          <motion.div className="ad-why-hero-card" variants={fadeUp}>
+            <AnkaraPattern color="#F5F0E8" opacity={0.06} />
+            <div className="ad-why-hero-num">01</div>
+            <h3 className="ad-why-hero-title">
+              Proudly<br />Nigerian.
+            </h3>
+            <p className="ad-why-hero-body">
+              Every pattern is authentic Ankara fabric sourced locally.
+              Every stitch is Nigerian craftsmanship. Not imported.
+              Not mass-produced. Made here, with pride.
+            </p>
+          </motion.div>
+
+          {/* Right cards */}
+          {[
+            { icon: "✏️", title: "Truly personalised",
+              body: "Your person's name embroidered directly onto the fabric. Not a sticker. Not a print. Permanent." },
+            { icon: "📦", title: "Packaged like a gift",
+              body: "Kraft box, tissue paper, handwritten card. The unboxing is part of the experience." },
+            { icon: "🏢", title: "Adire for Business",
+              body: "Staff packs. Client gifts. Corporate events. Ankara sets that actually impress. Bulk pricing available." },
+          ].map((item) => (
+            <motion.div key={item.title} className="ad-why-card" variants={fadeUp}>
+              <span className="ad-why-card-icon">{item.icon}</span>
+              <h3 className="ad-why-card-title">{item.title}</h3>
+              <p className="ad-why-card-body">{item.body}</p>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
-      {/* ── CTA STRIP ── */}
-      <div className="ad-craft-strip">
-        <AdirePattern opacity={0.04} />
-        <div className="ad-craft-left">
-          <h2 className="ad-craft-h2">
-            Give something they will
-            <br />
-            <em>remember forever.</em>
+      {/* ═══════════════════════ CTA ═══════════════════════ */}
+      <section className="ad-cta-section">
+        <div className="ad-cta-left">
+          <h2 className="ad-cta-h2">
+            Give something<br /><em>they'll never forget.</em>
           </h2>
-          <p className="ad-craft-p">
+          <p className="ad-cta-p">
             Order in minutes. Made by hand in Benin City.
-            Delivered across Nigeria within 3–5 days.
+            Delivered across Nigeria in 3–5 days.
           </p>
         </div>
-        <div className="ad-craft-actions">
-          <Link href="/shop" className="ad-btn-cream">Browse All Gifts</Link>
-          <Link href="/business" className="ad-btn-outline-light">Corporate Orders →</Link>
+        <div className="ad-cta-actions">
+          <Link href="/shop" className="ad-btn-white">Browse All Gifts</Link>
+          <Link href="/business" className="ad-btn-outline-white">Corporate Orders →</Link>
         </div>
-      </div>
-
-      {/* ── FOOTER ── */}
-      <footer className="ad-footer">
-        <div className="ad-footer-top">
-          <div>
-            <div className="ad-footer-brand">Adire<span>.</span></div>
-            <div className="ad-footer-tagline">Made Personal. Made Nigerian.</div>
-            <p className="ad-footer-desc">
-              Personalised Ankara tote bags and pouches, embroidered with your
-              name and made to order. Crafted in Benin City. Delivered
-              nationwide.
-            </p>
-          </div>
-          <div className="ad-footer-col">
-            <h4>Shop</h4>
-            <ul>
-              <li><Link href="/shop?category=tote">Ankara Tote Bags</Link></li>
-              <li><Link href="/shop?category=pouch">Ankara Pouches</Link></li>
-              <li><Link href="/shop?tag=bundle">Gift Sets</Link></li>
-              <li><Link href="/business">Corporate Gifts</Link></li>
-            </ul>
-          </div>
-          <div className="ad-footer-col">
-            <h4>Support</h4>
-            <ul>
-              <li><Link href="/track">Track Order</Link></li>
-              <li><Link href="/delivery">Delivery Info</Link></li>
-              <li><Link href="/returns">Returns</Link></li>
-              <li><Link href="/contact">Contact Us</Link></li>
-              <li><Link href="/about">Our Story</Link></li>
-            </ul>
-          </div>
-        </div>
-        <div className="ad-footer-bottom">
-          <div className="ad-footer-copy">
-            © 2025 <span>Adire</span>. Proudly Nigerian.
-          </div>
-          <div className="ad-footer-legal">
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-          </div>
-        </div>
-      </footer>
+      </section>
     </>
   );
 }
