@@ -6,7 +6,7 @@
 // Fonts: Playfair Display (display) · Syne (body/labels)
 // Palette: deep indigo · kola amber · harmattan cream · terracotta · forest
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { motion, useInView, useScroll, useTransform, type Variants } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -71,13 +71,15 @@ function AnkaraTile({ color = "#C17B3A", size = 60, opacity = 1 }: {
 function AnkaraPattern({ color = "#C17B3A", opacity = 0.07 }: {
   color?: string; opacity?: number;
 }) {
+  const uid = useId().replace(/:/g, "");
+  const patternId = `ankara-${uid}`;
   return (
     <svg aria-hidden style={{
       position: "absolute", inset: 0, width: "100%", height: "100%",
       pointerEvents: "none", opacity,
     }} xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <pattern id={`ankara-${color.replace("#","")}`}
+        <pattern id={patternId}
           x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
           <circle cx="30" cy="30" r="5" fill={color} />
           <circle cx="30" cy="30" r="10" fill="none" stroke={color} strokeWidth="0.8" />
@@ -89,7 +91,7 @@ function AnkaraPattern({ color = "#C17B3A", opacity = 0.07 }: {
           <line x1="60" y1="0" x2="0" y2="60" stroke={color} strokeWidth="0.2" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill={`url(#ankara-${color.replace("#","")})`} />
+      <rect width="100%" height="100%" fill={`url(#${patternId})`} />
     </svg>
   );
 }
@@ -101,12 +103,12 @@ function Grain() {
       position: "fixed", inset: 0, width: "100%", height: "100%",
       pointerEvents: "none", zIndex: 9999, opacity: 0.025, mixBlendMode: "multiply",
     }}>
-      <filter id="grain-f">
+      <filter id="lensra-grain-f">
         <feTurbulence type="fractalNoise" baseFrequency="0.72"
           numOctaves="3" stitchTiles="stitch" />
         <feColorMatrix type="saturate" values="0" />
       </filter>
-      <rect width="100%" height="100%" filter="url(#grain-f)" />
+      <rect width="100%" height="100%" filter="url(#lensra-grain-f)" />
     </svg>
   );
 }
@@ -223,8 +225,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
       .catch(console.error);
   }, []);
 
-  // const allProducts = products.filter(p => ["tote","pouch"].includes(p.category));
-  const allProducts = products
+  const allProducts = products.filter(p => ["tote","pouch"].includes(p.category));
   const filtered = activeFilter === "all" ? allProducts
     : allProducts.filter(p => p.category === activeFilter);
   const displayProducts = filtered.length > 0 ? filtered : featuredProducts;
@@ -234,36 +235,6 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;500;600;700;800&display=swap');
-
-        :root {
-          --indigo:    #1B2A4A;
-          --indigo-d:  #0e1a30;
-          --amber:     #C17B3A;
-          --amber-l:   #D4956A;
-          --amber-p:   #F0DFC4;
-          --cream:     #F5F0E8;
-          --cream-l:   #FDF9F4;
-          --terra:     #8B3A2A;
-          --forest:    #2A4A2E;
-          --cocoa:     #2C1810;
-          --muted:     #7A6E60;
-          --rule:      #E2D4BE;
-          --disp:      'Playfair Display', Georgia, serif;
-          --body:      'Syne', system-ui, sans-serif;
-          --ease:      cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body {
-          background: var(--cream);
-          color: var(--cocoa);
-          font-family: var(--body);
-          -webkit-font-smoothing: antialiased;
-          overflow-x: hidden;
-        }
-
         /* ── HERO ───────────────────────────────────────────────────── */
         .ad-hero {
           min-height: 100svh;
