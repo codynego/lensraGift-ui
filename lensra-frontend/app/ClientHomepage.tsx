@@ -11,7 +11,7 @@ import { motion, useInView, useScroll, useTransform, type Variants } from "frame
 import Link from "next/link";
 import Image from "next/image";
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.adire.ng/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 
 function getImageUrl(p: string | null | undefined): string | null {
   if (!p) return null;
