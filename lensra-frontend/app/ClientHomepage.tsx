@@ -226,15 +226,11 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: a
   }, []);
 
   const allProducts = products.filter(p => ["tote","pouch"].includes(p.category));
-  console.log("All products:", allProducts);
   const filtered = activeFilter === "all" ? allProducts
     : allProducts.filter(p => p.category === activeFilter);
   const displayProducts = filtered.length > 0 ? filtered : featuredProducts;
   const toteCount  = allProducts.filter(p => p.category === "tote").length;
   const pouchCount = allProducts.filter(p => p.category === "pouch").length;
-  console.log("Filtered products:", displayProducts);
-  console.log("Tote count:", toteCount);
-  console.log("Pouch count:", pouchCount);
 
 
   return (
