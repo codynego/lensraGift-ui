@@ -2,10 +2,8 @@
 
 // components/AdireNav.tsx
 // Lensra — Navigation
-// Bulletproof color approach:
-//   - Default state: always solid cream with dark text (safe on any page)
-//   - On dark-hero pages only: transparent with light text at page top
-//   - Transparent state is OPT-IN per page, not the default
+// Always solid cream. No transparency. No light/dark switching.
+// Dark indigo text on cream background — always readable on every page.
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -36,27 +34,23 @@ const NAV = [
       { label: "Corporate",     href: "/shop?tag=corporate", tag: "Bulk" },
     ],
   },
-  { label: "Business",  href: "/business" },
-  { label: "Our Story", href: "/about" },
+  { label: "Business",  href: "/business"  },
+  { label: "Our Story", href: "/about"     },
 ];
 
-// Pages whose hero section is dark — nav can start transparent on these
-const DARK_HERO_PAGES = ["/", "/about", "/business"];
+// ── Logo mark ─────────────────────────────────────────────────────────────────
 
-// ── Logo mark SVG ─────────────────────────────────────────────────────────────
-
-function Mark({ isDark }: { isDark: boolean }) {
-  const ring = isDark ? "#1B2A4A" : "rgba(245,240,232,0.7)";
+function Mark() {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden>
-      <circle cx="11" cy="11" r="10" stroke={ring} strokeWidth="1" />
+      <circle cx="11" cy="11" r="10" stroke="#1B2A4A" strokeWidth="1" />
       <circle cx="11" cy="11" r="3"  fill="#C17B3A" />
       <circle cx="11" cy="1"  r="1.5" fill="#C17B3A" />
       <circle cx="11" cy="21" r="1.5" fill="#C17B3A" />
       <circle cx="1"  cy="11" r="1.5" fill="#C17B3A" />
       <circle cx="21" cy="11" r="1.5" fill="#C17B3A" />
-      <line x1="11" y1="5"  x2="11" y2="17" stroke={ring} strokeWidth="0.7" />
-      <line x1="5"  y1="11" x2="17" y2="11" stroke={ring} strokeWidth="0.7" />
+      <line x1="11" y1="5"  x2="11" y2="17" stroke="#1B2A4A" strokeWidth="0.7" />
+      <line x1="5"  y1="11" x2="17" y2="11" stroke="#1B2A4A" strokeWidth="0.7" />
     </svg>
   );
 }
@@ -64,38 +58,19 @@ function Mark({ isDark }: { isDark: boolean }) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AdireNav() {
-  const pathname = usePathname();
-  const [scrolled,  setScrolled]  = useState(false);
-  const [open,      setOpen]      = useState(false);
-  const [dropdown,  setDropdown]  = useState<string | null>(null);
+  const pathname  = usePathname();
+  const [open,     setOpen]     = useState(false);
+  const [dropdown, setDropdown] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isDarkHeroPage = DARK_HERO_PAGES.includes(pathname);
-
-  // Transparent only when: on a dark-hero page AND at the very top AND menu closed
-  const isTransparent = isDarkHeroPage && !scrolled && !open;
-
-  // Light text (cream) only when transparent
-  // Dark text (indigo) in every other state
-  const textIsDark = !isTransparent;
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // run once on mount to catch pre-scrolled state
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Close menu on navigation
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const openDrop = (label: string) => {
+  const openDrop  = (label: string) => {
     if (timer.current) clearTimeout(timer.current);
     setDropdown(label);
   };
@@ -107,27 +82,17 @@ export default function AdireNav() {
     <>
       <style>{`
 
-        /* ── Base bar ── */
+        /* ── Bar — always solid cream ── */
         .n-bar {
           position: fixed; top: 0; left: 0; right: 0;
           z-index: 400; height: 68px;
           display: flex; align-items: center;
           justify-content: space-between;
           padding: 0 5vw;
-          /* Default: always solid so text is readable on any page */
           background: rgba(245,240,232,0.97);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border-bottom: 1px solid #E2D4BE;
-          transition: background 0.4s cubic-bezier(0.16,1,0.3,1),
-                      border-color 0.4s;
-        }
-        /* Transparent only when explicitly set */
-        .n-bar.transparent {
-          background: transparent;
-          backdrop-filter: none;
-          -webkit-backdrop-filter: none;
-          border-color: transparent;
         }
 
         /* ── Logo ── */
@@ -139,42 +104,38 @@ export default function AdireNav() {
           font-family: 'Playfair Display', Georgia, serif;
           font-size: 24px; font-weight: 900;
           letter-spacing: 0.14em; text-transform: uppercase;
-          line-height: 1;
-          /* Default: dark indigo — readable on cream bg */
-          color: #1B2A4A;
-          transition: color 0.3s;
+          line-height: 1; color: #1B2A4A;
         }
-        /* Light variant — only used on dark hero at top */
-        .n-logo-word.light { color: #F5F0E8; }
-        .n-logo-dot { color: #C17B3A; font-style: italic; font-weight: 400; }
+        .n-logo-dot {
+          color: #C17B3A;
+          font-style: italic; font-weight: 400;
+        }
 
         /* ── Desktop links ── */
         .n-links {
           display: flex; align-items: stretch;
           list-style: none; height: 68px;
         }
-        .n-item { position: relative; display: flex; align-items: stretch; }
-
+        .n-item {
+          position: relative; display: flex; align-items: stretch;
+        }
         .n-link {
           display: flex; align-items: center; gap: 6px;
           padding: 0 18px;
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 10px; font-weight: 700;
           letter-spacing: 0.26em; text-transform: uppercase;
-          text-decoration: none; background: none; border: none; cursor: pointer;
-          /* Default: muted indigo — readable on cream */
+          text-decoration: none; background: none; border: none;
+          cursor: pointer; white-space: nowrap;
           color: #7A6E60;
-          white-space: nowrap;
           border-bottom: 2px solid transparent;
           transition: color 0.2s, border-color 0.2s;
         }
         .n-link:hover,
-        .n-link.active { color: #C17B3A; border-color: #C17B3A; }
-
-        /* Light variant — only on dark hero at top */
-        .n-link.light       { color: rgba(245,240,232,0.65); }
-        .n-link.light:hover,
-        .n-link.light.active { color: #C17B3A; border-color: #C17B3A; }
+        .n-link.active {
+          color: #C17B3A;
+          border-color: #C17B3A;
+        }
 
         /* CSS chevron */
         .n-chevron {
@@ -184,7 +145,9 @@ export default function AdireNav() {
           transform: rotate(45deg) translateY(-1px);
           transition: transform 0.2s; flex-shrink: 0;
         }
-        .n-item:hover .n-chevron { transform: rotate(225deg) translateY(-1px); }
+        .n-item:hover .n-chevron {
+          transform: rotate(225deg) translateY(-1px);
+        }
 
         /* ── Dropdown ── */
         .n-drop {
@@ -221,45 +184,35 @@ export default function AdireNav() {
           font-size: 10px; font-weight: 800;
           letter-spacing: 0.26em; text-transform: uppercase;
           text-decoration: none;
-          /* Default: indigo on cream pages */
           background: #1B2A4A; color: #F5F0E8;
-          transition: background 0.2s, transform 0.15s;
           white-space: nowrap; flex-shrink: 0; border: none;
+          cursor: pointer;
+          transition: background 0.2s, transform 0.15s;
         }
-        .n-cta:hover { background: #243560; transform: translateY(-1px); }
-        /* Amber CTA when over dark hero */
-        .n-cta.light { background: #C17B3A; color: #fff; }
-        .n-cta.light:hover { background: #D4956A; }
+        .n-cta:hover { background: #C17B3A; transform: translateY(-1px); }
 
         /* ── Hamburger ── */
         .n-ham {
           display: none; flex-direction: column;
           justify-content: center; align-items: flex-end;
           gap: 5px; width: 44px; height: 44px;
-          background: none; border: none; cursor: pointer;
-          padding: 6px; z-index: 2;
+          background: none; border: none;
+          cursor: pointer; padding: 6px; z-index: 2;
         }
         .n-ham-line {
-          height: 1.5px;
-          /* Default: dark for cream backgrounds */
-          background: #1B2A4A;
+          height: 1.5px; background: #1B2A4A;
           transition: transform 0.35s cubic-bezier(0.16,1,0.3,1),
-                      opacity 0.2s, width 0.3s, background 0.3s;
+                      opacity 0.2s, width 0.3s;
         }
-        .n-ham-line.light { background: rgba(245,240,232,0.85); }
         .n-ham-line:nth-child(1) { width: 22px; }
         .n-ham-line:nth-child(2) { width: 16px; }
         .n-ham-line:nth-child(3) { width: 22px; }
         .n-ham.open .n-ham-line:nth-child(1) {
-          width: 22px;
-          transform: translateY(6.5px) rotate(45deg);
-          background: #1B2A4A;
+          width: 22px; transform: translateY(6.5px) rotate(45deg);
         }
         .n-ham.open .n-ham-line:nth-child(2) { opacity: 0; }
         .n-ham.open .n-ham-line:nth-child(3) {
-          width: 22px;
-          transform: translateY(-6.5px) rotate(-45deg);
-          background: #1B2A4A;
+          width: 22px; transform: translateY(-6.5px) rotate(-45deg);
         }
 
         /* ── Mobile menu ── */
@@ -341,15 +294,12 @@ export default function AdireNav() {
         }
       `}</style>
 
-      {/* ── Nav bar ── */}
-      <nav
-        className={`n-bar${isTransparent ? " transparent" : ""}`}
-        role="navigation"
-        aria-label="Main navigation"
-      >
+      {/* ── Bar ── */}
+      <nav className="n-bar" role="navigation" aria-label="Main navigation">
+
         <Link href="/" className="n-logo" aria-label="Lensra home">
-          <Mark isDark={textIsDark} />
-          <span className={`n-logo-word${isTransparent ? " light" : ""}`}>
+          <Mark />
+          <span className="n-logo-word">
             Lensra<span className="n-logo-dot">.</span>
           </span>
         </Link>
@@ -366,7 +316,6 @@ export default function AdireNav() {
                   <button
                     className={[
                       "n-link",
-                      isTransparent ? "light" : "",
                       pathname.startsWith(item.href) ? "active" : "",
                     ].filter(Boolean).join(" ")}
                     aria-haspopup="true"
@@ -392,7 +341,9 @@ export default function AdireNav() {
                           <Link key={s.label} href={s.href}
                             className="n-drop-link" role="menuitem">
                             {s.label}
-                            {s.tag && <span className="n-drop-tag">{s.tag}</span>}
+                            {s.tag && (
+                              <span className="n-drop-tag">{s.tag}</span>
+                            )}
                           </Link>
                         ))}
                       </motion.div>
@@ -404,7 +355,6 @@ export default function AdireNav() {
                   href={item.href}
                   className={[
                     "n-link",
-                    isTransparent ? "light" : "",
                     pathname === item.href ? "active" : "",
                   ].filter(Boolean).join(" ")}
                 >
@@ -415,8 +365,7 @@ export default function AdireNav() {
           ))}
         </ul>
 
-        <Link href="/shop"
-          className={`n-cta${isTransparent ? " light" : ""}`}>
+        <Link href="/shop" className="n-cta">
           Personalise Now
         </Link>
 
@@ -427,11 +376,9 @@ export default function AdireNav() {
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
         >
-          {[1, 2, 3].map(n => (
-            <span key={n}
-              className={`n-ham-line${isTransparent ? " light" : ""}`}
-            />
-          ))}
+          <span className="n-ham-line" />
+          <span className="n-ham-line" />
+          <span className="n-ham-line" />
         </button>
       </nav>
 
@@ -451,18 +398,26 @@ export default function AdireNav() {
               <motion.div key={item.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.07 + 0.18, duration: 0.5, ease: [0.16,1,0.3,1] }}
+                transition={{
+                  delay: i * 0.07 + 0.18,
+                  duration: 0.5,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
                 <Link href={item.href} className="n-mob-link">
                   {item.label}
                   <span className="n-mob-arrow">→</span>
                 </Link>
+
                 {item.sub && (
                   <div className="n-mob-subs">
                     {item.sub.map(s => (
-                      <Link key={s.label} href={s.href} className="n-mob-sub-link">
+                      <Link key={s.label} href={s.href}
+                        className="n-mob-sub-link">
                         {s.label}
-                        {s.tag && <span className="n-mob-sub-tag">{s.tag}</span>}
+                        {s.tag && (
+                          <span className="n-mob-sub-tag">{s.tag}</span>
+                        )}
                       </Link>
                     ))}
                   </div>
@@ -470,14 +425,22 @@ export default function AdireNav() {
               </motion.div>
             ))}
 
-            <motion.div className="n-mob-footer"
+            <motion.div
+              className="n-mob-footer"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.42 }}
             >
-              <Link href="/shop"     className="n-mob-cta n-mob-cta-primary">Shop All Products</Link>
-              <Link href="/business" className="n-mob-cta n-mob-cta-sec">Business</Link>
-              <Link href="/track"    className="n-mob-cta n-mob-cta-sec">Track Order</Link>
+              <Link href="/shop"
+                className="n-mob-cta n-mob-cta-primary">
+                Shop All Products
+              </Link>
+              <Link href="/business" className="n-mob-cta n-mob-cta-sec">
+                Business
+              </Link>
+              <Link href="/track"    className="n-mob-cta n-mob-cta-sec">
+                Track Order
+              </Link>
               <p className="n-mob-contact">
                 Need help?{" "}
                 <a href="https://wa.me/2348051385049"
