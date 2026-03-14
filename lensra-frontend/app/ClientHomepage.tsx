@@ -1,24 +1,23 @@
 "use client";
 
 // app/ClientHomepage.tsx
-// Lensra — rebranded homepage client component
-// Brand: Premium & minimal — ink black, warm cream, brushed gold
-// Products: Custom Mugs + Canvas Prints only
-// Tagline: "Gifts That Remember."
-// Fonts: Cormorant Garamond (display) · DM Sans (body)
+// Adire — Personalised Ankara Gifts
+// Brand: Warm luxury — indigo night, kola amber, harmattan cream, cocoa dark
+// Products: Ankara Tote Bags + Ankara Pouches
+// Tagline: "Made Personal. Made Nigerian."
+// Fonts: Cormorant Garamond (display) · Instrument Sans (body)
 
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView, type Variants } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import LensraSubscribe from "@/components/LensraSubscribe";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────────────
 
 const BaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.adire.ng/";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function getImageUrl(imagePath: string | null | undefined): string | null {
   if (!imagePath) return null;
@@ -34,23 +33,26 @@ function formatPrice(price: string | number) {
   return `₦${num.toLocaleString("en-NG", { minimumFractionDigits: 0 })}`;
 }
 
-// ── Motion variants ───────────────────────────────────────────────────────────
+// ── Motion variants ──────────────────────────────────────────────────────────
 
-// framer-motion requires ease bezier as a const tuple, not a plain number[]
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  // custom prop (index) controls per-child delay via variants + staggerChildren
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
+  hidden: { opacity: 0, y: 32 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.75, ease: EASE } },
+};
+
+const fadeIn: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.9, ease: EASE } },
 };
 
 const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.11, delayChildren: 0.05 } },
 };
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Grain overlay ────────────────────────────────────────────────────────────
 
 function GrainOverlay() {
   return (
@@ -63,32 +65,76 @@ function GrainOverlay() {
         height: "100%",
         pointerEvents: "none",
         zIndex: 9999,
-        opacity: 0.028,
+        opacity: 0.032,
         mixBlendMode: "multiply",
       }}
     >
-      <filter id="ln-grain">
+      <filter id="ad-grain">
         <feTurbulence
           type="fractalNoise"
-          baseFrequency="0.65"
+          baseFrequency="0.68"
           numOctaves="3"
           stitchTiles="stitch"
         />
         <feColorMatrix type="saturate" values="0" />
       </filter>
-      <rect width="100%" height="100%" filter="url(#ln-grain)" />
+      <rect width="100%" height="100%" filter="url(#ad-grain)" />
     </svg>
   );
 }
 
+// ── Adire pattern SVG (decorative) ───────────────────────────────────────────
+
+function AdirePattern({ opacity = 0.06 }: { opacity?: number }) {
+  return (
+    <svg
+      aria-hidden
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        opacity,
+      }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <pattern
+          id="adire-dots"
+          x="0"
+          y="0"
+          width="40"
+          height="40"
+          patternUnits="userSpaceOnUse"
+        >
+          <circle cx="20" cy="20" r="1.5" fill="#C17B3A" />
+          <circle cx="0" cy="0" r="1.5" fill="#C17B3A" />
+          <circle cx="40" cy="0" r="1.5" fill="#C17B3A" />
+          <circle cx="0" cy="40" r="1.5" fill="#C17B3A" />
+          <circle cx="40" cy="40" r="1.5" fill="#C17B3A" />
+          <rect
+            x="16" y="16" width="8" height="8"
+            fill="none" stroke="#C17B3A" strokeWidth="0.5"
+            transform="rotate(45 20 20)"
+          />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#adire-dots)" />
+    </svg>
+  );
+}
+
+// ── Product Card ─────────────────────────────────────────────────────────────
+
 function ProductCard({ product }: { product: any }) {
   const imageUrl = getImageUrl(product.image_url);
-  const isMug = product.category === "mug";
+  const isTote = product.category === "tote";
 
   return (
     <motion.div variants={fadeUp}>
-      <Link href={`/shop/${product.slug}`} className="ln-product-card">
-        <div className="ln-product-img-wrap">
+      <Link href={`/shop/${product.slug}`} className="ad-product-card">
+        <div className="ad-product-img-wrap">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -96,27 +142,38 @@ function ProductCard({ product }: { product: any }) {
               fill
               sizes="(max-width: 768px) 50vw, 33vw"
               style={{ objectFit: "cover" }}
-              className="ln-product-img"
+              className="ad-product-img"
             />
           ) : (
-            <div className="ln-product-placeholder">
-              {isMug ? "☕" : "🖼"}
+            <div className="ad-product-placeholder">
+              <div className="ad-placeholder-inner">
+                <span className="ad-placeholder-icon">{isTote ? "👜" : "👝"}</span>
+                <span className="ad-placeholder-label">
+                  {isTote ? "Ankara Tote" : "Ankara Pouch"}
+                </span>
+              </div>
             </div>
           )}
-          <div className="ln-product-hover-overlay">
-            <span className="ln-product-hover-cta">Customise →</span>
+          <div className="ad-product-overlay">
+            <span className="ad-product-cta">Personalise →</span>
           </div>
           {product.is_trending && (
-            <div className="ln-product-badge">Trending</div>
+            <div className="ad-product-badge">Trending</div>
+          )}
+          {product.is_new && (
+            <div className="ad-product-badge ad-badge-new">New</div>
           )}
         </div>
-        <div className="ln-product-meta">
-          <div className="ln-product-category">
-            {isMug ? "Custom Mug" : "Canvas Print"}
+        <div className="ad-product-meta">
+          <div className="ad-product-category">
+            {isTote ? "Ankara Tote Bag" : "Ankara Pouch"}
           </div>
-          <h3 className="ln-product-name">{product.name}</h3>
-          <div className="ln-product-price">
-            From {formatPrice(product.base_price || 0)}
+          <h3 className="ad-product-name">{product.name}</h3>
+          <div className="ad-product-footer">
+            <div className="ad-product-price">
+              From {formatPrice(product.base_price || 0)}
+            </div>
+            <div className="ad-product-personalise">Personalised →</div>
           </div>
         </div>
       </Link>
@@ -124,8 +181,14 @@ function ProductCard({ product }: { product: any }) {
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="ln-section-label">{children}</div>;
+// ── Section label ────────────────────────────────────────────────────────────
+
+function SectionLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
+  return (
+    <div className={`ad-section-label ${light ? "ad-section-label-light" : ""}`}>
+      {children}
+    </div>
+  );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -137,676 +200,804 @@ export default function ClientHomepage({
 }) {
   const [products] = useState(initialProducts);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-  const [activeFilter, setActiveFilter] = useState<"all" | "mug" | "canvas">("all");
-  const [showModal, setShowModal] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"all" | "tote" | "pouch">("all");
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // In-view refs for scroll-triggered animation
   const productsRef = useRef(null);
-  const howRef = useRef(null);
+  const processRef = useRef(null);
   const whyRef = useRef(null);
+  const occasionsRef = useRef(null);
+
   const productsInView = useInView(productsRef, { once: true, margin: "-80px" });
-  const howInView = useInView(howRef, { once: true, margin: "-80px" });
+  const processInView = useInView(processRef, { once: true, margin: "-80px" });
   const whyInView = useInView(whyRef, { once: true, margin: "-80px" });
+  const occasionsInView = useInView(occasionsRef, { once: true, margin: "-80px" });
 
   // Scroll-aware nav
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 56);
+    const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Fetch featured products (mug + canvas only)
+  // Fetch featured products
   useEffect(() => {
     fetch(`${BaseUrl}api/products/featured/`)
       .then((r) => r.json())
       .then((d) => {
         const results = d.results || d || [];
         setFeaturedProducts(
-          results.filter((p: any) => ["mug", "canvas"].includes(p.category))
+          results.filter((p: any) => ["tote", "pouch"].includes(p.category))
         );
       })
       .catch(console.error);
   }, []);
 
-  // Subscribe modal — once after 20s
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (localStorage.getItem("lensra_subscribe_seen")) return;
-    const t = setTimeout(() => {
-      setShowModal(true);
-      localStorage.setItem("lensra_subscribe_seen", "true");
-    }, 20000);
-    return () => clearTimeout(t);
-  }, []);
-
   // Derived state
   const allProducts = products.filter((p) =>
-    ["mug", "canvas"].includes(p.category)
+    ["tote", "pouch"].includes(p.category)
   );
   const filtered =
     activeFilter === "all"
       ? allProducts
       : allProducts.filter((p) => p.category === activeFilter);
   const displayProducts = filtered.length > 0 ? filtered : featuredProducts;
-  const mugCount = allProducts.filter((p) => p.category === "mug").length;
-  const canvasCount = allProducts.filter((p) => p.category === "canvas").length;
+  const toteCount = allProducts.filter((p) => p.category === "tote").length;
+  const pouchCount = allProducts.filter((p) => p.category === "pouch").length;
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Instrument+Sans:wght@300;400;500&display=swap');
 
         :root {
-          --ln-ink:       #0e0e0d;
-          --ln-warm:      #f7f2ea;
-          --ln-white:     #ffffff;
-          --ln-gold:      #b8965a;
-          --ln-gold-lt:   #d4b07a;
-          --ln-gold-pale: #f0e6d0;
-          --ln-muted:     #7a7168;
-          --ln-rule:      #e2d9cc;
-          --ln-display:   'Cormorant Garamond', Georgia, serif;
-          --ln-body:      'DM Sans', system-ui, sans-serif;
-          --ln-ease:      cubic-bezier(0.16, 1, 0.3, 1);
+          --ad-indigo:      #1B2A4A;
+          --ad-indigo-deep: #111d33;
+          --ad-indigo-mid:  #243560;
+          --ad-amber:       #C17B3A;
+          --ad-amber-lt:    #D4956A;
+          --ad-amber-pale:  #F0DFC4;
+          --ad-cream:       #F5F0E8;
+          --ad-cream-lt:    #FDF9F4;
+          --ad-cocoa:       #2C1810;
+          --ad-shea:        #E8D5B0;
+          --ad-muted:       #7A6E60;
+          --ad-rule:        #E2D4BE;
+          --ad-rule-dark:   #1e2d4e;
+          --ad-display:     'Cormorant Garamond', Georgia, serif;
+          --ad-body:        'Instrument Sans', system-ui, sans-serif;
+          --ad-ease:        cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         html { scroll-behavior: smooth; }
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-          background: var(--ln-warm);
-          color: var(--ln-ink);
-          font-family: var(--ln-body);
+          background: var(--ad-cream);
+          color: var(--ad-cocoa);
+          font-family: var(--ad-body);
           font-weight: 400;
           -webkit-font-smoothing: antialiased;
+          overflow-x: hidden;
         }
 
-        /* NAV */
-        .ln-nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+        /* ── NAV ── */
+        .ad-nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+          height: 68px;
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0 5vw; height: 64px;
-          transition: background 0.4s var(--ln-ease), border-color 0.4s;
+          padding: 0 5vw;
+          transition: background 0.45s var(--ad-ease), border-color 0.45s;
           border-bottom: 1px solid transparent;
         }
-        .ln-nav.scrolled {
-          background: rgba(247,242,234,0.97);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border-color: var(--ln-rule);
+        .ad-nav.scrolled {
+          background: rgba(245,240,232,0.96);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-color: var(--ad-rule);
         }
-        .ln-nav-logo {
-          font-family: var(--ln-display);
-          font-size: 26px; font-weight: 400; letter-spacing: -0.02em;
+        .ad-nav-logo {
+          font-family: var(--ad-display);
+          font-size: 28px; font-weight: 400;
+          letter-spacing: 0.06em; text-transform: uppercase;
           color: #f5f0e8; text-decoration: none; line-height: 1;
           transition: color 0.3s;
         }
-        .ln-nav-logo.dark { color: var(--ln-ink); }
-        .ln-nav-logo em { font-style: italic; color: var(--ln-gold); }
-        .ln-nav-links {
-          display: flex; align-items: center; gap: 36px; list-style: none;
+        .ad-nav-logo.dark { color: var(--ad-indigo); }
+        .ad-nav-logo span { color: var(--ad-amber); font-style: italic; font-weight: 300; }
+        .ad-nav-links {
+          display: flex; align-items: center; gap: 40px; list-style: none;
         }
-        .ln-nav-links a {
-          font-size: 12px; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase;
-          color: rgba(245,240,232,0.75); text-decoration: none; transition: color 0.2s;
+        .ad-nav-links a {
+          font-size: 11px; font-weight: 400; letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: rgba(245,240,232,0.7); text-decoration: none; transition: color 0.2s;
         }
-        .ln-nav-links.dark a { color: #4a4438; }
-        .ln-nav-links a:hover { color: #f5f0e8; }
-        .ln-nav-links.dark a:hover { color: var(--ln-ink); }
-        .ln-nav-cta {
-          background: var(--ln-gold) !important;
-          color: var(--ln-white) !important;
-          padding: 10px 22px !important;
+        .ad-nav-links.dark a { color: var(--ad-muted); }
+        .ad-nav-links a:hover,
+        .ad-nav-links.dark a:hover { color: var(--ad-amber); }
+        .ad-nav-cta {
+          background: var(--ad-amber) !important;
+          color: #fff !important;
+          padding: 10px 24px !important;
+          letter-spacing: 0.18em !important;
+          transition: background 0.2s !important;
         }
-        .ln-nav-links.dark .ln-nav-cta {
-          background: var(--ln-ink) !important;
-          color: var(--ln-warm) !important;
+        .ad-nav-cta:hover { background: var(--ad-amber-lt) !important; color: #fff !important; }
+        .ad-nav-links.dark .ad-nav-cta {
+          background: var(--ad-indigo) !important;
+          color: var(--ad-cream) !important;
         }
-        .ln-nav-cta:hover { opacity: 0.85; }
 
-        /* HERO */
-        .ln-hero {
+        /* ── HERO ── */
+        .ad-hero {
           min-height: 100svh;
-          display: grid; grid-template-columns: 55% 45%;
-          background: var(--ln-ink);
-          position: relative; overflow: hidden;
+          display: grid;
+          grid-template-columns: 52% 48%;
+          background: var(--ad-indigo);
+          position: relative;
+          overflow: hidden;
         }
-        .ln-hero-left {
-          display: flex; flex-direction: column; justify-content: flex-end;
-          padding: 128px 5vw 88px; position: relative; z-index: 2;
+
+        /* Hero left */
+        .ad-hero-left {
+          display: flex; flex-direction: column;
+          justify-content: flex-end;
+          padding: 130px 5vw 100px;
+          position: relative; z-index: 2;
         }
-        .ln-hero-left::before {
-          content: ''; position: absolute; inset: 0; pointer-events: none;
-          background: radial-gradient(ellipse 80% 70% at 0% 100%, #141007, transparent 65%);
+        .ad-hero-eyebrow {
+          font-size: 10px; font-weight: 500;
+          letter-spacing: 0.38em; text-transform: uppercase;
+          color: var(--ad-amber);
+          display: flex; align-items: center; gap: 16px;
+          margin-bottom: 32px;
         }
-        .ln-hero-eyebrow {
-          font-size: 11px; font-weight: 500; letter-spacing: 0.35em; text-transform: uppercase;
-          color: var(--ln-gold); margin-bottom: 30px;
-          display: flex; align-items: center; gap: 14px; position: relative;
+        .ad-hero-eyebrow::before {
+          content: '';
+          width: 28px; height: 1px;
+          background: var(--ad-amber); flex-shrink: 0;
         }
-        .ln-hero-eyebrow::before {
-          content: ''; width: 32px; height: 1px;
-          background: var(--ln-gold); display: block; flex-shrink: 0;
+        .ad-hero-h1 {
+          font-family: var(--ad-display);
+          font-size: clamp(58px, 6.8vw, 108px);
+          font-weight: 300; line-height: 0.9;
+          letter-spacing: -0.01em;
+          color: var(--ad-cream);
         }
-        .ln-hero-h1 {
-          font-family: var(--ln-display);
-          font-size: clamp(56px, 6.5vw, 100px);
-          font-weight: 400; line-height: 0.92;
-          letter-spacing: -0.02em; color: #ffffff; position: relative;
+        .ad-hero-h1 em {
+          font-style: italic;
+          color: var(--ad-amber-lt);
+          display: block;
+          margin-top: 4px;
         }
-        .ln-hero-h1 em {
-          font-style: italic; color: var(--ln-gold-lt); display: block; margin-top: 6px;
+        .ad-hero-body {
+          margin-top: 32px;
+          font-size: 16px; font-weight: 300;
+          color: rgba(232,213,176,0.75);
+          max-width: 400px; line-height: 1.85;
         }
-        .ln-hero-body {
-          margin-top: 28px; font-size: 17px; font-weight: 400;
-          color: #c8bfb0; max-width: 420px; line-height: 1.75; position: relative;
+        .ad-hero-actions {
+          margin-top: 48px;
+          display: flex; gap: 12px; flex-wrap: wrap;
         }
-        .ln-hero-actions {
-          margin-top: 44px; display: flex; gap: 14px; flex-wrap: wrap; position: relative;
-        }
-        .ln-btn-gold {
+        .ad-btn-amber {
           display: inline-flex; align-items: center; gap: 10px;
-          background: var(--ln-gold); color: #ffffff;
-          padding: 16px 34px; font-size: 12px; font-weight: 500; letter-spacing: 0.2em;
-          text-transform: uppercase; text-decoration: none;
-          transition: background 0.25s var(--ln-ease), transform 0.25s; white-space: nowrap;
+          background: var(--ad-amber); color: #fff;
+          padding: 16px 36px;
+          font-family: var(--ad-body);
+          font-size: 11px; font-weight: 500;
+          letter-spacing: 0.22em; text-transform: uppercase;
+          text-decoration: none;
+          transition: background 0.25s var(--ad-ease), transform 0.25s;
+          white-space: nowrap;
         }
-        .ln-btn-gold:hover { background: var(--ln-gold-lt); transform: translateY(-2px); }
-        .ln-btn-ghost-light {
+        .ad-btn-amber:hover { background: var(--ad-amber-lt); transform: translateY(-2px); }
+        .ad-btn-ghost {
           display: inline-flex; align-items: center; gap: 10px;
-          border: 1px solid rgba(255,255,255,0.2); color: #c8bfb0;
-          padding: 16px 34px; font-size: 12px; font-weight: 400; letter-spacing: 0.2em;
-          text-transform: uppercase; text-decoration: none;
-          transition: border-color 0.25s, color 0.25s; white-space: nowrap;
+          border: 1px solid rgba(232,213,176,0.25);
+          color: rgba(232,213,176,0.6);
+          padding: 16px 36px;
+          font-family: var(--ad-body);
+          font-size: 11px; font-weight: 400;
+          letter-spacing: 0.22em; text-transform: uppercase;
+          text-decoration: none;
+          transition: border-color 0.25s, color 0.25s;
+          white-space: nowrap;
         }
-        .ln-btn-ghost-light:hover { border-color: var(--ln-gold); color: var(--ln-gold-lt); }
+        .ad-btn-ghost:hover {
+          border-color: var(--ad-amber);
+          color: var(--ad-amber-lt);
+        }
 
         /* Hero right */
-        .ln-hero-right {
-          position: relative; overflow: hidden; background: #100e08;
+        .ad-hero-right {
+          position: relative; overflow: hidden;
+          background: var(--ad-indigo-deep);
         }
-        .ln-hero-right::before {
-          content: ''; position: absolute; inset: 0;
-          background: radial-gradient(ellipse 60% 80% at 80% 30%, #1e1a0f, transparent);
+        .ad-hero-pattern {
+          position: absolute; inset: 0;
         }
-        .ln-hero-ghost {
-          position: absolute; bottom: 60px; right: -12px;
-          font-family: var(--ln-display);
-          font-size: clamp(80px, 12vw, 160px);
+        .ad-hero-ghost-text {
+          position: absolute; bottom: 40px; right: -8px;
+          font-family: var(--ad-display);
+          font-size: clamp(70px, 10vw, 140px);
           font-weight: 300; font-style: italic;
-          color: rgba(184,150,90,0.06); white-space: nowrap;
-          line-height: 1; pointer-events: none; user-select: none;
-          letter-spacing: -0.04em;
+          color: rgba(193,123,58,0.07);
+          white-space: nowrap; line-height: 1;
+          pointer-events: none; user-select: none;
+          letter-spacing: -0.03em;
         }
-        .ln-float-wrap {
+        .ad-hero-cards {
           position: absolute; inset: 0;
           display: flex; flex-direction: column;
           align-items: center; justify-content: center;
-          gap: 20px; padding: 100px 32px 80px;
+          gap: 20px; padding: 110px 36px 90px;
         }
-        .ln-float-card {
-          background: rgba(255,255,255,0.035);
-          border: 1px solid rgba(184,150,90,0.15);
-          padding: 28px 32px;
+        .ad-hero-card {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(193,123,58,0.18);
+          padding: 26px 28px;
           display: flex; align-items: center; gap: 20px;
-          width: 100%; max-width: 320px;
-          position: relative; overflow: hidden; backdrop-filter: blur(4px);
+          width: 100%; max-width: 300px;
+          position: relative; overflow: hidden;
+          backdrop-filter: blur(8px);
         }
-        .ln-float-card::before {
-          content: ''; position: absolute;
-          left: 0; top: 0; bottom: 0; width: 2px; background: var(--ln-gold);
+        .ad-hero-card::before {
+          content: '';
+          position: absolute; left: 0; top: 0; bottom: 0;
+          width: 3px; background: var(--ad-amber);
         }
-        .ln-float-icon { font-size: 40px; line-height: 1; flex-shrink: 0; }
-        .ln-float-label {
-          font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
-          color: var(--ln-gold); margin-bottom: 5px;
+        .ad-hero-card-icon {
+          font-size: 36px; line-height: 1; flex-shrink: 0;
         }
-        .ln-float-name {
-          font-family: var(--ln-display); font-size: 20px;
-          font-weight: 400; color: #f0e8da; line-height: 1.1;
+        .ad-hero-card-label {
+          font-size: 9px; font-weight: 500;
+          letter-spacing: 0.32em; text-transform: uppercase;
+          color: var(--ad-amber); margin-bottom: 5px;
         }
-        .ln-float-sub { font-size: 13px; font-weight: 400; color: #7a6e60; margin-top: 4px; }
-        .ln-hero-stats {
-          display: flex; gap: 2px;
+        .ad-hero-card-name {
+          font-family: var(--ad-display);
+          font-size: 19px; font-weight: 400;
+          color: var(--ad-cream); line-height: 1.1;
+        }
+        .ad-hero-card-sub {
+          font-size: 12px; font-weight: 300;
+          color: rgba(193,123,58,0.65); margin-top: 3px;
+        }
+        .ad-hero-stats {
           position: absolute; bottom: 0; left: 0; right: 0;
+          display: flex; gap: 1px;
         }
-        .ln-hero-stat {
-          flex: 1; background: rgba(255,255,255,0.03);
-          border-top: 1px solid #1a1812;
-          padding: 16px 18px; text-align: center;
+        .ad-hero-stat {
+          flex: 1;
+          background: rgba(255,255,255,0.025);
+          border-top: 1px solid rgba(255,255,255,0.04);
+          padding: 14px 0; text-align: center;
         }
-        .ln-hero-stat-num {
-          font-family: var(--ln-display); font-size: 26px;
-          font-weight: 400; color: var(--ln-gold-lt); line-height: 1;
+        .ad-hero-stat-num {
+          font-family: var(--ad-display);
+          font-size: 24px; font-weight: 400;
+          color: var(--ad-amber-lt); line-height: 1;
         }
-        .ln-hero-stat-label {
-          font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
-          color: #6a6055; margin-top: 4px;
-        }
-
-        /* SECTION COMMONS */
-        .ln-section { padding: 100px 5vw; }
-        .ln-section-inner { max-width: 1360px; margin: 0 auto; }
-        .ln-section-label {
-          font-size: 11px; font-weight: 500; letter-spacing: 0.35em; text-transform: uppercase;
-          color: var(--ln-gold); margin-bottom: 18px;
-          display: flex; align-items: center; gap: 10px;
-        }
-        .ln-section-label::after {
-          content: ''; width: 40px; height: 1px; background: var(--ln-rule); display: block;
-        }
-        .ln-section-h2 {
-          font-family: var(--ln-display);
-          font-size: clamp(32px, 3.5vw, 52px);
-          font-weight: 400; line-height: 1.05; letter-spacing: -0.01em; color: var(--ln-ink);
-        }
-        .ln-section-header {
-          display: flex; align-items: flex-end; justify-content: space-between;
-          margin-bottom: 52px; flex-wrap: wrap; gap: 24px;
+        .ad-hero-stat-label {
+          font-size: 9px; font-weight: 500;
+          letter-spacing: 0.2em; text-transform: uppercase;
+          color: rgba(193,123,58,0.4); margin-top: 3px;
         }
 
-        /* PRODUCTS */
-        .ln-products-section { background: var(--ln-warm); padding: 100px 5vw; }
-        .ln-filter-tabs { display: flex; gap: 2px; }
-        .ln-filter-tab {
-          padding: 11px 24px; font-size: 12px; font-weight: 400; letter-spacing: 0.15em;
-          text-transform: uppercase; background: var(--ln-white);
-          border: none; cursor: pointer; color: #5a5248;
+        /* ── SECTION COMMONS ── */
+        .ad-section { padding: 100px 5vw; }
+        .ad-section-inner { max-width: 1360px; margin: 0 auto; }
+        .ad-section-label {
+          font-size: 10px; font-weight: 500;
+          letter-spacing: 0.38em; text-transform: uppercase;
+          color: var(--ad-amber); margin-bottom: 16px;
+          display: flex; align-items: center; gap: 12px;
+        }
+        .ad-section-label::after {
+          content: '';
+          width: 36px; height: 1px;
+          background: var(--ad-rule);
+        }
+        .ad-section-label-light::after { background: var(--ad-rule-dark); }
+        .ad-section-h2 {
+          font-family: var(--ad-display);
+          font-size: clamp(34px, 3.8vw, 58px);
+          font-weight: 300; line-height: 1.05;
+          letter-spacing: -0.01em; color: var(--ad-indigo);
+        }
+        .ad-section-h2-light { color: var(--ad-cream); }
+        .ad-section-header {
+          display: flex; align-items: flex-end;
+          justify-content: space-between;
+          margin-bottom: 56px; flex-wrap: wrap; gap: 28px;
+        }
+
+        /* ── PRODUCTS ── */
+        .ad-products-section {
+          background: var(--ad-cream); padding: 100px 5vw;
+        }
+        .ad-filter-row {
+          display: flex; gap: 2px;
+        }
+        .ad-filter-btn {
+          padding: 10px 22px;
+          font-family: var(--ad-body);
+          font-size: 11px; font-weight: 400;
+          letter-spacing: 0.18em; text-transform: uppercase;
+          background: var(--ad-cream-lt);
+          border: none; cursor: pointer;
+          color: var(--ad-muted);
           transition: background 0.2s, color 0.2s;
-          font-family: var(--ln-body);
         }
-        .ln-filter-tab:hover:not(.active) { background: var(--ln-gold-pale); color: var(--ln-ink); }
-        .ln-filter-tab.active { background: var(--ln-ink); color: var(--ln-warm); font-weight: 500; }
-        .ln-products-grid {
-          display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2px;
+        .ad-filter-btn:hover:not(.active) {
+          background: var(--ad-amber-pale);
+          color: var(--ad-cocoa);
         }
-        .ln-products-empty {
+        .ad-filter-btn.active {
+          background: var(--ad-indigo);
+          color: var(--ad-cream);
+          font-weight: 500;
+        }
+        .ad-products-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 2px;
+        }
+        .ad-products-empty {
           grid-column: 1/-1; padding: 80px 0; text-align: center;
-          font-family: var(--ln-display); font-size: 28px;
-          font-style: italic; color: var(--ln-muted);
+          font-family: var(--ad-display);
+          font-size: 26px; font-style: italic;
+          color: var(--ad-muted);
         }
-        .ln-product-card {
-          display: block; text-decoration: none; color: inherit; background: var(--ln-white);
+
+        /* Product card */
+        .ad-product-card {
+          display: block; text-decoration: none; color: inherit;
+          background: var(--ad-cream-lt);
         }
-        .ln-product-img-wrap {
-          position: relative; aspect-ratio: 4/3; overflow: hidden; background: var(--ln-gold-pale);
+        .ad-product-img-wrap {
+          position: relative; aspect-ratio: 3/4; overflow: hidden;
+          background: var(--ad-shea);
         }
-        .ln-product-img { transition: transform 0.65s var(--ln-ease); }
-        .ln-product-card:hover .ln-product-img { transform: scale(1.05); }
-        .ln-product-placeholder {
+        .ad-product-img { transition: transform 0.7s var(--ad-ease); }
+        .ad-product-card:hover .ad-product-img { transform: scale(1.06); }
+        .ad-product-placeholder {
           width: 100%; height: 100%;
-          display: flex; align-items: center; justify-content: center; font-size: 72px;
+          display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(160deg, var(--ad-shea) 0%, var(--ad-amber-pale) 100%);
         }
-        .ln-product-hover-overlay {
-          position: absolute; inset: 0; background: rgba(14,14,13,0);
-          display: flex; align-items: flex-end; padding: 20px; transition: background 0.35s;
+        .ad-placeholder-inner {
+          display: flex; flex-direction: column; align-items: center; gap: 12px;
         }
-        .ln-product-card:hover .ln-product-hover-overlay { background: rgba(14,14,13,0.38); }
-        .ln-product-hover-cta {
-          font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-          color: var(--ln-warm); opacity: 0; transform: translateY(10px);
+        .ad-placeholder-icon { font-size: 56px; }
+        .ad-placeholder-label {
+          font-family: var(--ad-display);
+          font-size: 14px; font-style: italic;
+          color: var(--ad-amber); letter-spacing: 0.05em;
+        }
+        .ad-product-overlay {
+          position: absolute; inset: 0;
+          background: rgba(27,42,74,0);
+          display: flex; align-items: flex-end; padding: 20px;
+          transition: background 0.35s;
+        }
+        .ad-product-card:hover .ad-product-overlay {
+          background: rgba(27,42,74,0.42);
+        }
+        .ad-product-cta {
+          font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+          color: var(--ad-cream); opacity: 0; transform: translateY(10px);
           transition: opacity 0.3s, transform 0.3s;
         }
-        .ln-product-card:hover .ln-product-hover-cta { opacity: 1; transform: translateY(0); }
-        .ln-product-badge {
-          position: absolute; top: 16px; left: 16px;
-          background: var(--ln-gold); color: var(--ln-white);
-          font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
-          padding: 5px 12px; font-family: var(--ln-body);
+        .ad-product-card:hover .ad-product-cta { opacity: 1; transform: translateY(0); }
+        .ad-product-badge {
+          position: absolute; top: 14px; left: 14px;
+          background: var(--ad-amber); color: #fff;
+          font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase;
+          padding: 5px 12px; font-family: var(--ad-body);
         }
-        .ln-product-meta { padding: 20px 22px 26px; }
-        .ln-product-category {
-          font-size: 11px; font-weight: 500; letter-spacing: 0.25em; text-transform: uppercase;
-          color: var(--ln-gold); margin-bottom: 6px;
+        .ad-badge-new { background: var(--ad-indigo); }
+        .ad-product-meta { padding: 18px 20px 24px; }
+        .ad-product-category {
+          font-size: 10px; font-weight: 500;
+          letter-spacing: 0.28em; text-transform: uppercase;
+          color: var(--ad-amber); margin-bottom: 6px;
         }
-        .ln-product-name {
-          font-family: var(--ln-display); font-size: 22px;
-          font-weight: 400; line-height: 1.15; margin-bottom: 8px; color: var(--ln-ink);
+        .ad-product-name {
+          font-family: var(--ad-display);
+          font-size: 22px; font-weight: 400; line-height: 1.15;
+          margin-bottom: 10px; color: var(--ad-indigo);
         }
-        .ln-product-price { font-size: 14px; font-weight: 400; color: #4a4438; letter-spacing: 0.03em; }
+        .ad-product-footer {
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .ad-product-price {
+          font-size: 14px; font-weight: 400;
+          color: var(--ad-muted); letter-spacing: 0.02em;
+        }
+        .ad-product-personalise {
+          font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+          color: var(--ad-amber); font-weight: 500;
+        }
 
-        /* OCCASIONS */
-        .ln-occasions-section {
-          background: var(--ln-white); padding: 80px 5vw;
-          border-top: 1px solid var(--ln-rule);
+        /* ── OCCASIONS ── */
+        .ad-occasions-section {
+          background: var(--ad-indigo);
+          padding: 80px 5vw; position: relative; overflow: hidden;
         }
-        .ln-occasions-grid {
-          display: grid; grid-template-columns: repeat(6, 1fr);
-          gap: 2px; margin-top: 40px;
+        .ad-occasions-grid {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 2px; margin-top: 44px;
         }
-        .ln-occasion-card {
+        .ad-occasion-card {
           display: block; text-decoration: none;
-          background: var(--ln-warm); padding: 28px 16px;
-          text-align: center; transition: background 0.25s;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(193,123,58,0.1);
+          padding: 28px 16px; text-align: center;
+          transition: background 0.25s, border-color 0.25s;
         }
-        .ln-occasion-card:hover { background: var(--ln-gold-pale); }
-        .ln-occasion-icon { font-size: 28px; margin-bottom: 10px; display: block; }
-        .ln-occasion-name {
-          font-family: var(--ln-display); font-size: 17px;
-          font-weight: 400; color: var(--ln-ink);
+        .ad-occasion-card:hover {
+          background: rgba(193,123,58,0.08);
+          border-color: rgba(193,123,58,0.3);
         }
-        .ln-occasion-arrow {
-          font-size: 12px; font-weight: 500; color: var(--ln-gold); margin-top: 6px;
-          opacity: 0; transition: opacity 0.2s;
+        .ad-occasion-icon {
+          font-size: 26px; margin-bottom: 10px; display: block;
         }
-        .ln-occasion-card:hover .ln-occasion-arrow { opacity: 1; }
+        .ad-occasion-name {
+          font-family: var(--ad-display);
+          font-size: 16px; font-weight: 400;
+          color: var(--ad-cream); line-height: 1.2;
+        }
+        .ad-occasion-arrow {
+          font-size: 12px; color: var(--ad-amber);
+          margin-top: 6px; opacity: 0;
+          transition: opacity 0.2s;
+        }
+        .ad-occasion-card:hover .ad-occasion-arrow { opacity: 1; }
 
-        /* HOW IT WORKS */
-        .ln-how-section {
-          background: var(--ln-ink); padding: 100px 5vw;
+        /* ── PROCESS ── */
+        .ad-process-section {
+          background: var(--ad-cocoa);
+          padding: 100px 5vw;
           position: relative; overflow: hidden;
         }
-        .ln-how-section::before {
-          content: ''; position: absolute; inset: 0; pointer-events: none;
-          background: radial-gradient(ellipse 70% 60% at 100% 100%, #18130a, transparent 60%);
-        }
-        .ln-how-section .ln-section-label { color: var(--ln-gold); }
-        .ln-how-section .ln-section-label::after { background: #222018; }
-        .ln-how-section .ln-section-h2 { color: #f0ebe0; }
-        .ln-how-steps {
-          display: grid; grid-template-columns: repeat(4, 1fr);
+        .ad-process-steps {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
           gap: 2px; margin-top: 60px;
         }
-        .ln-how-step {
-          background: rgba(255,255,255,0.025); padding: 40px 28px;
-          border-top: 1px solid #1a1812;
+        .ad-process-step {
+          background: rgba(255,255,255,0.025);
+          padding: 40px 26px;
+          border-top: 1px solid rgba(193,123,58,0.12);
+          position: relative;
         }
-        .ln-how-step-num {
-          font-family: var(--ln-display); font-size: 72px; font-weight: 300;
-          color: rgba(184,150,90,0.15); line-height: 1; margin-bottom: 24px;
+        .ad-process-num {
+          font-family: var(--ad-display);
+          font-size: 80px; font-weight: 300;
+          color: rgba(193,123,58,0.1);
+          line-height: 1; margin-bottom: 20px;
+          letter-spacing: -0.03em;
         }
-        .ln-how-step-icon { font-size: 28px; display: block; margin-bottom: 14px; }
-        .ln-how-step h4 {
-          font-size: 16px; font-weight: 500; color: #f0e8da;
-          margin-bottom: 10px; font-family: var(--ln-body);
+        .ad-process-icon {
+          font-size: 26px; display: block; margin-bottom: 14px;
         }
-        .ln-how-step p { font-size: 14px; font-weight: 400; color: #8a8070; line-height: 1.75; margin: 0; }
+        .ad-process-step h4 {
+          font-size: 15px; font-weight: 500;
+          color: var(--ad-cream); margin-bottom: 10px;
+          font-family: var(--ad-body);
+          letter-spacing: 0.03em;
+        }
+        .ad-process-step p {
+          font-size: 13px; font-weight: 300;
+          color: rgba(232,213,176,0.5); line-height: 1.8;
+        }
 
-        /* WHY LENSRA */
-        .ln-why-section { padding: 100px 5vw; background: var(--ln-warm); }
-        .ln-why-grid {
-          display: grid; grid-template-columns: 1fr 1fr;
+        /* ── WHY ADIRE ── */
+        .ad-why-section {
+          background: var(--ad-cream-lt);
+          padding: 100px 5vw;
+          border-top: 1px solid var(--ad-rule);
+        }
+        .ad-why-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
           gap: 2px; margin-top: 56px;
         }
-        .ln-why-card {
-          background: var(--ln-white); padding: 44px 36px;
-          border-top: 2px solid transparent; transition: border-color 0.3s;
+        .ad-why-card {
+          background: #fff; padding: 44px 36px;
+          border-top: 2px solid transparent;
+          transition: border-color 0.3s;
         }
-        .ln-why-card:hover { border-color: var(--ln-gold); }
-        .ln-why-icon { font-size: 32px; margin-bottom: 20px; display: block; }
-        .ln-why-card h3 {
-          font-family: var(--ln-display); font-size: 26px;
-          font-weight: 400; margin-bottom: 12px; color: var(--ln-ink);
+        .ad-why-card:hover { border-color: var(--ad-amber); }
+        .ad-why-icon { font-size: 28px; margin-bottom: 20px; display: block; }
+        .ad-why-card h3 {
+          font-family: var(--ad-display);
+          font-size: 26px; font-weight: 400;
+          margin-bottom: 12px; color: var(--ad-indigo);
         }
-        .ln-why-card p { font-size: 15px; font-weight: 400; color: #4a4438; line-height: 1.8; margin: 0; }
+        .ad-why-card p {
+          font-size: 14px; font-weight: 300;
+          color: var(--ad-muted); line-height: 1.85;
+        }
 
-        /* CTA STRIP */
-        .ln-cta-strip {
-          display: flex; align-items: center; justify-content: space-between;
+        /* ── CRAFT STRIP ── */
+        .ad-craft-strip {
+          background: var(--ad-indigo);
+          padding: 80px 5vw;
+          display: flex; align-items: center;
+          justify-content: space-between;
           gap: 48px; flex-wrap: wrap;
-          padding: 100px 5vw; border-top: 1px solid var(--ln-rule);
-          background: var(--ln-warm);
+          position: relative; overflow: hidden;
         }
-        .ln-cta-strip-left { max-width: 580px; }
-        .ln-cta-h2 {
-          font-family: var(--ln-display);
-          font-size: clamp(32px, 4vw, 54px);
-          font-weight: 400; line-height: 1.05;
-          letter-spacing: -0.01em; margin-bottom: 16px; color: var(--ln-ink);
+        .ad-craft-left { max-width: 560px; position: relative; z-index: 1; }
+        .ad-craft-h2 {
+          font-family: var(--ad-display);
+          font-size: clamp(32px, 3.8vw, 54px);
+          font-weight: 300; line-height: 1.05;
+          letter-spacing: -0.01em; color: var(--ad-cream);
+          margin-bottom: 16px;
         }
-        .ln-cta-h2 em { font-style: italic; color: var(--ln-gold); }
-        .ln-cta-p { font-size: 16px; font-weight: 400; color: #4a4438; line-height: 1.8; margin: 0; }
-        .ln-cta-actions { display: flex; gap: 12px; flex-direction: column; min-width: 220px; }
-        .ln-btn-ink {
+        .ad-craft-h2 em { font-style: italic; color: var(--ad-amber-lt); }
+        .ad-craft-p {
+          font-size: 15px; font-weight: 300;
+          color: rgba(232,213,176,0.55); line-height: 1.85;
+        }
+        .ad-craft-actions {
+          display: flex; flex-direction: column;
+          gap: 12px; min-width: 220px; position: relative; z-index: 1;
+        }
+        .ad-btn-cream {
           display: block; text-align: center;
-          background: var(--ln-ink); color: var(--ln-warm);
-          padding: 17px 36px; font-size: 11px; letter-spacing: 0.25em;
-          text-transform: uppercase; text-decoration: none; font-weight: 400;
-          transition: background 0.25s;
+          background: var(--ad-cream); color: var(--ad-indigo);
+          padding: 17px 36px;
+          font-family: var(--ad-body);
+          font-size: 11px; letter-spacing: 0.22em;
+          text-transform: uppercase; text-decoration: none;
+          font-weight: 400; transition: background 0.25s, color 0.25s;
         }
-        .ln-btn-ink:hover { background: var(--ln-gold); }
-        .ln-btn-outline {
+        .ad-btn-cream:hover { background: var(--ad-amber); color: #fff; }
+        .ad-btn-outline-light {
           display: block; text-align: center;
-          border: 1px solid var(--ln-rule); color: var(--ln-muted);
-          padding: 17px 36px; font-size: 11px; letter-spacing: 0.25em;
-          text-transform: uppercase; text-decoration: none; font-weight: 400;
-          transition: border-color 0.25s, color 0.25s;
+          border: 1px solid rgba(193,123,58,0.3);
+          color: rgba(193,123,58,0.65);
+          padding: 17px 36px;
+          font-family: var(--ad-body);
+          font-size: 11px; letter-spacing: 0.22em;
+          text-transform: uppercase; text-decoration: none;
+          font-weight: 400; transition: border-color 0.25s, color 0.25s;
         }
-        .ln-btn-outline:hover { border-color: var(--ln-gold); color: var(--ln-gold); }
+        .ad-btn-outline-light:hover { border-color: var(--ad-amber); color: var(--ad-amber-lt); }
 
-        /* SUBSCRIBE MODAL */
-        .ln-modal-backdrop {
-          position: fixed; inset: 0; background: rgba(14,14,13,0.75);
-          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-          z-index: 500; display: flex; align-items: center; justify-content: center; padding: 24px;
-        }
-        .ln-modal-inner { position: relative; }
-        .ln-modal-close {
-          position: absolute; top: -14px; right: -14px;
-          width: 36px; height: 36px;
-          background: var(--ln-ink); color: var(--ln-warm);
-          border: none; cursor: pointer; font-size: 16px;
-          display: flex; align-items: center; justify-content: center;
-          z-index: 10; transition: background 0.2s;
-        }
-        .ln-modal-close:hover { background: var(--ln-gold); }
-
-        /* FOOTER */
-        .ln-footer { background: var(--ln-ink); padding: 72px 5vw 32px; }
-        .ln-footer-top {
+        /* ── FOOTER ── */
+        .ad-footer { background: var(--ad-indigo-deep); padding: 72px 5vw 32px; }
+        .ad-footer-top {
           display: grid; grid-template-columns: 2fr 1fr 1fr;
-          gap: 56px; padding-bottom: 56px; border-bottom: 1px solid #1a1812;
+          gap: 56px; padding-bottom: 56px;
+          border-bottom: 1px solid var(--ad-rule-dark);
         }
-        .ln-footer-brand {
-          font-family: var(--ln-display); font-size: 30px;
-          font-weight: 300; color: #f5f0e8;
-          margin-bottom: 14px; letter-spacing: -0.02em; line-height: 1;
+        .ad-footer-brand {
+          font-family: var(--ad-display);
+          font-size: 32px; font-weight: 300;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          color: var(--ad-cream); margin-bottom: 6px; line-height: 1;
         }
-        .ln-footer-brand em { font-style: italic; color: var(--ln-gold); }
-        .ln-footer-desc { font-size: 14px; font-weight: 400; color: #6a6055; line-height: 1.8; max-width: 280px; }
-        .ln-footer-col h4 {
-          font-size: 11px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase;
-          color: var(--ln-gold); margin-bottom: 20px;
+        .ad-footer-brand span { color: var(--ad-amber); font-style: italic; font-weight: 300; }
+        .ad-footer-tagline {
+          font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+          color: rgba(193,123,58,0.5); margin-bottom: 16px;
         }
-        .ln-footer-col ul { list-style: none; padding: 0; margin: 0; }
-        .ln-footer-col li { margin-bottom: 10px; }
-        .ln-footer-col a { font-size: 14px; font-weight: 400; color: #6a6055; text-decoration: none; transition: color 0.2s; }
-        .ln-footer-col a:hover { color: var(--ln-gold-lt); }
-        .ln-footer-bottom {
-          display: flex; align-items: center; justify-content: space-between;
+        .ad-footer-desc {
+          font-size: 13px; font-weight: 300;
+          color: rgba(193,123,58,0.35); line-height: 1.85; max-width: 260px;
+        }
+        .ad-footer-col h4 {
+          font-size: 10px; font-weight: 500;
+          letter-spacing: 0.32em; text-transform: uppercase;
+          color: var(--ad-amber); margin-bottom: 20px;
+        }
+        .ad-footer-col ul { list-style: none; }
+        .ad-footer-col li { margin-bottom: 10px; }
+        .ad-footer-col a {
+          font-size: 13px; font-weight: 300;
+          color: rgba(193,123,58,0.35); text-decoration: none;
+          transition: color 0.2s;
+        }
+        .ad-footer-col a:hover { color: var(--ad-amber-lt); }
+        .ad-footer-bottom {
+          display: flex; align-items: center;
+          justify-content: space-between;
           padding-top: 28px; flex-wrap: wrap; gap: 16px;
         }
-        .ln-footer-copy { font-size: 13px; font-weight: 400; color: #3a3630; letter-spacing: 0.05em; }
-        .ln-footer-copy span { color: var(--ln-gold); }
-        .ln-footer-legal { display: flex; gap: 24px; }
-        .ln-footer-legal a {
-          font-size: 12px; font-weight: 400; color: #3a3630; text-decoration: none;
+        .ad-footer-copy {
+          font-size: 12px; font-weight: 300;
+          color: rgba(193,123,58,0.25); letter-spacing: 0.06em;
+        }
+        .ad-footer-copy span { color: var(--ad-amber); }
+        .ad-footer-legal { display: flex; gap: 24px; }
+        .ad-footer-legal a {
+          font-size: 11px; font-weight: 300;
+          color: rgba(193,123,58,0.25); text-decoration: none;
           letter-spacing: 0.08em; transition: color 0.2s;
         }
-        .ln-footer-legal a:hover { color: #6a6055; }
+        .ad-footer-legal a:hover { color: rgba(193,123,58,0.55); }
 
-        /* RESPONSIVE */
+        /* ── RESPONSIVE ── */
         @media (max-width: 1100px) {
-          .ln-how-steps { grid-template-columns: 1fr 1fr; }
-          .ln-occasions-grid { grid-template-columns: repeat(3, 1fr); }
-          .ln-footer-top { grid-template-columns: 1fr 1fr; }
+          .ad-process-steps { grid-template-columns: 1fr 1fr; }
+          .ad-occasions-grid { grid-template-columns: repeat(3, 1fr); }
+          .ad-footer-top { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 800px) {
-          .ln-hero { grid-template-columns: 1fr; min-height: auto; }
-          .ln-hero-left { padding: 108px 6vw 64px; }
-          .ln-hero-right { display: none; }
-          .ln-nav-links { display: none; }
-          .ln-why-grid { grid-template-columns: 1fr; }
-          .ln-how-steps { grid-template-columns: 1fr; }
-          .ln-cta-strip { flex-direction: column; }
-          .ln-cta-actions { width: 100%; }
-          .ln-products-grid { grid-template-columns: 1fr 1fr; }
-          .ln-occasions-grid { grid-template-columns: repeat(3, 1fr); }
-          .ln-footer-top { grid-template-columns: 1fr; gap: 36px; }
+          .ad-hero { grid-template-columns: 1fr; min-height: auto; }
+          .ad-hero-left { padding: 110px 6vw 72px; }
+          .ad-hero-right { display: none; }
+          .ad-nav-links { display: none; }
+          .ad-why-grid { grid-template-columns: 1fr; }
+          .ad-process-steps { grid-template-columns: 1fr; }
+          .ad-craft-strip { flex-direction: column; }
+          .ad-craft-actions { width: 100%; }
+          .ad-products-grid { grid-template-columns: 1fr 1fr; }
+          .ad-occasions-grid { grid-template-columns: repeat(3, 1fr); }
+          .ad-footer-top { grid-template-columns: 1fr; gap: 36px; }
         }
         @media (max-width: 480px) {
-          .ln-products-grid { grid-template-columns: 1fr; }
-          .ln-occasions-grid { grid-template-columns: repeat(2, 1fr); }
+          .ad-products-grid { grid-template-columns: 1fr; }
+          .ad-occasions-grid { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
 
       <GrainOverlay />
 
-      {/* SUBSCRIBE MODAL */}
-      {showModal && (
-        <div className="ln-modal-backdrop" onClick={() => setShowModal(false)}>
-          <div className="ln-modal-inner" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="ln-modal-close"
-              onClick={() => setShowModal(false)}
-              aria-label="Close"
-            >
-              ✕
-            </button>
-            <LensraSubscribe source="first_gift_popup" />
-          </div>
-        </div>
-      )}
-
-      {/* NAV */}
-      <nav className={`ln-nav ${scrolled ? "scrolled" : ""}`}>
-        <Link href="/" className={`ln-nav-logo ${scrolled ? "dark" : ""}`}>
-          Lens<em>ra</em>
+      {/* ── NAV ── */}
+      <nav className={`ad-nav ${scrolled ? "scrolled" : ""}`}>
+        <Link href="/" className={`ad-nav-logo ${scrolled ? "dark" : ""}`}>
+          Adire<span>.</span>
         </Link>
-        <ul className={`ln-nav-links ${scrolled ? "dark" : ""}`}>
+        <ul className={`ad-nav-links ${scrolled ? "dark" : ""}`}>
           <li><Link href="/shop">Shop</Link></li>
+          <li><Link href="/occasions">Occasions</Link></li>
           <li><Link href="/business">Business</Link></li>
           <li><Link href="/about">Our Story</Link></li>
           <li>
-            <Link href="/shop" className="ln-nav-cta">
-              Start Customising
+            <Link href="/shop" className="ad-nav-cta">
+              Personalise Now
             </Link>
           </li>
         </ul>
       </nav>
 
-      {/* HERO */}
-      <section className="ln-hero">
-        {/* Left — text */}
-        <div className="ln-hero-left">
+      {/* ── HERO ── */}
+      <section className="ad-hero">
+
+        {/* Left — copy */}
+        <div className="ad-hero-left">
           <motion.div
-            className="ln-hero-eyebrow"
+            className="ad-hero-eyebrow"
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+            transition={{ duration: 0.7, ease: [0.16,1,0.3,1], delay: 0.1 }}
           >
-            Benin City, Nigeria · Est. 2024
+            Benin City, Nigeria · Est. 2025
           </motion.div>
 
           <motion.h1
-            className="ln-hero-h1"
-            initial={{ opacity: 0, y: 32 }}
+            className="ad-hero-h1"
+            initial={{ opacity: 0, y: 36 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.22 }}
+            transition={{ duration: 0.85, ease: [0.16,1,0.3,1], delay: 0.22 }}
           >
-            Gifts
-            <em>That Remember.</em>
+            Made Personal.
+            <em>Made Nigerian.</em>
           </motion.h1>
 
           <motion.p
-            className="ln-hero-body"
+            className="ad-hero-body"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.38 }}
+            transition={{ duration: 0.8, ease: [0.16,1,0.3,1], delay: 0.38 }}
           >
-            Custom mugs and premium canvas prints — personalised with your
-            photos, names, and words. Crafted with care. Delivered across
-            Nigeria.
+            Personalised Ankara tote bags and pouches, embroidered with your
+            name and made to order in Benin City. A gift that feels like it
+            was always theirs.
           </motion.p>
 
           <motion.div
-            className="ln-hero-actions"
+            className="ad-hero-actions"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.52 }}
+            transition={{ duration: 0.8, ease: [0.16,1,0.3,1], delay: 0.52 }}
           >
-            <Link href="/shop?category=mug" className="ln-btn-gold">
-              ☕ Custom Mugs
+            <Link href="/shop?category=tote" className="ad-btn-amber">
+              Shop Tote Bags
             </Link>
-            <Link href="/shop?category=canvas" className="ln-btn-ghost-light">
-              🖼 Canvas Prints
+            <Link href="/shop?category=pouch" className="ad-btn-ghost">
+              Explore Pouches
             </Link>
           </motion.div>
         </div>
 
-        {/* Right — decorative */}
+        {/* Right — decorative cards */}
         <motion.div
-          className="ln-hero-right"
+          className="ad-hero-right"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.2, delay: 0.4 }}
+          transition={{ duration: 1.2, delay: 0.35 }}
         >
-          <div className="ln-hero-ghost">Remember.</div>
+          <div className="ad-hero-pattern">
+            <AdirePattern opacity={0.07} />
+          </div>
 
-          <div className="ln-float-wrap">
+          <div className="ad-hero-ghost-text">Adire.</div>
+
+          <div className="ad-hero-cards">
             <motion.div
-              className="ln-float-card"
+              className="ad-hero-card"
               animate={{ y: [0, -12, 0] }}
-              transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+              transition={{ duration: 6.5, ease: "easeInOut", repeat: Infinity }}
             >
-              <div className="ln-float-icon">☕</div>
+              <div className="ad-hero-card-icon">👜</div>
               <div>
-                <div className="ln-float-label">Product 01</div>
-                <div className="ln-float-name">Custom Ceramic Mug</div>
-                <div className="ln-float-sub">Your photo · Your words</div>
+                <div className="ad-hero-card-label">Product 01</div>
+                <div className="ad-hero-card-name">Ankara Tote Bag</div>
+                <div className="ad-hero-card-sub">Embroidered · Made to order</div>
               </div>
             </motion.div>
 
             <motion.div
-              className="ln-float-card"
+              className="ad-hero-card"
               animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 7, ease: "easeInOut", repeat: Infinity, delay: 1 }}
+              transition={{ duration: 7.5, ease: "easeInOut", repeat: Infinity, delay: 1.2 }}
             >
-              <div className="ln-float-icon">🖼</div>
+              <div className="ad-hero-card-icon">👝</div>
               <div>
-                <div className="ln-float-label">Product 02</div>
-                <div className="ln-float-name">Premium Canvas Print</div>
-                <div className="ln-float-sub">Archival quality · Any size</div>
+                <div className="ad-hero-card-label">Product 02</div>
+                <div className="ad-hero-card-name">Ankara Pouch</div>
+                <div className="ad-hero-card-sub">Personalised · Gift-ready</div>
               </div>
             </motion.div>
           </div>
 
-          <div className="ln-hero-stats">
+          <div className="ad-hero-stats">
             {[
-              { num: "500+", label: "Customers" },
-              { num: "72h", label: "Delivery" },
+              { num: "100%", label: "Handmade" },
+              { num: "3–5d", label: "Delivery" },
               { num: "🇳🇬", label: "Nationwide" },
             ].map((s) => (
-              <div className="ln-hero-stat" key={s.label}>
-                <div className="ln-hero-stat-num">{s.num}</div>
-                <div className="ln-hero-stat-label">{s.label}</div>
+              <div className="ad-hero-stat" key={s.label}>
+                <div className="ad-hero-stat-num">{s.num}</div>
+                <div className="ad-hero-stat-label">{s.label}</div>
               </div>
             ))}
           </div>
         </motion.div>
       </section>
 
-      {/* PRODUCTS */}
-      <section className="ln-products-section">
-        <div className="ln-section-inner">
-          <div className="ln-section-header">
+      {/* ── PRODUCTS ── */}
+      <section className="ad-products-section">
+        <div className="ad-section-inner">
+          <div className="ad-section-header">
             <div>
               <SectionLabel>Our Products</SectionLabel>
-              <h2 className="ln-section-h2">
-                Two products.<br />Every occasion.
+              <h2 className="ad-section-h2">
+                Two products.<br />Infinite occasions.
               </h2>
             </div>
-            <div className="ln-filter-tabs">
+            <div className="ad-filter-row">
               {(
                 [
-                  { key: "all", label: `All (${allProducts.length})` },
-                  { key: "mug", label: `Mugs (${mugCount})` },
-                  { key: "canvas", label: `Canvas (${canvasCount})` },
+                  { key: "all",   label: `All (${allProducts.length})` },
+                  { key: "tote",  label: `Tote Bags (${toteCount})` },
+                  { key: "pouch", label: `Pouches (${pouchCount})` },
                 ] as const
               ).map(({ key, label }) => (
                 <button
                   key={key}
-                  className={`ln-filter-tab ${activeFilter === key ? "active" : ""}`}
+                  className={`ad-filter-btn ${activeFilter === key ? "active" : ""}`}
                   onClick={() => setActiveFilter(key)}
                 >
                   {label}
@@ -817,79 +1008,96 @@ export default function ClientHomepage({
 
           <motion.div
             ref={productsRef}
-            className="ln-products-grid"
+            className="ad-products-grid"
             variants={stagger}
             initial="hidden"
             animate={productsInView ? "show" : "hidden"}
           >
             {displayProducts.length > 0 ? (
-              displayProducts.map((product, i) => (
+              displayProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))
             ) : (
-              <div className="ln-products-empty">New designs arriving soon.</div>
+              <div className="ad-products-empty">New patterns arriving soon.</div>
             )}
           </motion.div>
         </div>
       </section>
 
-      {/* OCCASIONS */}
-      <section className="ln-occasions-section">
-        <div className="ln-section-inner">
-          <SectionLabel>Shop by Occasion</SectionLabel>
-          <h2 className="ln-section-h2">
-            Every moment deserves<br />to be remembered.
+      {/* ── OCCASIONS ── */}
+      <section className="ad-occasions-section">
+        <div className="ad-section-inner">
+          <SectionLabel light>Shop by Occasion</SectionLabel>
+          <h2 className="ad-section-h2 ad-section-h2-light">
+            Every celebration<br />deserves something real.
           </h2>
-          <div className="ln-occasions-grid">
+          <motion.div
+            ref={occasionsRef}
+            className="ad-occasions-grid"
+            variants={stagger}
+            initial="hidden"
+            animate={occasionsInView ? "show" : "hidden"}
+          >
             {[
               { icon: "🎂", name: "Birthday",    slug: "birthday" },
               { icon: "💍", name: "Anniversary", slug: "anniversary" },
-              { icon: "💝", name: "Valentine",   slug: "valentine" },
               { icon: "🎓", name: "Graduation",  slug: "graduation" },
               { icon: "🤍", name: "Wedding",     slug: "wedding" },
               { icon: "🎁", name: "Just Because",slug: "just-because" },
+              { icon: "🏢", name: "Corporate",   slug: "corporate" },
             ].map((o) => (
-              <Link
-                key={o.slug}
-                href={`/shop?tag=${o.slug}`}
-                className="ln-occasion-card"
-              >
-                <span className="ln-occasion-icon">{o.icon}</span>
-                <div className="ln-occasion-name">{o.name}</div>
-                <div className="ln-occasion-arrow">→</div>
-              </Link>
+              <motion.div key={o.slug} variants={fadeUp}>
+                <Link href={`/shop?tag=${o.slug}`} className="ad-occasion-card">
+                  <span className="ad-occasion-icon">{o.icon}</span>
+                  <div className="ad-occasion-name">{o.name}</div>
+                  <div className="ad-occasion-arrow">→</div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
+        <AdirePattern opacity={0.05} />
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="ln-how-section">
-        <div className="ln-section-inner">
-          <SectionLabel>The Process</SectionLabel>
-          <h2 className="ln-section-h2">
-            From idea to doorstep<br />in four steps.
+      {/* ── PROCESS ── */}
+      <section className="ad-process-section">
+        <div className="ad-section-inner">
+          <SectionLabel light>How It Works</SectionLabel>
+          <h2 className="ad-section-h2 ad-section-h2-light">
+            From your name<br />to their hands.
           </h2>
           <motion.div
-            ref={howRef}
-            className="ln-how-steps"
+            ref={processRef}
+            className="ad-process-steps"
             variants={stagger}
             initial="hidden"
-            animate={howInView ? "show" : "hidden"}
+            animate={processInView ? "show" : "hidden"}
           >
             {[
-              { num: "01", icon: "🎨", title: "Pick your product",
-                body: "Choose a custom mug or premium canvas print — two products, each designed to become a lasting gift." },
-              { num: "02", icon: "📐", title: "Choose a template",
-                body: "Pick from five curated styles: Minimal, Celebration, Romantic, Corporate, or Quote." },
-              { num: "03", icon: "✍🏾", title: "Personalise it",
-                body: "Upload your photo, type a name, a date, a message. Watch it come to life on screen before you order." },
-              { num: "04", icon: "📦", title: "We make & deliver",
-                body: "Produced in Benin City with premium materials. Shipped nationwide, packaged beautifully, within 72 hours." },
-            ].map((step, i) => (
-              <motion.div key={step.num} className="ln-how-step" variants={fadeUp}>
-                <div className="ln-how-step-num">{step.num}</div>
-                <span className="ln-how-step-icon">{step.icon}</span>
+              {
+                num: "01", icon: "🧵",
+                title: "Choose your product",
+                body: "Pick a tote bag or pouch. Browse our curated Ankara patterns and choose the one that speaks to the occasion.",
+              },
+              {
+                num: "02", icon: "✍🏾",
+                title: "Personalise it",
+                body: "Tell us the name to be embroidered, any message, and the occasion. Every piece is made to your exact specification.",
+              },
+              {
+                num: "03", icon: "🪡",
+                title: "We craft it",
+                body: "Your bag is cut, sewn, and embroidered by hand in Benin City. Packaged in kraft tissue so it arrives as a gift should.",
+              },
+              {
+                num: "04", icon: "📦",
+                title: "Delivered to them",
+                body: "Shipped nationwide via GIG Logistics within 3–5 days. Trackable, insured, and beautifully packaged on arrival.",
+              },
+            ].map((step) => (
+              <motion.div key={step.num} className="ad-process-step" variants={fadeUp}>
+                <div className="ad-process-num">{step.num}</div>
+                <span className="ad-process-icon">{step.icon}</span>
                 <h4>{step.title}</h4>
                 <p>{step.body}</p>
               </motion.div>
@@ -898,32 +1106,44 @@ export default function ClientHomepage({
         </div>
       </section>
 
-      {/* WHY LENSRA */}
-      <section className="ln-why-section">
-        <div className="ln-section-inner">
-          <SectionLabel>Why Lensra</SectionLabel>
-          <h2 className="ln-section-h2">
-            Premium isn't a price.<br />It's a standard.
+      {/* ── WHY ADIRE ── */}
+      <section className="ad-why-section">
+        <div className="ad-section-inner">
+          <SectionLabel>Why Adire</SectionLabel>
+          <h2 className="ad-section-h2">
+            A gift they will keep.<br />Not just receive.
           </h2>
           <motion.div
             ref={whyRef}
-            className="ln-why-grid"
+            className="ad-why-grid"
             variants={stagger}
             initial="hidden"
             animate={whyInView ? "show" : "hidden"}
           >
             {[
-              { icon: "🎯", title: "Made for the moment",
-                body: "Every gift is designed around a specific memory. Not mass-produced. Made for one person, one occasion." },
-              { icon: "🏺", title: "Crafted, not printed",
-                body: "Premium ceramic mugs and archival-grade canvas at full resolution. Quality that sits on a shelf for years." },
-              { icon: "⚡", title: "72-hour delivery",
-                body: "Produced in Benin City. Shipped to Lagos, Abuja, Port Harcourt — anywhere in Nigeria — within 72 hours." },
-              { icon: "🏢", title: "Lensra Business",
-                body: "Corporate gifts that actually impress. Branded mugs, staff packs, client gifts at volume. Dedicated support." },
-            ].map((item, i) => (
-              <motion.div key={item.title} className="ln-why-card" variants={fadeUp}>
-                <span className="ln-why-icon">{item.icon}</span>
+              {
+                icon: "🇳🇬",
+                title: "Proudly Nigerian",
+                body: "Every pattern is authentic Ankara fabric sourced locally. Every stitch is Nigerian craftsmanship. Not imported. Not mass-produced.",
+              },
+              {
+                icon: "✏️",
+                title: "Truly personalised",
+                body: "Your person's name, embroidered directly onto the fabric. Not a sticker. Not a print. A permanent part of the bag that lasts for years.",
+              },
+              {
+                icon: "📦",
+                title: "Packaged like a gift",
+                body: "Every order arrives in a kraft gift box with tissue paper and a handwritten-feel card. The unboxing is part of the experience.",
+              },
+              {
+                icon: "🏢",
+                title: "Adire for Business",
+                body: "Staff appreciation packs. Client gifts. Corporate events. Branded Ankara sets that actually impress. Bulk pricing available.",
+              },
+            ].map((item) => (
+              <motion.div key={item.title} className="ad-why-card" variants={fadeUp}>
+                <span className="ad-why-icon">{item.icon}</span>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </motion.div>
@@ -932,56 +1152,63 @@ export default function ClientHomepage({
         </div>
       </section>
 
-      {/* CTA STRIP */}
-      <div className="ln-cta-strip">
-        <div className="ln-cta-strip-left">
-          <h2 className="ln-cta-h2">
-            Every gift starts with
+      {/* ── CTA STRIP ── */}
+      <div className="ad-craft-strip">
+        <AdirePattern opacity={0.04} />
+        <div className="ad-craft-left">
+          <h2 className="ad-craft-h2">
+            Give something they will
             <br />
-            <em>a memory worth keeping.</em>
+            <em>remember forever.</em>
           </h2>
-          <p className="ln-cta-p">
-            Start customising your mug or canvas print today.
-            It takes two minutes — and lasts a lifetime.
+          <p className="ad-craft-p">
+            Order in minutes. Made by hand in Benin City.
+            Delivered across Nigeria within 3–5 days.
           </p>
         </div>
-        <div className="ln-cta-actions">
-          <Link href="/shop" className="ln-btn-ink">Browse All Gifts</Link>
-          <Link href="/business" className="ln-btn-outline">Corporate Gifting →</Link>
+        <div className="ad-craft-actions">
+          <Link href="/shop" className="ad-btn-cream">Browse All Gifts</Link>
+          <Link href="/business" className="ad-btn-outline-light">Corporate Orders →</Link>
         </div>
       </div>
 
-      {/* FOOTER */}
-      <footer className="ln-footer">
-        <div className="ln-footer-top">
+      {/* ── FOOTER ── */}
+      <footer className="ad-footer">
+        <div className="ad-footer-top">
           <div>
-            <div className="ln-footer-brand">Lens<em>ra</em></div>
-            <p className="ln-footer-desc">
-              Custom mugs and premium canvas prints. Personalised with your
-              photos and words. Made in Benin City, delivered across Nigeria.
+            <div className="ad-footer-brand">Adire<span>.</span></div>
+            <div className="ad-footer-tagline">Made Personal. Made Nigerian.</div>
+            <p className="ad-footer-desc">
+              Personalised Ankara tote bags and pouches, embroidered with your
+              name and made to order. Crafted in Benin City. Delivered
+              nationwide.
             </p>
           </div>
-          <div className="ln-footer-col">
+          <div className="ad-footer-col">
             <h4>Shop</h4>
             <ul>
-              <li><Link href="/shop?category=mug">Custom Mugs</Link></li>
-              <li><Link href="/shop?category=canvas">Canvas Prints</Link></li>
+              <li><Link href="/shop?category=tote">Ankara Tote Bags</Link></li>
+              <li><Link href="/shop?category=pouch">Ankara Pouches</Link></li>
+              <li><Link href="/shop?tag=bundle">Gift Sets</Link></li>
               <li><Link href="/business">Corporate Gifts</Link></li>
             </ul>
           </div>
-          <div className="ln-footer-col">
+          <div className="ad-footer-col">
             <h4>Support</h4>
             <ul>
               <li><Link href="/track">Track Order</Link></li>
               <li><Link href="/delivery">Delivery Info</Link></li>
               <li><Link href="/returns">Returns</Link></li>
               <li><Link href="/contact">Contact Us</Link></li>
+              <li><Link href="/about">Our Story</Link></li>
             </ul>
           </div>
         </div>
-        <div className="ln-footer-bottom">
-          <div className="ln-footer-copy">© 2026 <span>Lensra</span>. Proudly Nigerian.</div>
-          <div className="ln-footer-legal">
+        <div className="ad-footer-bottom">
+          <div className="ad-footer-copy">
+            © 2025 <span>Adire</span>. Proudly Nigerian.
+          </div>
+          <div className="ad-footer-legal">
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
           </div>

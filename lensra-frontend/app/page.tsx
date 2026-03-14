@@ -1,66 +1,73 @@
 // app/page.tsx
-// Server component — Lensra rebranded homepage
+// Server component — Adire homepage
+// Brand: Personalised Ankara Gifts · Made in Benin City · Delivered Nationwide
 
-import { Metadata } from 'next';
-import ClientHomepage from './ClientHomepage';
-import { WithContext, WebPage, Organization, BreadcrumbList } from 'schema-dts';
+import { Metadata } from "next";
+import ClientHomepage from "./ClientHomepage";
+import { WithContext, WebPage, Organization, BreadcrumbList } from "schema-dts";
 
-const BaseUrl = "https://api.lensra.com/";
+const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.adire.ng/";
+const SiteUrl = "https://www.adire.ng";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface Product {
   id: number;
   slug: string;
   name: string;
   base_price: string;
-  category: 'mug' | 'canvas' | string;
+  category: "tote" | "pouch" | string;
   image_url: string | null;
   is_active: boolean;
   is_trending: boolean;
   is_featured: boolean;
+  is_new?: boolean;
 }
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: 'Lensra | Gifts That Remember — Custom Mugs & Canvas Prints in Nigeria',
+  title: "Adire | Personalised Ankara Gifts — Made in Nigeria",
   description:
-    'Turn your most precious moments into lasting gifts. Custom mugs and premium canvas prints, personalised with your photos and words. Delivered across Nigeria from Benin City.',
+    "Handmade personalised Ankara tote bags and pouches, embroidered with your name and made to order in Benin City. The most meaningful gift you can give. Delivered across Nigeria.",
   keywords: [
-    'custom mugs Nigeria',
-    'personalised canvas prints Nigeria',
-    'custom gifts Benin City',
-    'premium personalised gifts Nigeria',
-    'photo gifts Nigeria',
-    'custom mug Nigeria',
-    'canvas print gift Nigeria',
-    'Lensra gifts',
+    "personalised Ankara gifts Nigeria",
+    "custom Ankara tote bag Nigeria",
+    "Ankara pouch personalised",
+    "personalised gifts Benin City",
+    "Ankara gifts Nigeria",
+    "handmade Nigerian gifts",
+    "embroidered Ankara bag Nigeria",
+    "Adire gifts Nigeria",
+    "custom gifts Nigeria",
+    "Nigerian gifting brand",
   ],
   openGraph: {
-    title: 'Lensra — Gifts That Remember',
+    title: "Adire — Personalised Ankara Gifts. Made Nigerian.",
     description:
-      'Custom mugs and premium canvas prints, personalised with your photos and words. Delivered across Nigeria.',
-    url: 'https://www.lensra.com',
-    siteName: 'Lensra',
+      "Handmade Ankara tote bags and pouches embroidered with your name. Made to order in Benin City. Delivered nationwide.",
+    url: SiteUrl,
+    siteName: "Adire",
     images: [
       {
-        url: '/og-image.jpg',
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: 'Lensra — Custom Mugs & Canvas Prints',
+        alt: "Adire — Personalised Ankara Gifts",
       },
     ],
-    type: 'website',
-    locale: 'en_NG',
+    type: "website",
+    locale: "en_NG",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Lensra — Gifts That Remember',
+    card: "summary_large_image",
+    title: "Adire — Made Personal. Made Nigerian.",
     description:
-      'Custom mugs and premium canvas prints. Personalised, premium, delivered nationwide.',
-    images: ['/og-image.jpg'],
+      "Personalised Ankara tote bags and pouches. Embroidered, handmade, delivered nationwide.",
+    images: ["/og-image.jpg"],
   },
   alternates: {
-    canonical: 'https://www.lensra.com',
+    canonical: SiteUrl,
   },
   robots: {
     index: true,
@@ -75,36 +82,42 @@ function HomepageSchema() {
     breadcrumb: WithContext<BreadcrumbList>;
     publisher: Organization;
   } = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: 'Lensra — Gifts That Remember',
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Adire — Personalised Ankara Gifts",
     description:
-      'Custom mugs and premium canvas prints, personalised with your photos and words. Delivered across Nigeria.',
-    url: 'https://www.lensra.com',
+      "Handmade personalised Ankara tote bags and pouches, embroidered with your name and made to order in Benin City. Delivered across Nigeria.",
+    url: SiteUrl,
     breadcrumb: {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
       itemListElement: [
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
           position: 1,
-          name: 'Home',
-          item: 'https://www.lensra.com',
+          name: "Home",
+          item: SiteUrl,
         },
       ],
     },
     publisher: {
-      '@type': 'Organization',
-      name: 'Lensra',
+      "@type": "Organization",
+      name: "Adire",
+      url: SiteUrl,
       logo: {
-        '@type': 'ImageObject',
-        url: 'https://www.lensra.com/logo.png',
+        "@type": "ImageObject",
+        url: `${SiteUrl}/logo.png`,
       },
       address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Benin City',
-        addressRegion: 'Edo',
-        addressCountry: 'NG',
+        "@type": "PostalAddress",
+        addressLocality: "Benin City",
+        addressRegion: "Edo",
+        addressCountry: "NG",
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        availableLanguage: "English",
       },
     },
   };
@@ -126,15 +139,15 @@ export default async function Homepage() {
     const res = await fetch(`${BaseUrl}api/products/`, {
       next: { revalidate: 3600 },
     });
-    if (!res.ok) throw new Error('Failed to fetch products');
+    if (!res.ok) throw new Error("Failed to fetch products");
     const data = await res.json();
     products = Array.isArray(data) ? data : (data.results ?? []);
-    // Only surface active mug + canvas products on the homepage
+    // Only surface active tote + pouch products on the homepage
     products = products.filter(
-      (p) => p.is_active && ['mug', 'canvas'].includes(p.category),
+      (p) => p.is_active && ["tote", "pouch"].includes(p.category)
     );
   } catch (err) {
-    console.error('[Lensra] Product fetch error:', err);
+    console.error("[Adire] Product fetch error:", err);
   }
 
   return (
