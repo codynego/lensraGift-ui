@@ -144,13 +144,13 @@ export default function AdireFooter() {
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 9px; font-weight: 800;
           letter-spacing: 0.42em; text-transform: uppercase;
-          color: rgba(193,123,58,0.45);
+          color: rgba(193,123,58,0.7);
           margin-bottom: 20px;
         }
         .f-desc {
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 13px; font-weight: 400;
-          color: rgba(193,123,58,0.3);
+          color: rgba(245,240,232,0.55);
           line-height: 1.9; max-width: 240px;
           margin-bottom: 28px;
         }
@@ -193,7 +193,7 @@ export default function AdireFooter() {
           display: inline-flex; align-items: center; gap: 8px;
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 13px; font-weight: 400;
-          color: rgba(193,123,58,0.32);
+          color: rgba(245,240,232,0.5);
           text-decoration: none;
           transition: color 0.2s;
         }
@@ -211,19 +211,19 @@ export default function AdireFooter() {
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 8px; font-weight: 800;
           letter-spacing: 0.36em; text-transform: uppercase;
-          color: rgba(193,123,58,0.28); display: block; margin-bottom: 3px;
+          color: rgba(193,123,58,0.6); display: block; margin-bottom: 3px;
         }
         .f-contact-val {
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 13px; font-weight: 500;
-          color: rgba(193,123,58,0.5); text-decoration: none;
+          color: rgba(245,240,232,0.7); text-decoration: none;
           transition: color 0.2s;
         }
         a.f-contact-val:hover { color: #C17B3A; }
         .f-hours {
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 11px; font-weight: 400;
-          color: rgba(193,123,58,0.2); line-height: 1.75; margin-top: 6px;
+          color: rgba(245,240,232,0.35); line-height: 1.75; margin-top: 6px;
         }
 
         /* ── BOTTOM BAR ── */
@@ -237,27 +237,27 @@ export default function AdireFooter() {
         .f-copy {
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 11px; font-weight: 400;
-          color: rgba(193,123,58,0.2); letter-spacing: 0.06em;
+          color: rgba(245,240,232,0.4); letter-spacing: 0.06em;
         }
-        .f-copy strong { color: rgba(193,123,58,0.4); font-weight: 600; }
+        .f-copy strong { color: rgba(245,240,232,0.65); font-weight: 600; }
         .f-legal { display: flex; align-items: center; gap: 16px; }
         .f-legal-link {
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 11px; font-weight: 400;
-          color: rgba(193,123,58,0.2); text-decoration: none;
+          color: rgba(245,240,232,0.4); text-decoration: none;
           letter-spacing: 0.08em; transition: color 0.2s;
         }
-        .f-legal-link:hover { color: rgba(193,123,58,0.5); }
+        .f-legal-link:hover { color: rgba(245,240,232,0.75); }
         .f-sep {
           width: 3px; height: 3px; border-radius: 50%;
-          background: rgba(193,123,58,0.15);
+          background: rgba(245,240,232,0.2);
         }
         .f-paystack {
           display: inline-flex; align-items: center; gap: 6px;
           font-family: 'Syne', system-ui, sans-serif;
           font-size: 10px; font-weight: 600;
           letter-spacing: 0.1em;
-          color: rgba(193,123,58,0.2);
+          color: rgba(245,240,232,0.35);
         }
 
         /* ── RESPONSIVE ── */

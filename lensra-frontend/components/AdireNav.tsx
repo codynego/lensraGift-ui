@@ -75,6 +75,12 @@ export default function AdireNav() {
   const [dropdown,  setDropdown]  = useState<string | null>(null);
   const timerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Pages with a dark hero where the transparent nav looks intentional
+  // All other pages get a solid nav immediately so text is always readable
+  const hasDarkHero = pathname === "/" ||
+    pathname === "/about" ||
+    pathname === "/business";
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", fn, { passive: true });
@@ -97,7 +103,13 @@ export default function AdireNav() {
     timerRef.current = setTimeout(() => setDropdown(null), 160);
   };
 
-  const light = !scrolled && !open; // nav is over dark hero
+  // On dark-hero pages: transparent until scrolled, then solid cream
+  // On all other pages: always solid cream so text is always readable
+  const isSolid = !hasDarkHero || scrolled || open;
+
+  // Text is light (cream) when over a dark hero and not yet scrolled
+  // Text is dark (indigo) when nav is solid/cream
+  const light = hasDarkHero && !scrolled && !open;
 
   return (
     <>
@@ -332,7 +344,7 @@ export default function AdireNav() {
 
       {/* ── Bar ── */}
       <nav
-        className={`n-bar ${scrolled || open ? "solid" : ""}`}
+        className={`n-bar ${isSolid ? "solid" : ""}`}
         role="navigation" aria-label="Main navigation"
       >
         <Link href="/" className="n-logo" aria-label="Lensra home">
