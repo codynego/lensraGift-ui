@@ -1,122 +1,123 @@
 // app/shop/[id]/page.tsx
-// Note: This is the server component for the product detail page
+// Adire — Product detail server component
 
-import { Metadata } from 'next';
-import ClientProductDetail from './ClientProductDetail'; // We'll define this below
-import ProductSchema from '@/components/ProductSchema'; // Assuming this is in components
+import { Metadata } from "next";
+import ClientProductDetail from "./ClientProductDetail";
+import ProductSchema from "@/components/ProductSchema";
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+const BaseUrl  = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
+const SiteUrl  = "https://www.lensra.com";
 
-interface AttributeValue {
-  id: number;
-  attribute_name: string;
-  value: string;
-}
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-interface ProductVariant {
-  id: number;
-  attributes: AttributeValue[];
-  price_override: string | null;
-  stock_quantity: number;
-}
-
-interface ProductImage {
-  id: number;
-  image_url: string;
-  alt_text: string;
-}
+interface AttributeValue { id: number; attribute_name: string; value: string; }
+interface ProductVariant  { id: number; attributes: AttributeValue[]; price_override: string | null; stock_quantity: number; }
+interface ProductImage    { id: number; image_url: string; alt_text: string; }
 
 interface ProductDetail {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  base_price: string;
-  category_name: string;
-  display_price: string;
-  is_on_sale: boolean;
-  original_price: string | null;
-  image_url: string | null;
-  gallery: ProductImage[];
-  variants: ProductVariant[];
-  min_order_quantity: number;
-  is_customizable: boolean;
-  message: string | null;
+  id: number; name: string; slug: string; description: string;
+  base_price: string; display_price: string;
+  is_on_sale: boolean; original_price: string | null;
+  category_name: string; image_url: string | null;
+  gallery: ProductImage[]; variants: ProductVariant[];
+  min_order_quantity: number; is_customizable: boolean; message: string | null;
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  try {
-    const response = await fetch(`${BaseUrl}api/products/${params.id}/`, { next: { revalidate: 3600 } }); // ISR every hour
-    if (!response.ok) throw new Error('Product not found');
-    const product: ProductDetail = await response.json();
+// ── Metadata ──────────────────────────────────────────────────────────────────
 
-    const images = [product.image_url, ...product.gallery.map((g) => g.image_url)].filter(Boolean) as string[];
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  try {
+    const res = await fetch(`${BaseUrl}api/products/${params.id}/`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) throw new Error("Not found");
+    const product: ProductDetail = await res.json();
+
+    const images = [product.image_url, ...product.gallery.map(g => g.image_url)].filter(Boolean) as string[];
 
     return {
-      title: `${product.name} | Personalized ${product.category_name} Gifts in Nigeria - Lensra`,
-      description: product.description.slice(0, 160) + '...', // Truncate for meta
+      title: `${product.name} | Personalised Ankara Gift — Adire Nigeria`,
+      description: product.description.slice(0, 160) + "…",
       keywords: [
         product.name.toLowerCase(),
-        `${product.category_name.toLowerCase()} gifts Nigeria`,
-        'personalized gifts Lagos',
-        'custom print on demand',
-        'digital surprise gifts',
-        'Lensra products',
+        `personalised ${product.category_name.toLowerCase()} Nigeria`,
+        "custom Ankara gift Nigeria",
+        "embroidered Ankara bag Nigeria",
+        "personalised gifts Benin City",
+        "Adire gifts",
       ],
       openGraph: {
-        title: `${product.name} - Premium Custom Gift by Lensra`,
-        description: 'Discover this unique personalized gift with instant digital reveal. Perfect for special occasions.',
-        url: `https://www.lensra.com/shop/${params.id}`,
-        images: images.map((img) => ({
-          url: img,
-          width: 800, // Adjust based on actual sizes
-          height: 600,
-          alt: `${product.name} Image`,
-        })),
-        type: 'website',
+        title: `${product.name} — Adire Personalised Ankara Gifts`,
+        description: "Handmade, embroidered with your name. Made in Benin City. Delivered across Nigeria.",
+        url: `${SiteUrl}/shop/${params.id}`,
+        images: images.map(img => ({ url: img, width: 800, height: 1067, alt: product.name })),
+        type: "website",
       },
       twitter: {
-        card: 'summary_large_image',
-        title: `${product.name} | Lensra Gifts`,
-        description: 'Personalized with secret messages and emotions. Shop now!',
-        images: images,
+        card: "summary_large_image",
+        title: `${product.name} | Adire`,
+        description: "Personalised Ankara gift. Made in Nigeria, delivered nationwide.",
+        images,
       },
-      alternates: {
-        canonical: `/shop/${params.id}`,
-      },
+      alternates: { canonical: `/shop/${params.id}` },
     };
-  } catch (err) {
+  } catch {
     return {
-      title: 'Product Not Found | Lensra Gifts',
-      description: 'Browse our collection of premium personalized gifts.',
+      title: "Product Not Found | Adire",
+      description: "Browse our collection of personalised Ankara gifts.",
     };
   }
 }
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function ProductDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   let product: ProductDetail | null = null;
-  let relatedProducts: ProductDetail[] = [];
+  let related: ProductDetail[] = [];
 
   try {
-    const response = await fetch(`${BaseUrl}api/products/${params.id}/`, { next: { revalidate: 3600 } });
-    if (!response.ok) throw new Error('Product not found');
-    product = await response.json();
+    const res = await fetch(`${BaseUrl}api/products/${params.id}/`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) throw new Error("Product not found");
+    product = await res.json();
 
     if (product) {
-      const relatedRes = await fetch(`${BaseUrl}api/products/?category__name=${product.category_name}`, { next: { revalidate: 3600 } });
-      if (relatedRes.ok) {
-        const relatedData = await relatedRes.json();
-        const productsArray = Array.isArray(relatedData) ? relatedData : (relatedData.results || []);
-        relatedProducts = productsArray.filter((p: ProductDetail) => product && p.id !== product.id).slice(0, 4);
+      const relRes = await fetch(
+        `${BaseUrl}api/products/?category__name=${product.category_name}`,
+        { next: { revalidate: 3600 } }
+      );
+      if (relRes.ok) {
+        const relData = await relRes.json();
+        const arr: ProductDetail[] = Array.isArray(relData) ? relData : (relData.results ?? []);
+        related = arr.filter(p => product && p.id !== product.id).slice(0, 4);
       }
     }
   } catch (err) {
-    console.error(err);
-    // Optionally render error UI
+    console.error("[Adire] Product fetch error:", err);
   }
 
   if (!product) {
-    return <div className="min-h-screen flex items-center justify-center font-black uppercase text-4xl italic">Item not found.</div>;
+    return (
+      <div style={{
+        minHeight: "100vh", display: "flex",
+        alignItems: "center", justifyContent: "center",
+        fontFamily: "'Playfair Display', Georgia, serif",
+        fontSize: "clamp(28px, 5vw, 52px)",
+        fontWeight: 900, fontStyle: "italic",
+        color: "#1B2A4A", background: "#F5F0E8",
+      }}>
+        Item not found.
+      </div>
+    );
   }
 
   return (
@@ -125,26 +126,28 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         id={product.id.toString()}
         name={product.name}
         description={product.description}
-        image={product.image_url || product.gallery[0]?.image_url || ''} // Or array if multiple
+        image={product.image_url || product.gallery[0]?.image_url || ""}
         price={parseFloat(product.base_price)}
         currency="NGN"
-        availability={product.variants.some((v) => v.stock_quantity > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}
-        url={`https://www.lensra.com/shop/${params.id}`}
+        availability={
+          product.variants.some(v => v.stock_quantity > 0)
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock"
+        }
+        url={`${SiteUrl}/shop/${params.id}`}
         category={product.category_name}
-        // Add rating if available from product data
-        // breadcrumbs as before
         breadcrumbs={{
           itemListElement: [
-            { position: 1, name: 'Home', item: 'https://www.lensra.com' },
-            { position: 2, name: product.category_name, item: `https://www.lensra.com/shop?category=${product.category_name}` },
-            { position: 3, name: product.name, item: `https://www.lensra.com/shop/${params.id}` },
-          ]
+            { position: 1, name: "Home",              item: SiteUrl },
+            { position: 2, name: product.category_name, item: `${SiteUrl}/shop?category=${product.category_name}` },
+            { position: 3, name: product.name,          item: `${SiteUrl}/shop/${params.id}` },
+          ],
         }}
       />
-      <ClientProductDetail 
-        initialProduct={product} 
-        initialRelatedProducts={relatedProducts} 
-        baseUrl={BaseUrl} 
+      <ClientProductDetail
+        initialProduct={product}
+        initialRelatedProducts={related}
+        baseUrl={BaseUrl}
       />
     </>
   );
