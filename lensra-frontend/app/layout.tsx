@@ -1,22 +1,110 @@
 // app/layout.tsx
 // Adire — Root layout
-// Wires AdireNav + AdireFooter around all page content
+// Preserves: AuthProvider, GoogleAnalytics, Pinterest verify meta, favicon, robots
+// Updates: brand, fonts (Playfair Display + Syne via next/font), metadata, site URL
 
+import "./globals.css";
 import type { Metadata } from "next";
+import { Playfair_Display, Syne } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import AdireNav from "@/components/AdireNav";
 import AdireFooter from "@/components/AdireFooter";
-import { AuthProvider } from "@/context/AuthContext"; // ← adjust path to match yours
-import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+
+// ── Fonts ─────────────────────────────────────────────────────────────────────
+// Using next/font instead of @import — faster, no FOUT, self-hosted automatically
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-syne",
+  display: "swap",
+});
+
+// ── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.adire.ng"),
   title: {
     default: "Adire | Personalised Ankara Gifts — Made in Nigeria",
     template: "%s | Adire",
   },
   description:
-    "Handmade personalised Ankara tote bags and pouches, embroidered with your name. Made to order in Benin City. Delivered across Nigeria.",
+    "Handmade personalised Ankara tote bags and pouches, embroidered with your name and made to order in Benin City. The most meaningful gift you can give. Delivered across Nigeria in 3–5 days.",
+  keywords: [
+    "personalised Ankara gifts Nigeria",
+    "custom Ankara tote bag Nigeria",
+    "Ankara pouch personalised",
+    "personalised gifts Benin City",
+    "Ankara gifts Nigeria",
+    "handmade Nigerian gifts",
+    "embroidered Ankara bag Nigeria",
+    "Adire gifts Nigeria",
+    "custom gifts Nigeria",
+    "Nigerian gifting brand",
+    "Ankara gift delivery Nigeria",
+    "made in Nigeria gifts",
+  ],
+  authors: [{ name: "Adire" }],
+  creator: "Adire",
+  metadataBase: new URL("https://www.lensra.com"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Adire — Made Personal. Made Nigerian.",
+    description:
+      "Handmade Ankara tote bags and pouches embroidered with your name. Made to order in Benin City. Delivered nationwide.",
+    url: "https://www.lensra.com",
+    siteName: "Adire",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Adire — Personalised Ankara Gifts",
+      },
+    ],
+    locale: "en_NG",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Adire | Personalised Ankara Gifts",
+    description:
+      "Embroidered with your name. Made by hand in Benin City. Delivered across Nigeria.",
+    images: ["/og-image.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    // Replace with your actual Google Search Console verification code
+    google: "your-google-verification-code",
+  },
+  icons: {
+    icon:     "/favicon.png",
+    shortcut: "/favicon.png",
+    apple:    "/favicon.png",
+  },
 };
+
+// ── Layout ────────────────────────────────────────────────────────────────────
 
 export default function RootLayout({
   children,
@@ -24,31 +112,46 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${playfair.variable} ${syne.variable}`}>
       <head>
-        {/* Preconnect for Google Fonts used in Nav + Footer */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Instrument+Sans:wght@300;400;500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body>
         {/*
-          AuthProvider must wrap everything — it supplies the auth context
-          that useAuth() reads on /login, /signup, /reseller-program etc.
-          It must be a Client Component ("use client" in AuthContext.tsx).
+          Pinterest domain verification — kept from original.
+          Replace value if your Pinterest account changes.
+        */}
+        <meta name="p:domain_verify" content="f8b7975759669136bd46bcbf56ffd0e5" />
+      </head>
+
+      <body
+        style={{
+          fontFamily: "var(--font-syne), system-ui, sans-serif",
+          background: "#F5F0E8",
+          color: "#2C1810",
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale" as any,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+          overflowX: "hidden",
+        }}
+      >
+        {/*
+          AuthProvider wraps everything so useAuth() works on every page —
+          including /login, /signup, /reseller-program etc.
+          It must have "use client" at the top of AuthContext.tsx.
         */}
         <AuthProvider>
           <AdireNav />
-          <main>{children}</main>
+          <main style={{ flexGrow: 1, paddingTop: "68px" }}>
+            {children}
+          </main>
           <AdireFooter />
         </AuthProvider>
+
+        {/*
+          Google Analytics — same @next/third-parties implementation as original.
+          Set NEXT_PUBLIC_GA_ID in your .env file.
+        */}
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
       </body>
     </html>
   );

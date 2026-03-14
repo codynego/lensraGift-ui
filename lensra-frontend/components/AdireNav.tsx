@@ -1,34 +1,36 @@
 "use client";
 
 // components/AdireNav.tsx
-// Adire — Top navigation component
-// Behaviours: transparent on hero → frosted cream on scroll
-//             mobile: hamburger → full-screen slide-down menu
-//             desktop: inline links + CTA pill
+// Adire — Navigation component
+// Design: bold, cultural, matches homepage energy
+// Fonts: Playfair Display (logo) · Syne (links)
+// States: transparent on hero → cream frosted on scroll
+//         mobile: full-takeover menu with staggered Playfair links
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface NavLink {
+interface NavItem {
   label: string;
   href: string;
-  sub?: { label: string; href: string }[];
+  sub?: { label: string; href: string; tag?: string }[];
 }
 
-// ── Nav link tree ─────────────────────────────────────────────────────────────
+// ── Data ──────────────────────────────────────────────────────────────────────
 
-const NAV_LINKS: NavLink[] = [
+const NAV: NavItem[] = [
   {
     label: "Shop",
     href: "/shop",
     sub: [
       { label: "Ankara Tote Bags", href: "/shop?category=tote" },
       { label: "Ankara Pouches",   href: "/shop?category=pouch" },
-      { label: "Gift Sets",        href: "/shop?tag=bundle" },
+      { label: "Gift Sets",        href: "/shop?tag=bundle",   tag: "Popular" },
+      { label: "New Arrivals",     href: "/shop?tag=new" },
     ],
   },
   {
@@ -39,31 +41,27 @@ const NAV_LINKS: NavLink[] = [
       { label: "Anniversaries",href: "/shop?tag=anniversary" },
       { label: "Graduations",  href: "/shop?tag=graduation" },
       { label: "Weddings",     href: "/shop?tag=wedding" },
-      { label: "Corporate",    href: "/shop?tag=corporate" },
+      { label: "Corporate",    href: "/shop?tag=corporate",  tag: "Bulk" },
     ],
   },
   { label: "Business", href: "/business" },
-  { label: "Our Story", href: "/about" },
+  { label: "Our Story",href: "/about"    },
 ];
 
-// ── Adire pattern mark (small SVG logo element) ───────────────────────────────
+// ── Ankara mark SVG ───────────────────────────────────────────────────────────
 
-function AdireMark({ dark = false }: { dark?: boolean }) {
-  const colour = dark ? "#1B2A4A" : "#F5F0E8";
-  const accent = "#C17B3A";
+function Mark({ light }: { light: boolean }) {
+  const ring  = light ? "rgba(245,240,232,0.6)" : "#1B2A4A";
   return (
-    <svg
-      width="20" height="20" viewBox="0 0 20 20"
-      fill="none" xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <rect x="2" y="2" width="16" height="16" rx="1"
-        fill="none" stroke={colour} strokeWidth="0.75" />
-      <circle cx="10" cy="10" r="2" fill={accent} />
-      <circle cx="2"  cy="2"  r="1" fill={accent} />
-      <circle cx="18" cy="2"  r="1" fill={accent} />
-      <circle cx="2"  cy="18" r="1" fill={accent} />
-      <circle cx="18" cy="18" r="1" fill={accent} />
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden>
+      <circle cx="11" cy="11" r="10" stroke={ring}  strokeWidth="1"   fill="none" />
+      <circle cx="11" cy="11" r="3"  fill="#C17B3A" />
+      <circle cx="11" cy="1"  r="1.5" fill="#C17B3A" />
+      <circle cx="11" cy="21" r="1.5" fill="#C17B3A" />
+      <circle cx="1"  cy="11" r="1.5" fill="#C17B3A" />
+      <circle cx="21" cy="11" r="1.5" fill="#C17B3A" />
+      <line x1="11" y1="4"  x2="11" y2="18" stroke={ring} strokeWidth="0.6" />
+      <line x1="4"  y1="11" x2="18" y2="11" stroke={ring} strokeWidth="0.6" />
     </svg>
   );
 }
@@ -71,319 +69,322 @@ function AdireMark({ dark = false }: { dark?: boolean }) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AdireNav() {
-  const pathname = usePathname();
-  const [scrolled,     setScrolled]     = useState(false);
-  const [menuOpen,     setMenuOpen]     = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [dropdownTimer, setDropdownTimer]   = useState<ReturnType<typeof setTimeout> | null>(null);
+  const pathname  = usePathname();
+  const [scrolled,  setScrolled]  = useState(false);
+  const [open,      setOpen]      = useState(false);
+  const [dropdown,  setDropdown]  = useState<string | null>(null);
+  const timerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Scroll detection ───────────────────────────────────────────────────────
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", fn, { passive: true });
+    fn();
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  // ── Close mobile menu on route change ─────────────────────────────────────
-  useEffect(() => { setMenuOpen(false); }, [pathname]);
+  useEffect(() => { setOpen(false); }, [pathname]);
 
-  // ── Lock body scroll when mobile menu open ────────────────────────────────
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
+    document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [menuOpen]);
+  }, [open]);
 
-  // ── Dropdown hover helpers ─────────────────────────────────────────────────
-  const openDropdown  = useCallback((label: string) => {
-    if (dropdownTimer) clearTimeout(dropdownTimer);
-    setActiveDropdown(label);
-  }, [dropdownTimer]);
+  const openDrop  = (label: string) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setDropdown(label);
+  };
+  const closeDrop = () => {
+    timerRef.current = setTimeout(() => setDropdown(null), 160);
+  };
 
-  const closeDropdown = useCallback(() => {
-    const t = setTimeout(() => setActiveDropdown(null), 140);
-    setDropdownTimer(t);
-  }, []);
-
-  const isDark = scrolled || menuOpen;
+  const light = !scrolled && !open; // nav is over dark hero
 
   return (
     <>
-      {/* ── Global nav styles ── */}
       <style>{`
-        .ad-nav {
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        .n-bar {
           position: fixed; top: 0; left: 0; right: 0; z-index: 400;
           height: 68px;
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 5vw;
-          transition: background 0.45s cubic-bezier(0.16,1,0.3,1),
-                      border-color 0.45s cubic-bezier(0.16,1,0.3,1);
+          transition: background 0.4s cubic-bezier(0.16,1,0.3,1),
+                      border-color 0.4s;
           border-bottom: 1px solid transparent;
         }
-        .ad-nav.scrolled {
+        .n-bar.solid {
           background: rgba(245,240,232,0.97);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          border-color: #E2D4BE;
-        }
-        .ad-nav.menu-open {
-          background: #F5F0E8;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-color: #E2D4BE;
         }
 
-        /* Logo */
-        .ad-nav-logo {
+        /* ── Logo ── */
+        .n-logo {
           display: flex; align-items: center; gap: 10px;
-          text-decoration: none; position: relative; z-index: 2;
+          text-decoration: none; z-index: 2; flex-shrink: 0;
         }
-        .ad-nav-logo-word {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 26px; font-weight: 400;
-          letter-spacing: 0.1em; text-transform: uppercase;
+        .n-logo-word {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: 24px; font-weight: 900;
+          letter-spacing: 0.14em; text-transform: uppercase;
           line-height: 1; transition: color 0.3s;
           color: #F5F0E8;
         }
-        .ad-nav-logo-word.dark { color: #1B2A4A; }
-        .ad-nav-logo-word span {
-          color: #C17B3A; font-style: italic; font-weight: 300;
-        }
+        .n-logo-word.dark { color: #1B2A4A; }
+        .n-logo-dot { color: #C17B3A; font-style: italic; font-weight: 400; }
 
-        /* Desktop links */
-        .ad-nav-desktop {
-          display: flex; align-items: center; gap: 0;
-          list-style: none; position: relative;
+        /* ── Desktop links ── */
+        .n-links {
+          display: flex; align-items: stretch;
+          list-style: none; height: 68px;
         }
-        .ad-nav-item { position: relative; }
-        .ad-nav-link {
-          display: flex; align-items: center; gap: 5px;
-          padding: 8px 16px;
-          font-family: 'Instrument Sans', system-ui, sans-serif;
-          font-size: 11px; font-weight: 400;
-          letter-spacing: 0.2em; text-transform: uppercase;
-          text-decoration: none;
+        .n-item { position: relative; display: flex; align-items: stretch; }
+
+        .n-link {
+          display: flex; align-items: center; gap: 6px;
+          padding: 0 18px;
+          font-family: 'Syne', system-ui, sans-serif;
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 0.26em; text-transform: uppercase;
+          text-decoration: none; background: none; border: none; cursor: pointer;
+          color: rgba(245,240,232,0.6);
           transition: color 0.2s;
-          color: rgba(245,240,232,0.65);
-          background: none; border: none; cursor: pointer;
           white-space: nowrap;
+          border-bottom: 2px solid transparent;
+          transition: color 0.2s, border-color 0.2s;
         }
-        .ad-nav-link.dark { color: #7A6E60; }
-        .ad-nav-link:hover,
-        .ad-nav-link.active { color: #C17B3A; }
-        .ad-nav-link.dark:hover,
-        .ad-nav-link.dark.active { color: #C17B3A; }
-        .ad-nav-chevron {
-          width: 8px; height: 8px;
-          border-right: 1px solid currentColor;
-          border-bottom: 1px solid currentColor;
-          transform: rotate(45deg) translateY(-2px);
-          transition: transform 0.2s;
-          flex-shrink: 0;
-        }
-        .ad-nav-item:hover .ad-nav-chevron { transform: rotate(225deg) translateY(-2px); }
+        .n-link.dark  { color: #7A6E60; }
+        .n-link.active,
+        .n-link:hover { color: #C17B3A; }
+        .n-link.dark.active,
+        .n-link.dark:hover { color: #C17B3A; border-color: #C17B3A; }
 
-        /* Dropdown */
-        .ad-dropdown {
-          position: absolute; top: calc(100% + 8px); left: 0;
-          min-width: 200px;
-          background: #F5F0E8;
-          border: 0.5px solid #E2D4BE;
-          box-shadow: 0 8px 32px rgba(27,42,74,0.1);
-          padding: 8px 0;
-          z-index: 500;
+        /* chevron — CSS only, no icon dep */
+        .n-chevron {
+          width: 6px; height: 6px;
+          border-right: 1.5px solid currentColor;
+          border-bottom: 1.5px solid currentColor;
+          transform: rotate(45deg) translateY(-1px);
+          transition: transform 0.2s; flex-shrink: 0;
         }
-        .ad-dropdown-link {
-          display: block; padding: 10px 20px;
-          font-family: 'Instrument Sans', system-ui, sans-serif;
-          font-size: 12px; font-weight: 400;
-          letter-spacing: 0.1em;
+        .n-item:hover .n-chevron { transform: rotate(225deg) translateY(-1px); }
+
+        /* ── Dropdown ── */
+        .n-drop {
+          position: absolute; top: 100%; left: 0;
+          min-width: 220px;
+          background: #F5F0E8;
+          border: 1px solid #E2D4BE;
+          border-top: 3px solid #C17B3A;
+          box-shadow: 0 16px 48px rgba(27,42,74,0.12);
+          padding: 10px 0;
+          z-index: 600;
+        }
+        .n-drop-link {
+          display: flex; align-items: center;
+          justify-content: space-between;
+          padding: 11px 20px;
+          font-family: 'Syne', system-ui, sans-serif;
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.12em;
           color: #7A6E60; text-decoration: none;
           transition: background 0.15s, color 0.15s;
-          white-space: nowrap;
         }
-        .ad-dropdown-link:hover {
-          background: #F0DFC4; color: #1B2A4A;
+        .n-drop-link:hover { background: #F0DFC4; color: #1B2A4A; }
+        .n-drop-tag {
+          font-size: 8px; font-weight: 800;
+          letter-spacing: 0.2em; text-transform: uppercase;
+          background: #C17B3A; color: #fff;
+          padding: 2px 7px;
         }
 
-        /* CTA */
-        .ad-nav-cta {
-          margin-left: 16px;
+        /* ── CTA button ── */
+        .n-cta {
           display: inline-flex; align-items: center;
-          padding: 10px 22px;
-          font-family: 'Instrument Sans', system-ui, sans-serif;
-          font-size: 10px; font-weight: 500;
-          letter-spacing: 0.22em; text-transform: uppercase;
+          margin-left: 20px;
+          padding: 11px 24px;
+          font-family: 'Syne', system-ui, sans-serif;
+          font-size: 10px; font-weight: 800;
+          letter-spacing: 0.26em; text-transform: uppercase;
           text-decoration: none;
           background: #C17B3A; color: #fff;
-          transition: background 0.2s, transform 0.2s;
-          white-space: nowrap;
+          transition: background 0.2s, transform 0.15s;
+          white-space: nowrap; flex-shrink: 0;
+          border: none;
         }
-        .ad-nav-cta:hover { background: #D4956A; transform: translateY(-1px); }
-        .ad-nav-cta.dark {
-          background: #1B2A4A; color: #F5F0E8;
-        }
-        .ad-nav-cta.dark:hover { background: #243560; }
+        .n-cta:hover { background: #D4956A; transform: translateY(-1px); }
+        .n-cta.dark  { background: #1B2A4A; }
+        .n-cta.dark:hover { background: #243560; }
 
-        /* Hamburger */
-        .ad-hamburger {
-          display: none;
-          flex-direction: column; justify-content: center;
-          gap: 5px; width: 36px; height: 36px;
+        /* ── Hamburger ── */
+        .n-ham {
+          display: none; flex-direction: column;
+          justify-content: center; align-items: flex-end;
+          gap: 5px; width: 44px; height: 44px;
           background: none; border: none; cursor: pointer;
-          padding: 4px; position: relative; z-index: 2;
+          padding: 6px; z-index: 2;
         }
-        .ad-hamburger-line {
-          width: 22px; height: 1px;
-          transition: transform 0.3s cubic-bezier(0.16,1,0.3,1),
-                      opacity 0.2s, background 0.3s;
+        .n-ham-line {
+          height: 1.5px; background: rgba(245,240,232,0.8);
+          transition: transform 0.35s cubic-bezier(0.16,1,0.3,1),
+                      opacity 0.2s, width 0.3s, background 0.3s;
         }
-        .ad-hamburger-line.light { background: rgba(245,240,232,0.75); }
-        .ad-hamburger-line.dark  { background: #1B2A4A; }
-        .ad-hamburger.open .ad-hamburger-line:nth-child(1) {
-          transform: translateY(6px) rotate(45deg);
+        .n-ham-line:nth-child(1) { width: 22px; }
+        .n-ham-line:nth-child(2) { width: 16px; }
+        .n-ham-line:nth-child(3) { width: 22px; }
+        .n-ham-line.dark { background: #1B2A4A; }
+        .n-ham.open .n-ham-line:nth-child(1) {
+          width: 22px;
+          transform: translateY(6.5px) rotate(45deg);
           background: #1B2A4A;
         }
-        .ad-hamburger.open .ad-hamburger-line:nth-child(2) {
-          opacity: 0;
-        }
-        .ad-hamburger.open .ad-hamburger-line:nth-child(3) {
-          transform: translateY(-6px) rotate(-45deg);
+        .n-ham.open .n-ham-line:nth-child(2) { opacity: 0; }
+        .n-ham.open .n-ham-line:nth-child(3) {
+          width: 22px;
+          transform: translateY(-6.5px) rotate(-45deg);
           background: #1B2A4A;
         }
 
-        /* Mobile menu */
-        .ad-mobile-menu {
-          position: fixed; top: 68px; left: 0; right: 0; bottom: 0;
-          background: #F5F0E8; z-index: 350;
+        /* ── Mobile menu — full takeover ── */
+        .n-mob {
+          position: fixed; inset: 0; z-index: 350;
+          background: #F5F0E8;
           display: flex; flex-direction: column;
-          padding: 0 6vw 40px; overflow-y: auto;
+          padding: 90px 8vw 48px;
+          overflow-y: auto;
         }
-        .ad-mobile-divider {
-          width: 100%; height: 0.5px;
-          background: #E2D4BE; margin: 0;
-        }
-        .ad-mobile-link {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 20px 0;
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 28px; font-weight: 300;
+        .n-mob-link {
+          display: flex; align-items: baseline;
+          justify-content: space-between;
+          padding: 18px 0;
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: clamp(32px, 7vw, 52px);
+          font-weight: 900; line-height: 1;
           color: #1B2A4A; text-decoration: none;
-          letter-spacing: -0.01em;
-          border-bottom: 0.5px solid #E2D4BE;
+          border-bottom: 1px solid #E2D4BE;
           transition: color 0.2s;
+          letter-spacing: -0.02em;
         }
-        .ad-mobile-link:hover { color: #C17B3A; }
-        .ad-mobile-link span {
-          font-size: 16px; color: #C17B3A; font-style: italic;
+        .n-mob-link:hover { color: #C17B3A; }
+        .n-mob-link-arrow {
+          font-family: 'Playfair Display', serif;
+          font-size: 20px; font-style: italic;
+          color: #C17B3A;
         }
-        .ad-mobile-sub {
-          padding: 8px 0 16px 0;
-          border-bottom: 0.5px solid #E2D4BE;
-          display: flex; flex-direction: column; gap: 0;
+        .n-mob-subs {
+          display: flex; flex-wrap: wrap; gap: 8px;
+          padding: 12px 0 20px;
+          border-bottom: 1px solid #E2D4BE;
         }
-        .ad-mobile-sub-link {
-          display: block; padding: 10px 0;
-          font-family: 'Instrument Sans', system-ui, sans-serif;
-          font-size: 13px; font-weight: 400;
-          letter-spacing: 0.15em; text-transform: uppercase;
+        .n-mob-sub-link {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 7px 14px;
+          font-family: 'Syne', system-ui, sans-serif;
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 0.2em; text-transform: uppercase;
           color: #7A6E60; text-decoration: none;
-          transition: color 0.15s;
+          background: rgba(193,123,58,0.08);
+          transition: background 0.15s, color 0.15s;
         }
-        .ad-mobile-sub-link:hover { color: #C17B3A; }
-        .ad-mobile-footer {
-          margin-top: auto; padding-top: 32px;
-          display: flex; flex-direction: column; gap: 10px;
+        .n-mob-sub-link:hover { background: #C17B3A; color: #fff; }
+        .n-mob-sub-tag {
+          font-size: 8px; font-weight: 800;
+          background: #C17B3A; color: #fff; padding: 1px 6px;
         }
-        .ad-mobile-cta-main {
-          display: block; text-align: center;
+        .n-mob-footer {
+          margin-top: auto; padding-top: 36px;
+          display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .n-mob-cta {
+          display: flex; align-items: center; justify-content: center;
+          padding: 16px;
+          font-family: 'Syne', system-ui, sans-serif;
+          font-size: 10px; font-weight: 800;
+          letter-spacing: 0.22em; text-transform: uppercase;
+          text-decoration: none; transition: background 0.2s;
+        }
+        .n-mob-cta-primary {
           background: #C17B3A; color: #fff;
-          padding: 16px; text-decoration: none;
-          font-family: 'Instrument Sans', system-ui, sans-serif;
+          grid-column: 1 / -1;
+        }
+        .n-mob-cta-primary:hover { background: #D4956A; }
+        .n-mob-cta-sec {
+          background: none; border: 1px solid #E2D4BE; color: #7A6E60;
+        }
+        .n-mob-cta-sec:hover { border-color: #C17B3A; color: #C17B3A; }
+        .n-mob-contact {
+          grid-column: 1 / -1; text-align: center;
+          padding-top: 16px;
+          font-family: 'Syne', system-ui, sans-serif;
           font-size: 11px; font-weight: 500;
-          letter-spacing: 0.22em; text-transform: uppercase;
+          color: #B4A898;
         }
-        .ad-mobile-cta-sec {
-          display: block; text-align: center;
-          border: 0.5px solid #E2D4BE; color: #7A6E60;
-          padding: 16px; text-decoration: none;
-          font-family: 'Instrument Sans', system-ui, sans-serif;
-          font-size: 11px; font-weight: 400;
-          letter-spacing: 0.22em; text-transform: uppercase;
-          transition: border-color 0.2s, color 0.2s;
-        }
-        .ad-mobile-cta-sec:hover { border-color: #C17B3A; color: #C17B3A; }
-        .ad-mobile-contact {
-          margin-top: 20px;
-          font-family: 'Instrument Sans', system-ui, sans-serif;
-          font-size: 12px; font-weight: 300;
-          color: #B4A898; letter-spacing: 0.05em; text-align: center;
-        }
-        .ad-mobile-contact a {
-          color: #C17B3A; text-decoration: none;
-        }
+        .n-mob-contact a { color: #C17B3A; text-decoration: none; }
 
-        @media (max-width: 900px) {
-          .ad-nav-desktop { display: none; }
-          .ad-hamburger   { display: flex; }
+        @media (max-width: 960px) {
+          .n-links { display: none; }
+          .n-cta   { display: none; }
+          .n-ham   { display: flex; }
         }
       `}</style>
 
-      {/* ── Nav bar ── */}
-      <nav className={[
-        "ad-nav",
-        scrolled ? "scrolled" : "",
-        menuOpen ? "menu-open" : "",
-      ].filter(Boolean).join(" ")}
+      {/* ── Bar ── */}
+      <nav
+        className={`n-bar ${scrolled || open ? "solid" : ""}`}
         role="navigation" aria-label="Main navigation"
       >
-        {/* Logo */}
-        <Link href="/" className="ad-nav-logo" aria-label="Adire — home">
-          <AdireMark dark={isDark} />
-          <span className={`ad-nav-logo-word ${isDark ? "dark" : ""}`}>
-            Adire<span>.</span>
+        <Link href="/" className="n-logo" aria-label="Adire home">
+          <Mark light={light} />
+          <span className={`n-logo-word ${light ? "" : "dark"}`}>
+            Adire<span className="n-logo-dot">.</span>
           </span>
         </Link>
 
-        {/* Desktop links */}
-        <ul className="ad-nav-desktop" role="list">
-          {NAV_LINKS.map((link) => (
-            <li key={link.label} className="ad-nav-item"
-              onMouseEnter={() => link.sub && openDropdown(link.label)}
-              onMouseLeave={() => link.sub && closeDropdown()}
+        {/* Desktop */}
+        <ul className="n-links" role="list">
+          {NAV.map(item => (
+            <li key={item.label} className="n-item"
+              onMouseEnter={() => item.sub && openDrop(item.label)}
+              onMouseLeave={() => item.sub && closeDrop()}
             >
-              {link.sub ? (
+              {item.sub ? (
                 <>
                   <button
                     className={[
-                      "ad-nav-link",
-                      isDark ? "dark" : "",
-                      pathname.startsWith(link.href) ? "active" : "",
+                      "n-link",
+                      light ? "" : "dark",
+                      pathname.startsWith(item.href) ? "active" : "",
                     ].filter(Boolean).join(" ")}
-                    aria-expanded={activeDropdown === link.label}
                     aria-haspopup="true"
+                    aria-expanded={dropdown === item.label}
                   >
-                    {link.label}
-                    <span className="ad-nav-chevron" aria-hidden />
+                    {item.label}
+                    <span className="n-chevron" aria-hidden />
                   </button>
+
                   <AnimatePresence>
-                    {activeDropdown === link.label && (
+                    {dropdown === item.label && (
                       <motion.div
-                        className="ad-dropdown"
+                        className="n-drop"
                         role="menu"
-                        initial={{ opacity: 0, y: -6 }}
+                        initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.18 }}
-                        onMouseEnter={() => openDropdown(link.label)}
-                        onMouseLeave={closeDropdown}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.16 }}
+                        onMouseEnter={() => openDrop(item.label)}
+                        onMouseLeave={closeDrop}
                       >
-                        {link.sub.map((sub) => (
+                        {item.sub.map(s => (
                           <Link
-                            key={sub.label}
-                            href={sub.href}
-                            className="ad-dropdown-link"
+                            key={s.label}
+                            href={s.href}
+                            className="n-drop-link"
                             role="menuitem"
                           >
-                            {sub.label}
+                            {s.label}
+                            {s.tag && <span className="n-drop-tag">{s.tag}</span>}
                           </Link>
                         ))}
                       </motion.div>
@@ -392,39 +393,34 @@ export default function AdireNav() {
                 </>
               ) : (
                 <Link
-                  href={link.href}
+                  href={item.href}
                   className={[
-                    "ad-nav-link",
-                    isDark ? "dark" : "",
-                    pathname === link.href ? "active" : "",
+                    "n-link",
+                    light ? "" : "dark",
+                    pathname === item.href ? "active" : "",
                   ].filter(Boolean).join(" ")}
                 >
-                  {link.label}
+                  {item.label}
                 </Link>
               )}
             </li>
           ))}
-          <li>
-            <Link
-              href="/shop"
-              className={`ad-nav-cta ${isDark ? "dark" : ""}`}
-            >
-              Personalise Now
-            </Link>
-          </li>
         </ul>
+
+        <Link href="/shop" className={`n-cta ${light ? "" : "dark"}`}>
+          Personalise Now
+        </Link>
 
         {/* Hamburger */}
         <button
-          className={`ad-hamburger ${menuOpen ? "open" : ""}`}
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
+          className={`n-ham ${open ? "open" : ""}`}
+          onClick={() => setOpen(v => !v)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
         >
-          {[1,2,3].map((n) => (
-            <span
-              key={n}
-              className={`ad-hamburger-line ${isDark ? "dark" : "light"}`}
+          {[1, 2, 3].map(n => (
+            <span key={n}
+              className={`n-ham-line ${!light ? "dark" : ""}`}
             />
           ))}
         </button>
@@ -432,36 +428,33 @@ export default function AdireNav() {
 
       {/* ── Mobile menu ── */}
       <AnimatePresence>
-        {menuOpen && (
+        {open && (
           <motion.div
-            className="ad-mobile-menu"
+            className="n-mob"
             role="dialog"
-            aria-label="Mobile navigation"
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.32, ease: [0.16,1,0.3,1] }}
+            aria-label="Navigation menu"
+            initial={{ clipPath: "inset(0 0 100% 0)" }}
+            animate={{ clipPath: "inset(0 0 0% 0)" }}
+            exit={{ clipPath: "inset(0 0 100% 0)" }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
-            {NAV_LINKS.map((link, i) => (
-              <motion.div
-                key={link.label}
-                initial={{ opacity: 0, y: 12 }}
+            {NAV.map((item, i) => (
+              <motion.div key={item.label}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 + 0.05 }}
+                transition={{ delay: i * 0.07 + 0.2, duration: 0.5, ease: [0.16,1,0.3,1] }}
               >
-                <Link href={link.href} className="ad-mobile-link">
-                  {link.label}
-                  <span>→</span>
+                <Link href={item.href} className="n-mob-link">
+                  {item.label}
+                  <span className="n-mob-link-arrow">→</span>
                 </Link>
-                {link.sub && (
-                  <div className="ad-mobile-sub">
-                    {link.sub.map((sub) => (
-                      <Link
-                        key={sub.label}
-                        href={sub.href}
-                        className="ad-mobile-sub-link"
-                      >
-                        {sub.label}
+
+                {item.sub && (
+                  <div className="n-mob-subs">
+                    {item.sub.map(s => (
+                      <Link key={s.label} href={s.href} className="n-mob-sub-link">
+                        {s.label}
+                        {s.tag && <span className="n-mob-sub-tag">{s.tag}</span>}
                       </Link>
                     ))}
                   </div>
@@ -469,17 +462,22 @@ export default function AdireNav() {
               </motion.div>
             ))}
 
-            <div className="ad-mobile-footer">
-              <Link href="/shop" className="ad-mobile-cta-main">
-                Shop All Products
-              </Link>
-              <Link href="/business" className="ad-mobile-cta-sec">
-                Corporate Orders →
-              </Link>
-              <p className="ad-mobile-contact">
-                Questions? <a href="https://wa.me/2348051385049">WhatsApp us</a>
+            <motion.div
+              className="n-mob-footer"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45 }}
+            >
+              <Link href="/shop"     className="n-mob-cta n-mob-cta-primary">Shop All Products</Link>
+              <Link href="/business" className="n-mob-cta n-mob-cta-sec">Business</Link>
+              <Link href="/track"    className="n-mob-cta n-mob-cta-sec">Track Order</Link>
+              <p className="n-mob-contact">
+                Need help?{" "}
+                <a href="https://wa.me/2348051385049" target="_blank" rel="noopener noreferrer">
+                  WhatsApp us
+                </a>
               </p>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
