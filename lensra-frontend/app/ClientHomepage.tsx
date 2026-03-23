@@ -188,6 +188,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
     ) || initialProducts[0] || null;
 
     console.log("Hero product:", heroProduct);
+    console.log("initial products", initialProducts)
 
   // Secondary products: up to 2, exclude hero product
   const secondaryProducts = initialProducts
