@@ -68,7 +68,7 @@ export function LensraNav() {
   // On hero page (home), nav starts transparent then goes solid on scroll
   const isHome = pathname === "/";
   const navBg = isHome && !scrolled && !open
-    ? "rgba(15,15,15,0)"
+    ? "rgba(15,15,15,0.97)"
     : "rgba(15,15,15,0.97)";
   const navBorder = isHome && !scrolled && !open
     ? "1px solid rgba(255,255,255,0)"
