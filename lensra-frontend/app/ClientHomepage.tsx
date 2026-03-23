@@ -187,10 +187,13 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
       /box|memory|surprise/i.test(p.name + " " + p.category)
     ) || initialProducts[0] || null;
 
+    console.log("Hero product:", heroProduct);
+
   // Secondary products: up to 2, exclude hero product
   const secondaryProducts = initialProducts
     .filter(p => p.id !== heroProduct?.id)
     .slice(0, 2);
+    console.log("Secondary products:", secondaryProducts);
 
   const heroImageUrl = getImageUrl(heroProduct?.image_url ?? null);
 
