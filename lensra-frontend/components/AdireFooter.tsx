@@ -1,42 +1,14 @@
 "use client";
 
-// components/AdireFooter.tsx
-// Adire — Footer component
-// Design: bold, cultural, editorial — matches homepage energy
-// Fonts: Playfair Display · Syne
-// Sections: amber top band · asymmetric main grid · dark bottom bar
+// components/LensraFooter.tsx
+// Lensra — Footer
+// Design: Premium black/white/red — clean, emotional, spacious
+// Fonts: Montserrat · Inter
 
 import Link from "next/link";
 
-// ── Ankara background pattern ─────────────────────────────────────────────────
-
-function AnkaraPattern() {
-  return (
-    <svg aria-hidden style={{
-      position: "absolute", inset: 0, width: "100%", height: "100%",
-      pointerEvents: "none", opacity: 0.05,
-    }}>
-      <defs>
-        <pattern id="fp" x="0" y="0" width="56" height="56" patternUnits="userSpaceOnUse">
-          <circle cx="28" cy="28" r="5"  fill="#C17B3A" />
-          <circle cx="28" cy="28" r="11" fill="none" stroke="#C17B3A" strokeWidth="0.7" />
-          <circle cx="28" cy="28" r="18" fill="none" stroke="#C17B3A" strokeWidth="0.4" />
-          <circle cx="28" cy="28" r="25" fill="none" stroke="#C17B3A" strokeWidth="0.25" />
-          <line x1="0"  y1="28" x2="56" y2="28" stroke="#C17B3A" strokeWidth="0.25" />
-          <line x1="28" y1="0"  x2="28" y2="56" stroke="#C17B3A" strokeWidth="0.25" />
-          <line x1="0"  y1="0"  x2="56" y2="56" stroke="#C17B3A" strokeWidth="0.18" />
-          <line x1="56" y1="0"  x2="0"  y2="56" stroke="#C17B3A" strokeWidth="0.18" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#fp)" />
-    </svg>
-  );
-}
-
-// ── Social SVG icons ──────────────────────────────────────────────────────────
-
 const IgIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="5" />
     <circle cx="12" cy="12" r="4" />
@@ -56,368 +28,492 @@ const WaIcon = () => (
   </svg>
 );
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
-export default function AdireFooter() {
+export default function LensraFooter() {
   const year = new Date().getFullYear();
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
 
-        /* ── AMBER TOP BAND ── */
-        .f-band {
-          background: #C17B3A;
-          padding: 20px 5vw;
+        /* ── CTA BAND ── */
+        .lxf-band {
+          background: #DD183B;
+          padding: 48px 6vw;
           display: flex; align-items: center;
           justify-content: space-between;
-          flex-wrap: wrap; gap: 16px;
+          flex-wrap: wrap; gap: 28px;
           position: relative; overflow: hidden;
         }
-        .f-band::before {
+
+        /* Large ghost text in background */
+        .lxf-band::after {
           content: 'LENSRA';
-          position: absolute; right: 4vw;
-          top: 50%; transform: translateY(-50%);
-          font-family: 'Playfair Display', serif;
-          font-size: clamp(48px, 8vw, 96px);
-          font-weight: 900; font-style: italic;
-          color: rgba(0,0,0,0.08);
+          position: absolute; right: 4vw; top: 50%;
+          transform: translateY(-50%);
+          font-family: 'Montserrat', sans-serif;
+          font-size: clamp(60px, 11vw, 140px);
+          font-weight: 900;
+          color: rgba(255,255,255,0.07);
           pointer-events: none; user-select: none;
           letter-spacing: -0.04em; line-height: 1;
         }
-        .f-band-text {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(16px, 2vw, 22px);
-          font-weight: 400; font-style: italic;
-          color: rgba(255,255,255,0.9);
-          position: relative; z-index: 1;
+
+        .lxf-band-left { position: relative; z-index: 1; }
+        .lxf-band-eyebrow {
+          font-family: 'Montserrat', sans-serif;
+          font-size: 9px; font-weight: 800;
+          letter-spacing: 0.35em; text-transform: uppercase;
+          color: rgba(255,255,255,0.55);
+          margin-bottom: 10px; display: block;
         }
-        .f-band-cta {
-          display: inline-flex; align-items: center; gap: 8px;
-          padding: 12px 28px;
-          font-family: 'Syne', system-ui, sans-serif;
-          font-size: 10px; font-weight: 800;
-          letter-spacing: 0.28em; text-transform: uppercase;
-          background: #fff; color: #C17B3A;
-          text-decoration: none;
+        .lxf-band-heading {
+          font-family: 'Montserrat', sans-serif;
+          font-size: clamp(22px, 3vw, 38px);
+          font-weight: 900; line-height: 1.1;
+          letter-spacing: -0.02em;
+          color: #FFFFFF;
+        }
+
+        .lxf-band-right {
+          display: flex; flex-direction: column;
+          gap: 10px; position: relative; z-index: 1;
+          min-width: 220px;
+        }
+        .lxf-band-cta-main {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 16px 36px;
+          background: #FFFFFF; color: #DD183B;
+          font-family: 'Montserrat', sans-serif;
+          font-size: 11px; font-weight: 800;
+          letter-spacing: 0.15em; text-transform: uppercase;
+          text-decoration: none; border-radius: 1px;
           transition: background 0.2s, color 0.2s;
-          position: relative; z-index: 1;
-          white-space: nowrap;
         }
-        .f-band-cta:hover { background: #1B2A4A; color: #fff; }
+        .lxf-band-cta-main:hover { background: #0F0F0F; color: #fff; }
+        .lxf-band-cta-sec {
+          display: flex; align-items: center; justify-content: center; gap: 6px;
+          padding: 12px 36px;
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.25);
+          color: rgba(255,255,255,0.65);
+          font-family: 'Montserrat', sans-serif;
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 0.15em; text-transform: uppercase;
+          text-decoration: none; border-radius: 1px;
+          transition: border-color 0.2s, color 0.2s;
+        }
+        .lxf-band-cta-sec:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
 
         /* ── MAIN FOOTER ── */
-        .f-main {
-          background: #0e1a30;
-          position: relative; overflow: hidden;
-          padding: 72px 5vw 0;
+        .lxf-main {
+          background: #0F0F0F;
+          padding: 80px 6vw 0;
+          position: relative;
         }
 
-        /* Asymmetric grid: tall brand column + 3 link columns */
-        .f-grid {
-          display: grid;
-          grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
-          gap: 48px;
+        /* Top row: brand + newsletter */
+        .lxf-top {
+          display: flex; align-items: flex-start;
+          justify-content: space-between;
+          gap: 48px; flex-wrap: wrap;
           padding-bottom: 64px;
-          border-bottom: 1px solid rgba(193,123,58,0.12);
-          position: relative; z-index: 1;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          margin-bottom: 64px;
         }
 
-        /* Brand column */
-        .f-brand { display: flex; flex-direction: column; }
-        .f-logo {
+        /* Logo/brand in footer */
+        .lxf-brand {}
+        .lxf-flogo {
           display: flex; align-items: center; gap: 10px;
-          text-decoration: none; margin-bottom: 4px;
+          text-decoration: none; margin-bottom: 16px;
         }
-        .f-logo-mark {
-          width: 32px; height: 32px; flex-shrink: 0;
+        .lxf-flogo-mark {
+          width: 30px; height: 30px;
+          background: #DD183B; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
         }
-        .f-logo-word {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: 28px; font-weight: 900;
-          letter-spacing: 0.14em; text-transform: uppercase;
-          color: #F5F0E8; line-height: 1;
+        .lxf-flogo-word {
+          font-family: 'Montserrat', sans-serif;
+          font-size: 20px; font-weight: 900;
+          letter-spacing: 0.12em; text-transform: uppercase;
+          color: #FFFFFF;
         }
-        .f-logo-dot { color: #C17B3A; font-style: italic; font-weight: 400; }
-        .f-tagline {
-          font-family: 'Syne', system-ui, sans-serif;
+        .lxf-flogo-dot { color: #DD183B; }
+        .lxf-brand-tagline {
+          font-family: 'Montserrat', sans-serif;
           font-size: 9px; font-weight: 800;
-          letter-spacing: 0.42em; text-transform: uppercase;
-          color: rgba(193,123,58,0.7);
-          margin-bottom: 20px;
+          letter-spacing: 0.35em; text-transform: uppercase;
+          color: rgba(221,24,59,0.6); display: block;
+          margin-bottom: 16px;
         }
-        .f-desc {
-          font-family: 'Syne', system-ui, sans-serif;
-          font-size: 13px; font-weight: 400;
-          color: rgba(245,240,232,0.55);
-          line-height: 1.9; max-width: 240px;
+        .lxf-brand-desc {
+          font-family: 'Inter', sans-serif;
+          font-size: 13px; font-weight: 300;
+          color: rgba(255,255,255,0.35);
+          line-height: 1.85; max-width: 280px;
           margin-bottom: 28px;
         }
-
-        /* Social row */
-        .f-socials { display: flex; gap: 6px; }
-        .f-social {
+        .lxf-socials { display: flex; gap: 8px; }
+        .lxf-social {
           width: 40px; height: 40px;
           display: flex; align-items: center; justify-content: center;
-          border: 1px solid rgba(193,123,58,0.18);
-          color: rgba(193,123,58,0.4);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 50%;
+          color: rgba(255,255,255,0.3);
           text-decoration: none;
           transition: border-color 0.2s, color 0.2s, background 0.2s;
           cursor: pointer; background: none;
         }
-        .f-social:hover {
-          border-color: #C17B3A;
-          color: #C17B3A;
-          background: rgba(193,123,58,0.07);
+        .lxf-social:hover {
+          border-color: #DD183B;
+          color: #DD183B;
+          background: rgba(221,24,59,0.06);
         }
 
-        /* Link columns */
-        .f-col {}
-        .f-col-head {
-          font-family: 'Syne', system-ui, sans-serif;
+        /* Newsletter */
+        .lxf-newsletter { max-width: 380px; }
+        .lxf-nl-label {
+          font-family: 'Montserrat', sans-serif;
           font-size: 9px; font-weight: 800;
-          letter-spacing: 0.42em; text-transform: uppercase;
-          color: #C17B3A; margin-bottom: 20px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid rgba(193,123,58,0.15);
-          display: flex; align-items: center; gap: 8px;
+          letter-spacing: 0.35em; text-transform: uppercase;
+          color: #DD183B; margin-bottom: 12px; display: block;
         }
-        .f-col-head::before {
-          content: ''; width: 16px; height: 2px;
-          background: #C17B3A; flex-shrink: 0;
+        .lxf-nl-heading {
+          font-family: 'Montserrat', sans-serif;
+          font-size: 20px; font-weight: 800;
+          color: #FFFFFF; line-height: 1.2;
+          letter-spacing: -0.02em;
+          margin-bottom: 8px;
         }
-        .f-links { list-style: none; }
-        .f-links li { margin-bottom: 10px; }
-        .f-link {
-          display: inline-flex; align-items: center; gap: 8px;
-          font-family: 'Syne', system-ui, sans-serif;
+        .lxf-nl-sub {
+          font-family: 'Inter', sans-serif;
+          font-size: 13px; font-weight: 300;
+          color: rgba(255,255,255,0.35);
+          line-height: 1.7; margin-bottom: 20px;
+        }
+        .lxf-nl-form {
+          display: flex; gap: 0;
+        }
+        .lxf-nl-input {
+          flex: 1;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-right: none;
+          border-radius: 1px 0 0 1px;
+          color: #FFFFFF;
+          font-family: 'Inter', sans-serif;
           font-size: 13px; font-weight: 400;
-          color: rgba(245,240,232,0.5);
+          padding: 13px 18px;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        .lxf-nl-input::placeholder { color: rgba(255,255,255,0.2); }
+        .lxf-nl-input:focus { border-color: rgba(221,24,59,0.4); }
+        .lxf-nl-btn {
+          background: #DD183B; color: #fff;
+          border: none; cursor: pointer;
+          padding: 13px 22px;
+          font-family: 'Montserrat', sans-serif;
+          font-size: 10px; font-weight: 800;
+          letter-spacing: 0.15em; text-transform: uppercase;
+          border-radius: 0 1px 1px 0;
+          white-space: nowrap;
+          transition: background 0.2s;
+        }
+        .lxf-nl-btn:hover { background: #C2152F; }
+
+        /* ── LINKS GRID ── */
+        .lxf-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 40px;
+          padding-bottom: 64px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .lxf-col-head {
+          font-family: 'Montserrat', sans-serif;
+          font-size: 9px; font-weight: 800;
+          letter-spacing: 0.36em; text-transform: uppercase;
+          color: rgba(255,255,255,0.25);
+          margin-bottom: 20px; display: block;
+          padding-bottom: 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .lxf-links { list-style: none; }
+        .lxf-links li { margin-bottom: 11px; }
+        .lxf-link {
+          font-family: 'Inter', sans-serif;
+          font-size: 13px; font-weight: 400;
+          color: rgba(255,255,255,0.4);
           text-decoration: none;
+          display: inline-flex; align-items: center; gap: 8px;
           transition: color 0.2s;
         }
-        .f-link:hover { color: #D4956A; }
-        .f-link-badge {
-          font-size: 8px; font-weight: 800;
-          letter-spacing: 0.18em; text-transform: uppercase;
-          background: rgba(193,123,58,0.15); color: #C17B3A;
-          padding: 2px 7px;
+        .lxf-link:hover { color: #FFFFFF; }
+        .lxf-link-badge {
+          font-family: 'Montserrat', sans-serif;
+          font-size: 7px; font-weight: 800;
+          letter-spacing: 0.15em; text-transform: uppercase;
+          background: #DD183B; color: #fff;
+          padding: 2px 7px; border-radius: 1px;
         }
 
         /* Contact column */
-        .f-contact-item { margin-bottom: 18px; }
-        .f-contact-label {
-          font-family: 'Syne', system-ui, sans-serif;
+        .lxf-contact-item { margin-bottom: 20px; }
+        .lxf-contact-label {
+          font-family: 'Montserrat', sans-serif;
           font-size: 8px; font-weight: 800;
-          letter-spacing: 0.36em; text-transform: uppercase;
-          color: rgba(193,123,58,0.6); display: block; margin-bottom: 3px;
+          letter-spacing: 0.32em; text-transform: uppercase;
+          color: rgba(255,255,255,0.2);
+          display: block; margin-bottom: 4px;
         }
-        .f-contact-val {
-          font-family: 'Syne', system-ui, sans-serif;
-          font-size: 13px; font-weight: 500;
-          color: rgba(245,240,232,0.7); text-decoration: none;
-          transition: color 0.2s;
+        .lxf-contact-val {
+          font-family: 'Inter', sans-serif;
+          font-size: 13px; font-weight: 400;
+          color: rgba(255,255,255,0.55);
+          text-decoration: none;
+          transition: color 0.2s; display: block;
         }
-        a.f-contact-val:hover { color: #C17B3A; }
-        .f-hours {
-          font-family: 'Syne', system-ui, sans-serif;
-          font-size: 11px; font-weight: 400;
-          color: rgba(245,240,232,0.35); line-height: 1.75; margin-top: 6px;
+        a.lxf-contact-val:hover { color: #DD183B; }
+        .lxf-contact-sub {
+          font-family: 'Inter', sans-serif;
+          font-size: 11px; font-weight: 300;
+          color: rgba(255,255,255,0.2);
+          margin-top: 3px; display: block;
+          line-height: 1.6;
         }
 
         /* ── BOTTOM BAR ── */
-        .f-bottom {
-          position: relative; z-index: 1;
+        .lxf-bottom {
           display: flex; align-items: center;
           justify-content: space-between;
-          flex-wrap: wrap; gap: 14px;
-          padding: 20px 0;
+          flex-wrap: wrap; gap: 16px;
+          padding: 22px 0;
         }
-        .f-copy {
-          font-family: 'Syne', system-ui, sans-serif;
+        .lxf-copy {
+          font-family: 'Inter', sans-serif;
+          font-size: 11px; font-weight: 300;
+          color: rgba(255,255,255,0.2);
+          letter-spacing: 0.04em;
+        }
+        .lxf-copy strong { color: rgba(255,255,255,0.4); font-weight: 500; }
+        .lxf-legal { display: flex; align-items: center; gap: 4px; }
+        .lxf-legal-link {
+          font-family: 'Inter', sans-serif;
           font-size: 11px; font-weight: 400;
-          color: rgba(245,240,232,0.4); letter-spacing: 0.06em;
+          color: rgba(255,255,255,0.2);
+          text-decoration: none; padding: 0 10px;
+          transition: color 0.2s;
         }
-        .f-copy strong { color: rgba(245,240,232,0.65); font-weight: 600; }
-        .f-legal { display: flex; align-items: center; gap: 16px; }
-        .f-legal-link {
-          font-family: 'Syne', system-ui, sans-serif;
-          font-size: 11px; font-weight: 400;
-          color: rgba(245,240,232,0.4); text-decoration: none;
-          letter-spacing: 0.08em; transition: color 0.2s;
+        .lxf-legal-link:hover { color: rgba(255,255,255,0.6); }
+        .lxf-legal-sep {
+          width: 1px; height: 10px;
+          background: rgba(255,255,255,0.1);
         }
-        .f-legal-link:hover { color: rgba(245,240,232,0.75); }
-        .f-sep {
-          width: 3px; height: 3px; border-radius: 50%;
-          background: rgba(245,240,232,0.2);
-        }
-        .f-paystack {
+        .lxf-secure {
           display: inline-flex; align-items: center; gap: 6px;
-          font-family: 'Syne', system-ui, sans-serif;
-          font-size: 10px; font-weight: 600;
-          letter-spacing: 0.1em;
-          color: rgba(245,240,232,0.35);
+          font-family: 'Inter', sans-serif;
+          font-size: 10px; font-weight: 400;
+          color: rgba(255,255,255,0.18);
+          letter-spacing: 0.05em;
         }
+        .lxf-secure svg { opacity: 0.4; }
 
         /* ── RESPONSIVE ── */
-        @media (max-width: 1100px) {
-          .f-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
-          .f-brand { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 32px; }
-          .f-desc  { max-width: 360px; }
+        @media (max-width: 1024px) {
+          .lxf-grid { grid-template-columns: repeat(2, 1fr); }
         }
-        @media (max-width: 640px) {
-          .f-grid { grid-template-columns: 1fr; }
-          .f-brand { grid-column: auto; flex-direction: column; }
-          .f-band  { flex-direction: column; align-items: flex-start; }
-          .f-band-cta { width: 100%; justify-content: center; }
-          .f-bottom { flex-direction: column; align-items: flex-start; }
+        @media (max-width: 768px) {
+          .lxf-top { flex-direction: column; }
+          .lxf-newsletter { max-width: 100%; }
+          .lxf-band { flex-direction: column; }
+          .lxf-band-right { min-width: 0; width: 100%; }
+        }
+        @media (max-width: 560px) {
+          .lxf-grid { grid-template-columns: 1fr; gap: 28px; }
+          .lxf-bottom { flex-direction: column; align-items: flex-start; }
+          .lxf-legal { flex-wrap: wrap; }
         }
       `}</style>
 
       <footer>
 
-        {/* ── Amber top band ── */}
-        <div className="f-band">
-          <p className="f-band-text">
-            Every gift starts with a name worth remembering.
-          </p>
-          <Link href="/shop" className="f-band-cta">
-            Start Personalising →
-          </Link>
+        {/* ── CTA BAND ── */}
+        <div className="lxf-band">
+          <div className="lxf-band-left">
+            <span className="lxf-band-eyebrow">Start Today</span>
+            <h2 className="lxf-band-heading">
+              Make someone feel<br />unforgettable.
+            </h2>
+          </div>
+          <div className="lxf-band-right">
+            <Link href="/shop" className="lxf-band-cta-main">
+              Create Your Gift →
+            </Link>
+            <Link href="/business" className="lxf-band-cta-sec">
+              Corporate Orders
+            </Link>
+          </div>
         </div>
 
-        {/* ── Main dark section ── */}
-        <div className="f-main">
-          <AnkaraPattern />
+        {/* ── MAIN DARK SECTION ── */}
+        <div className="lxf-main">
 
-          <div className="f-grid">
-
-            {/* Brand column */}
-            <div className="f-brand">
-              <div>
-                <Link href="/" className="f-logo" aria-label="Lensra home">
-                  <svg className="f-logo-mark" viewBox="0 0 32 32" fill="none" aria-hidden>
-                    <circle cx="16" cy="16" r="15" stroke="#F5F0E8" strokeWidth="1" fill="none" />
-                    <circle cx="16" cy="16" r="4"  fill="#C17B3A" />
-                    <circle cx="16" cy="1"  r="2"  fill="#C17B3A" />
-                    <circle cx="16" cy="31" r="2"  fill="#C17B3A" />
-                    <circle cx="1"  cy="16" r="2"  fill="#C17B3A" />
-                    <circle cx="31" cy="16" r="2"  fill="#C17B3A" />
-                    <line x1="16" y1="5"  x2="16" y2="27" stroke="#F5F0E8" strokeWidth="0.6" />
-                    <line x1="5"  y1="16" x2="27" y2="16" stroke="#F5F0E8" strokeWidth="0.6" />
+          {/* Top: brand + newsletter */}
+          <div className="lxf-top">
+            <div className="lxf-brand">
+              <Link href="/" className="lxf-flogo" aria-label="Lensra home">
+                <div className="lxf-flogo-mark">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                    <path d="M7 2L7 12M2 7L12 7" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
-                  <span className="f-logo-word">
-                    Lensra<span className="f-logo-dot">.</span>
-                  </span>
-                </Link>
-                <p className="f-tagline">Gifts That Remember.</p>
-                <p className="f-desc">
-                  Personalised Ankara tote bags and pouches — embroidered
-                  with your name. Made to order in Benin City.
-                  Delivered anywhere in Nigeria in 3–5 days.
-                </p>
-              </div>
-              <div className="f-socials">
-                <a href="https://instagram.com/lensraNG"    className="f-social" aria-label="Instagram"  target="_blank" rel="noopener noreferrer"><IgIcon /></a>
-                <a href="https://tiktok.com/@lensra"      className="f-social" aria-label="TikTok"     target="_blank" rel="noopener noreferrer"><TkIcon /></a>
-                <a href="https://wa.me/2348051385049"          className="f-social" aria-label="WhatsApp"   target="_blank" rel="noopener noreferrer"><WaIcon /></a>
-              </div>
-            </div>
-
-            {/* Shop column */}
-            <div className="f-col">
-              <div className="f-col-head">Shop</div>
-              <ul className="f-links">
-                <li>
-                  <Link href="/shop?category=tote" className="f-link">
-                    Ankara Tote Bags
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/shop?category=pouch" className="f-link">
-                    Ankara Pouches
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/shop?tag=bundle" className="f-link">
-                    Gift Sets
-                    <span className="f-link-badge">Popular</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/business" className="f-link">
-                    Corporate Gifts
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/shop?tag=new" className="f-link">
-                    New Arrivals
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Support column */}
-            <div className="f-col">
-              <div className="f-col-head">Help</div>
-              <ul className="f-links">
-                <li><Link href="/track"    className="f-link">Track My Order</Link></li>
-                <li><Link href="/delivery" className="f-link">Delivery Info</Link></li>
-                <li><Link href="/returns"  className="f-link">Returns Policy</Link></li>
-                <li><Link href="/faq"      className="f-link">FAQs</Link></li>
-                <li><Link href="/about"    className="f-link">Our Story</Link></li>
-                <li><Link href="/contact"  className="f-link">Contact Us</Link></li>
-              </ul>
-            </div>
-
-            {/* Contact column */}
-            <div className="f-col">
-              <div className="f-col-head">Reach Us</div>
-
-              <div className="f-contact-item">
-                <span className="f-contact-label">WhatsApp</span>
-                <a href="https://wa.me/2348051385049" className="f-contact-val"
-                  target="_blank" rel="noopener noreferrer">
-                  +234 805 138 5049
-                </a>
-              </div>
-
-              <div className="f-contact-item">
-                <span className="f-contact-label">Email</span>
-                <a href="mailto:hello@lensra.com" className="f-contact-val">
-                  hello@lensra.com
-                </a>
-              </div>
-
-              <div className="f-contact-item">
-                <span className="f-contact-label">Made in</span>
-                <span className="f-contact-val">Benin City, Edo</span>
-              </div>
-
-              <p className="f-hours">
-                Mon – Sat · 9 am – 6 pm WAT<br />
-                Orders processed same day
+                </div>
+                <span className="lxf-flogo-word">
+                  Lensra<span className="lxf-flogo-dot">.</span>
+                </span>
+              </Link>
+              <span className="lxf-brand-tagline">Gifts That Remember.</span>
+              <p className="lxf-brand-desc">
+                Personalised surprise boxes that create unforgettable moments.
+                Made with care in Benin City. Delivered across Nigeria in 3–5 days.
               </p>
+              <div className="lxf-socials">
+                <a href="https://instagram.com/lensraNG" className="lxf-social" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                  <IgIcon />
+                </a>
+                <a href="https://tiktok.com/@lensra" className="lxf-social" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
+                  <TkIcon />
+                </a>
+                <a href="https://wa.me/2348051385049" className="lxf-social" aria-label="WhatsApp" target="_blank" rel="noopener noreferrer">
+                  <WaIcon />
+                </a>
+              </div>
             </div>
 
+            <div className="lxf-newsletter">
+              <span className="lxf-nl-label">Stay in the loop</span>
+              <h3 className="lxf-nl-heading">
+                Be first to know about<br />new gift experiences.
+              </h3>
+              <p className="lxf-nl-sub">
+                No spam. Just meaningful updates, exclusive offers, and gift inspiration.
+              </p>
+              <div className="lxf-nl-form">
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  className="lxf-nl-input"
+                />
+                <button className="lxf-nl-btn">Subscribe</button>
+              </div>
+            </div>
           </div>
 
-          {/* ── Bottom bar ── */}
-          <div className="f-bottom">
-            <p className="f-copy">
-              © {year} <strong>Lensra</strong>. Proudly Nigerian. All rights reserved.
-            </p>
-            <div className="f-legal">
-              <Link href="/privacy" className="f-legal-link">Privacy</Link>
-              <span className="f-sep" aria-hidden />
-              <Link href="/terms"   className="f-legal-link">Terms</Link>
-              <span className="f-sep" aria-hidden />
-              <Link href="/returns" className="f-legal-link">Returns</Link>
+          {/* Links grid */}
+          <div className="lxf-grid">
+
+            {/* Gifts */}
+            <div>
+              <span className="lxf-col-head">Our Gifts</span>
+              <ul className="lxf-links">
+                <li>
+                  <Link href="/shop/surprise-memory-box" className="lxf-link">
+                    Surprise Memory Box
+                    <span className="lxf-link-badge">Popular</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shop/exploding-box" className="lxf-link">
+                    Exploding Box
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shop/video-memory-card" className="lxf-link">
+                    Video Memory Card
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shop" className="lxf-link">
+                    Browse All Gifts
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/business" className="lxf-link">
+                    Corporate Gifting
+                  </Link>
+                </li>
+              </ul>
             </div>
-            <div className="f-paystack">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+
+            {/* Occasions */}
+            <div>
+              <span className="lxf-col-head">Occasions</span>
+              <ul className="lxf-links">
+                <li><Link href="/shop?tag=birthday"    className="lxf-link">Birthday</Link></li>
+                <li><Link href="/shop?tag=anniversary" className="lxf-link">Anniversary</Link></li>
+                <li><Link href="/shop?tag=valentine"   className="lxf-link">Valentine's Day</Link></li>
+                <li><Link href="/shop?tag=mothers-day" className="lxf-link">Mother's Day</Link></li>
+                <li><Link href="/shop?tag=graduation"  className="lxf-link">Graduation</Link></li>
+                <li><Link href="/shop?tag=wedding"     className="lxf-link">Wedding</Link></li>
+              </ul>
+            </div>
+
+            {/* Help */}
+            <div>
+              <span className="lxf-col-head">Help</span>
+              <ul className="lxf-links">
+                <li><Link href="/track"    className="lxf-link">Track My Order</Link></li>
+                <li><Link href="/delivery" className="lxf-link">Delivery Info</Link></li>
+                <li><Link href="/returns"  className="lxf-link">Returns Policy</Link></li>
+                <li><Link href="/faq"      className="lxf-link">FAQs</Link></li>
+                <li><Link href="/about"    className="lxf-link">Our Story</Link></li>
+                <li><Link href="/contact"  className="lxf-link">Contact Us</Link></li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <span className="lxf-col-head">Get in Touch</span>
+              <div className="lxf-contact-item">
+                <span className="lxf-contact-label">WhatsApp</span>
+                <a href="https://wa.me/2348051385049" className="lxf-contact-val" target="_blank" rel="noopener noreferrer">
+                  +234 805 138 5049
+                </a>
+                <span className="lxf-contact-sub">Fastest response</span>
+              </div>
+              <div className="lxf-contact-item">
+                <span className="lxf-contact-label">Email</span>
+                <a href="mailto:hello@lensra.com" className="lxf-contact-val">
+                  hello@lensra.com
+                </a>
+                <span className="lxf-contact-sub">Within 24 hours</span>
+              </div>
+              <div className="lxf-contact-item">
+                <span className="lxf-contact-label">Location</span>
+                <span className="lxf-contact-val">Benin City, Edo State</span>
+                <span className="lxf-contact-sub">Mon – Sat · 9am – 6pm WAT</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="lxf-bottom">
+            <p className="lxf-copy">
+              © {year} <strong>Lensra</strong>. Proudly made in Nigeria. All rights reserved.
+            </p>
+            <div className="lxf-legal">
+              <Link href="/privacy" className="lxf-legal-link">Privacy</Link>
+              <span className="lxf-legal-sep" />
+              <Link href="/terms" className="lxf-legal-link">Terms</Link>
+              <span className="lxf-legal-sep" />
+              <Link href="/returns" className="lxf-legal-link">Returns</Link>
+            </div>
+            <div className="lxf-secure">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
               </svg>
               Secured by Paystack
             </div>
