@@ -1,31 +1,30 @@
 // app/layout.tsx
-// Adire — Root layout
-// Preserves: AuthProvider, GoogleAnalytics, Pinterest verify meta, favicon, robots
-// Updates: brand, fonts (Playfair Display + Syne via next/font), metadata, site URL
+// Lensra — Root layout
+// Design: Premium Black × White × Red
+// Fonts: Montserrat + Inter via next/font
 
 import "./globals.css";
 import type { Metadata } from "next";
-import { Playfair_Display, Syne } from "next/font/google";
+import { Montserrat, Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import AdireNav from "@/components/AdireNav";
-import AdireFooter from "@/components/AdireFooter";
+import { LensraNav } from "@/components/LensraNav";
+import LensraFooter from "@/components/LensraFooter";
 import { AuthProvider } from "@/context/AuthContext";
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
-// Using next/font instead of @import — faster, no FOUT, self-hosted automatically
 
-const playfair = Playfair_Display({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["400", "700", "900"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   style: ["normal", "italic"],
-  variable: "--font-playfair",
+  variable: "--font-montserrat",
   display: "swap",
 });
 
-const syne = Syne({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-syne",
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -33,23 +32,23 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: {
-    default: "Lensra | Personalised Ankara Gifts — Made in Nigeria",
+    default: "Lensra | Personalised Gift Experiences — Made in Nigeria",
     template: "%s | Lensra",
   },
   description:
-    "Handmade personalised Ankara tote bags and pouches, embroidered with your name and made to order in Benin City. The most meaningful gift you can give. Delivered across Nigeria in 3–5 days.",
+    "We create personalised surprise boxes that make your loved ones smile, cry, and remember forever. Handcrafted in Benin City. Delivered across Nigeria in 3–5 days.",
   keywords: [
-    "personalised Ankara gifts Nigeria",
-    "custom Ankara tote bag Nigeria",
-    "Ankara pouch personalised",
+    "personalised gifts Nigeria",
+    "surprise memory box Nigeria",
+    "custom gift box Nigeria",
+    "exploding box gift Nigeria",
     "personalised gifts Benin City",
-    "Ankara gifts Nigeria",
-    "handmade Nigerian gifts",
-    "embroidered Ankara bag Nigeria",
+    "meaningful gifts Nigeria",
+    "video memory card gift",
     "Lensra gifts Nigeria",
     "custom gifts Nigeria",
     "Nigerian gifting brand",
-    "Ankara gift delivery Nigeria",
+    "gift delivery Nigeria",
     "made in Nigeria gifts",
   ],
   authors: [{ name: "Lensra" }],
@@ -59,9 +58,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Lensra — Personalised Ankara Gifts. Made Nigerian.",
+    title: "Lensra — Turn Memories Into Unforgettable Gifts",
     description:
-      "Handmade Ankara tote bags and pouches embroidered with your name. Made to order in Benin City. Delivered nationwide.",
+      "Personalised surprise boxes handcrafted with love. Made in Benin City. Delivered nationwide in 3–5 days.",
     url: "https://www.lensra.com",
     siteName: "Lensra",
     images: [
@@ -69,7 +68,7 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Lensra — Personalised Ankara Gifts",
+        alt: "Lensra — Personalised Gift Experiences",
       },
     ],
     locale: "en_NG",
@@ -77,9 +76,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Lensra | Personalised Ankara Gifts",
+    title: "Lensra | Personalised Gift Experiences",
     description:
-      "Embroidered with your name. Made by hand in Benin City. Delivered across Nigeria.",
+      "Surprise boxes that make people cry happy tears. Made in Benin City. Delivered across Nigeria.",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -94,7 +93,6 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // Replace with your actual Google Search Console verification code
     google: "your-google-verification-code",
   },
   icons: {
@@ -112,20 +110,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${syne.variable}`}>
+    <html lang="en" className={`${montserrat.variable} ${inter.variable}`}>
       <head>
-        {/*
-          Pinterest domain verification — kept from original.
-          Replace value if your Pinterest account changes.
-        */}
         <meta name="p:domain_verify" content="f8b7975759669136bd46bcbf56ffd0e5" />
       </head>
 
       <body
         style={{
-          fontFamily: "var(--font-syne), system-ui, sans-serif",
-          background: "#F5F0E8",
-          color: "#2C1810",
+          fontFamily: "var(--font-inter), system-ui, sans-serif",
+          background: "#FFFFFF",
+          color: "#0F0F0F",
           WebkitFontSmoothing: "antialiased",
           MozOsxFontSmoothing: "grayscale" as any,
           display: "flex",
@@ -134,23 +128,14 @@ export default function RootLayout({
           overflowX: "hidden",
         }}
       >
-        {/*
-          AuthProvider wraps everything so useAuth() works on every page —
-          including /login, /signup, /reseller-program etc.
-          It must have "use client" at the top of AuthContext.tsx.
-        */}
         <AuthProvider>
-          <AdireNav />
+          <LensraNav />
           <main style={{ flexGrow: 1, paddingTop: "68px" }}>
             {children}
           </main>
-          <AdireFooter />
+          <LensraFooter />
         </AuthProvider>
 
-        {/*
-          Google Analytics — same @next/third-parties implementation as original.
-          Set NEXT_PUBLIC_GA_ID in your .env file.
-        */}
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
       </body>
     </html>
