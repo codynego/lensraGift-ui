@@ -188,6 +188,7 @@ export default function ClientHomepage() {
       })
       .then(data => {
         const all: Product[] = Array.isArray(data) ? data : (data.results ?? []);
+        console.log("[Lensra] fetched products:", all);
         // Only active tote / pouch / box products
         const filtered = all.filter(
           p => p.is_active && ["tote", "pouch", "box", "memory", "surprise"].some(
