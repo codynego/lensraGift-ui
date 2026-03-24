@@ -170,31 +170,55 @@ function SmallProductCard({ product }: { product: Product }) {
 }
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────
-export default function ClientHomepage({ initialProducts }: { initialProducts: Product[] }) {
+export default function ClientHomepage() {
   const heroRef = useRef(null);
+
+  // ── Product state ───────────────────────────────────────────────────────────
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setProductsLoading(true);
+
+    fetch(`${BaseUrl}api/products/`, { signal: controller.signal })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(data => {
+        const all: Product[] = Array.isArray(data) ? data : (data.results ?? []);
+        // Only active tote / pouch / box products
+        const filtered = all.filter(
+          p => p.is_active && ["tote", "pouch", "box", "memory", "surprise"].some(
+            k => p.category?.toLowerCase().includes(k)
+          )
+        );
+        setProducts(filtered);
+      })
+      .catch(err => {
+        if (err.name !== "AbortError") console.error("[Lensra] product fetch:", err);
+      })
+      .finally(() => setProductsLoading(false));
+
+    return () => controller.abort();
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  // Subtle parallax — only scale, no opacity fadeout that could cause overflow issues
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.06]);
 
-  // ── Derive products from real data ─────────────────────────────────────────
-  // Hero product: first product with 'box' or 'memory' in name/category, else first product
+  // ── Derive hero + secondary from fetched products ──────────────────────────
   const heroProduct =
-    initialProducts.find(p =>
-      /box|memory|surprise/i.test(p.name + " " + p.category)
-    ) || initialProducts[0] || null;
+    products.find(p => /box|memory|surprise/i.test(p.name + " " + p.category))
+    || products[0]
+    || null;
 
-    console.log("Hero product:", heroProduct);
-    console.log("initial products", initialProducts)
-
-  // Secondary products: up to 2, exclude hero product
-  const secondaryProducts = initialProducts
+  const secondaryProducts = products
     .filter(p => p.id !== heroProduct?.id)
     .slice(0, 2);
-    console.log("Secondary products:", secondaryProducts);
 
   const heroImageUrl = getImageUrl(heroProduct?.image_url ?? null);
 
@@ -798,6 +822,33 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
         }
 
         /* ══════════════════════════════════════════
+           SKELETON LOADER
+        ══════════════════════════════════════════ */
+        @keyframes lx-shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position:  600px 0; }
+        }
+        .lx-ske {
+          border-radius: 2px;
+          background: linear-gradient(
+            90deg,
+            rgba(255,255,255,0.04) 25%,
+            rgba(255,255,255,0.09) 50%,
+            rgba(255,255,255,0.04) 75%
+          );
+          background-size: 600px 100%;
+          animation: lx-shimmer 1.6s ease-in-out infinite;
+        }
+        .lx-ske-img   { aspect-ratio: 4/5; width: 100%; }
+        .lx-ske-label { height: 10px; width: 100px; margin-bottom: 20px; }
+        .lx-ske-h-lg  { height: 52px; width: 90%;  margin-bottom: 10px; }
+        .lx-ske-h-md  { height: 52px; width: 65%;  margin-bottom: 28px; }
+        .lx-ske-body  { height: 14px; width: 100%; margin-bottom: 10px; }
+        .lx-ske-short { width: 75%; }
+        .lx-ske-price { height: 36px; width: 140px; margin: 24px 0; }
+        .lx-ske-btn   { height: 52px; width: 200px; }
+
+        /* ══════════════════════════════════════════
            RESPONSIVE
         ══════════════════════════════════════════ */
         @media (max-width: 960px) {
@@ -902,7 +953,23 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
 
       {/* ═══ 3. HERO PRODUCT ═══════════════════════════════════════════════════ */}
       <section className="lx-product-section">
-        {heroProduct ? (
+        {productsLoading ? (
+          /* ── Skeleton while fetching ─────────────────────────────────────── */
+          <div className="lx-product-inner lx-skeleton-wrap" aria-busy="true">
+            <div className="lx-ske lx-ske-img" />
+            <div className="lx-product-content">
+              <div className="lx-ske lx-ske-label" />
+              <div className="lx-ske lx-ske-h-lg" />
+              <div className="lx-ske lx-ske-h-md" />
+              <div className="lx-ske lx-ske-body" />
+              <div className="lx-ske lx-ske-body lx-ske-short" />
+              <div className="lx-ske lx-ske-body lx-ske-short" />
+              <div className="lx-ske lx-ske-price" />
+              <div className="lx-ske lx-ske-btn" />
+            </div>
+          </div>
+        ) : heroProduct ? (
+          /* ── Real product ────────────────────────────────────────────────── */
           <Reveal>
             <div className="lx-product-inner">
               {/* Image */}
@@ -913,9 +980,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
                   ) : (
                     <div className="lx-product-img-placeholder">🎁</div>
                   )}
-                  {heroProduct.is_new && (
-                    <div className="lx-product-badge">New</div>
-                  )}
+                  {heroProduct.is_new && <div className="lx-product-badge">New</div>}
                   {heroProduct.is_featured && !heroProduct.is_new && (
                     <div className="lx-product-badge">Best Seller</div>
                   )}
@@ -929,7 +994,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
                 </motion.div>
 
                 <motion.h2 className="lx-product-h2" variants={fadeUp}>
-                  {heroProduct.name.includes("Memory") || heroProduct.name.includes("Surprise") ? (
+                  {/memory|surprise/i.test(heroProduct.name) ? (
                     <>
                       {heroProduct.name.split(" ").slice(0, -2).join(" ")}<br />
                       <em>{heroProduct.name.split(" ").slice(-2).join(" ")}</em>
@@ -962,14 +1027,12 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
                   <Link href={`/shop/${heroProduct.slug}`} className="lx-btn-red">
                     Create Your Gift →
                   </Link>
-                  <Link href="/shop" className="lx-btn-outline">
-                    View All
-                  </Link>
+                  <Link href="/shop" className="lx-btn-outline">View All</Link>
                 </motion.div>
               </motion.div>
             </div>
 
-            {/* Secondary products — only if they exist in real data */}
+            {/* Secondary products */}
             {secondaryProducts.length > 0 && (
               <div className="lx-others">
                 <span className="lx-others-label">Other Experiences</span>
@@ -982,7 +1045,7 @@ export default function ClientHomepage({ initialProducts }: { initialProducts: P
             )}
           </Reveal>
         ) : (
-          /* No products loaded — clean fallback pointing to shop */
+          /* ── Fetch succeeded but no products returned ────────────────────── */
           <Reveal>
             <div style={{ textAlign: "center", padding: "40px 0" }}>
               <motion.div variants={fadeUp}>

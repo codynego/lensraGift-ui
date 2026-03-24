@@ -1,28 +1,12 @@
 // app/page.tsx
-// Server component — Adire homepage
-// Brand: Personalised Ankara Gifts · Made in Benin City · Delivered Nationwide
+// Server component — Lensra homepage
+// Product fetching is handled client-side in ClientHomepage.tsx
 
 import { Metadata } from "next";
 import ClientHomepage from "./ClientHomepage";
 import { WithContext, WebPage, Organization, BreadcrumbList } from "schema-dts";
 
-const BaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lensra.com/";
 const SiteUrl = "https://www.lensra.com";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-export interface Product {
-  id: number;
-  slug: string;
-  name: string;
-  base_price: string;
-  category: "tote" | "pouch" | string;
-  image_url: string | null;
-  is_active: boolean;
-  is_trending: boolean;
-  is_featured: boolean;
-  is_new?: boolean;
-}
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
@@ -132,30 +116,11 @@ function HomepageSchema() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default async function Homepage() {
-  let products: Product[] = [];
-
-  try {
-    const res = await fetch(`${BaseUrl}api/products/`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch products");
-    const data = await res.json();
-    console.log("Fetched products data:", data);
-    products = Array.isArray(data) ? data : (data.results ?? []);
-
-    products = products.filter(
-      (p) => p.is_active
-    );
-    console.log("Filtered active tote/pouch products:", products);
-  } catch (err) {
-    console.error("[Lensra] Product fetch error:", err);
-  }
-
+export default function Homepage() {
   return (
     <>
       <HomepageSchema />
-      <ClientHomepage initialProducts={products} />
+      <ClientHomepage />
     </>
   );
 }
