@@ -217,6 +217,8 @@ export default function ClientHomepage() {
     products.find(p => /box|memory|surprise/i.test(p.name + " " + p.category))
     || products[0]
     || null;
+    console.log("products", products)
+    console.log("[Lensra] hero product:", heroProduct);
 
   const secondaryProducts = products
     .filter(p => p.id !== heroProduct?.id)
