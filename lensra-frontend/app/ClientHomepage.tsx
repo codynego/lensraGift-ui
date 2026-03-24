@@ -150,20 +150,37 @@ function TestimonialSlider() {
 // ── Secondary product card (small) ────────────────────────────────────────────
 function SmallProductCard({ product }: { product: Product }) {
   const imgUrl = getImageUrl(product.image_url);
+
   return (
     <Link href={`/shop/${product.slug}`} className="lx-sm-card">
-      <div className="lx-sm-card-img">
+      <div 
+        className="lx-sm-card-img" 
+        style={{ position: "relative", overflow: "hidden" }}
+      >
         {imgUrl ? (
-          <Image src={imgUrl} alt={product.name} fill style={{ objectFit: "cover" }}
-            sizes="200px" className="lx-sm-card-photo" />
+          <img 
+            src={imgUrl} 
+            alt={product.name} 
+            className="lx-sm-card-photo"
+            style={{ 
+              width: "100%", 
+              height: "100%", 
+              objectFit: "cover",
+              display: "block" 
+            }} 
+          />
         ) : (
           <div className="lx-sm-card-placeholder">🎁</div>
         )}
       </div>
+
       <div className="lx-sm-card-info">
         <span className="lx-sm-card-name">{product.name}</span>
-        <span className="lx-sm-card-price">From {formatPrice(product.base_price || 0)}</span>
+        <span className="lx-sm-card-price">
+          From {formatPrice(product.base_price || 0)}
+        </span>
       </div>
+      
       <span className="lx-sm-card-arrow">→</span>
     </Link>
   );
@@ -188,7 +205,7 @@ export default function ClientHomepage() {
       })
       .then(data => {
         const all: Product[] = Array.isArray(data) ? data : (data.results ?? []);
-        console.log("[Lensra] fetched products:", all);
+
         // Only active tote / pouch / box products
         // const filtered = all.filter(
         //   p => p.is_active && ["tote", "pouch", "box", "memory", "surprise"].some(
@@ -196,7 +213,7 @@ export default function ClientHomepage() {
         //   )
         // );
         const filtered = all.filter(p => p.is_active);
-        console.log("[Lensra] active products:", filtered);
+
         setProducts(all);
       })
       .catch(err => {
@@ -218,8 +235,7 @@ export default function ClientHomepage() {
     products.find(p => /box|memory|surprise/i.test(p.name + " " + p.category))
     || products[0]
     || null;
-    console.log("products", products)
-    console.log("[Lensra] hero product:", heroProduct);
+
 
   const secondaryProducts = products
     .filter(p => p.id !== heroProduct?.id)
