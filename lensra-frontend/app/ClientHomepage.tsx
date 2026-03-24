@@ -190,11 +190,12 @@ export default function ClientHomepage() {
         const all: Product[] = Array.isArray(data) ? data : (data.results ?? []);
         console.log("[Lensra] fetched products:", all);
         // Only active tote / pouch / box products
-        const filtered = all.filter(
-          p => p.is_active && ["tote", "pouch", "box", "memory", "surprise"].some(
-            k => p.category?.toLowerCase().includes(k)
-          )
-        );
+        // const filtered = all.filter(
+        //   p => p.is_active && ["tote", "pouch", "box", "memory", "surprise"].some(
+        //     k => p.category?.toLowerCase().includes(k)
+        //   )
+        // );
+        const filtered = all.filter(p => p.is_active);
         setProducts(filtered);
       })
       .catch(err => {
