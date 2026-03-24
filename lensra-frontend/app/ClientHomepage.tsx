@@ -196,7 +196,8 @@ export default function ClientHomepage() {
         //   )
         // );
         const filtered = all.filter(p => p.is_active);
-        setProducts(filtered);
+        console.log("[Lensra] active products:", filtered);
+        setProducts(all);
       })
       .catch(err => {
         if (err.name !== "AbortError") console.error("[Lensra] product fetch:", err);
